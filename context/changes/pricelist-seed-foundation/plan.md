@@ -276,30 +276,30 @@ No data migration — the pricelist is not in the database. The only "migration"
 
 #### Automated
 
-- [x] 1.1 Type checking passes: `npm run lint`
-- [x] 1.2 Build passes: `npm run build`
-- [x] 1.3 `PriceValueSchema` parses one fixture of each of the four `kind`s
+- [x] 1.1 Type checking passes: `npm run lint` — f3245e5
+- [x] 1.2 Build passes: `npm run build` — f3245e5
+- [x] 1.3 `PriceValueSchema` parses one fixture of each of the four `kind`s — f3245e5
 
 #### Manual
 
-- [x] 1.4 Four price kinds cover every `price_type` present in both JSON files
-- [x] 1.5 Annotation fields present on the source item schema
+- [x] 1.4 Four price kinds cover every `price_type` present in both JSON files — f3245e5
+- [x] 1.5 Annotation fields present on the source item schema — f3245e5
 
 ### Phase 2: Seed data + inline annotations + load-time validation
 
 #### Automated
 
-- [ ] 2.1 Seed validates: `npm run validate:pricing` exits 0 with expected counts
-- [ ] 2.2 Lint passes: `npm run lint`
-- [ ] 2.3 Build passes: `npm run build`
-- [ ] 2.4 Tampering check: removing an annotation entry fails `validate:pricing`, then restore
+- [x] 2.1 Seed validates: `npm run validate:pricing` exits 0 with expected counts
+- [x] 2.2 Lint passes: `npm run lint`
+- [x] 2.3 Build passes: `npm run build`
+- [x] 2.4 Tampering check: removing an annotation entry fails `validate:pricing`, then restore
 
 #### Manual
 
-- [ ] 2.5 "Znieczulenie" flagged `localAnesthesia: true`; no other item unless confirmed
-- [ ] 2.6 Each item's `validForTooth` / `validForGeneral` matches clinical intent
-- [ ] 2.7 `ANESTHESIA_FEE_SCHEDULE` matches `pricing-narkoza.json` (1400 / 2000 / 100 / 5)
-- [ ] 2.8 Root JSON files removed; relocated copies byte-identical
+- [x] 2.5 "Znieczulenie" flagged `localAnesthesia: true`; no other item unless confirmed
+- [x] 2.6 Each item's `validForTooth` / `validForGeneral` matches clinical intent
+- [x] 2.7 `ANESTHESIA_FEE_SCHEDULE` matches `pricing-narkoza.json` (1400 / 2000 / 100 / 5)
+- [x] 2.8 Root JSON files removed; relocated copies byte-identical
 
 ### Phase 3: Resolver + S-01-facing API + change-price docs
 
