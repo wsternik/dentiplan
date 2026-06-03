@@ -1,0 +1,109 @@
+{
+  "$comment": "Pricing model for treatment under general anesthesia (leczenie w znieczuleniu ogólnym / narkoza). Source: src/pages/leczenie-w-narkozie.astro + src/components/narkoza/NarkozeCennik.astro, both deriving from PRICES.narkoza in src/lib/pricing.ts. Currency: PLN. Total cost is the sum of two independent components: (1) anesthesia fee, (2) dental treatment quoted individually at the qualifying consultation.",
+  "currency": "PLN",
+  "isIndicative": true,
+  "nfz": false,
+  "requiresQualifyingConsultation": true,
+  "model": {
+    "description": "Całkowity koszt składa się z dwóch niezależnych części.",
+    "components": [
+      {
+        "order": 1,
+        "name": "Znieczulenie ogólne",
+        "includes": "Znieczulenie dożylne, opieka anestezjologa i monitorowanie pacjenta.",
+        "pricing": {
+          "base": [
+            {
+              "patientGroup": "Dzieci — zęby mleczne",
+              "key": "dzieci",
+              "price": 1400,
+              "display": "1 400 zł",
+              "scope": "do 5 zębów w jednej sesji",
+              "note": "dotyczy dzieci leczących wyłącznie zęby mleczne"
+            },
+            {
+              "patientGroup": "Dorośli i dzieci — zęby stałe",
+              "key": "dorosli",
+              "price": 2000,
+              "display": "2 000 zł",
+              "scope": "do 5 zębów w jednej sesji",
+              "note": "dotyczy dorosłych oraz dzieci leczących zęby stałe"
+            }
+          ],
+          "modifier": {
+            "name": "Każdy dodatkowy ząb powyżej 5",
+            "key": "dodatkowy",
+            "amount": 100,
+            "display": "+100 zł",
+            "appliesWhen": "more than 5 teeth treated in a single session"
+          }
+        }
+      },
+      {
+        "order": 2,
+        "name": "Leczenie stomatologiczne",
+        "includes": "Wypełnienia, ekstrakcje, leczenie kanałowe itp.",
+        "pricing": {
+          "type": "individual",
+          "display": "wycena indywidualna",
+          "note": "Koszt zależy od zakresu i rodzaju zabiegów, wyliczany według cennika gabinetu i ustalany na konsultacji kwalifikacyjnej. Patrz pricing.json (poszczególne kategorie zabiegów)."
+        }
+      }
+    ]
+  },
+  "formula": {
+    "anesthesia": "base + max(0, teeth - 5) * 100",
+    "total": "anesthesia + dentalTreatment",
+    "notes": "base = 1400 dla dzieci (zęby mleczne) lub 2000 dla dorosłych/zębów stałych. dentalTreatment ustalany indywidualnie."
+  },
+  "examples": [
+    {
+      "label": "3 zęby mleczne u dziecka",
+      "patientGroup": "dzieci",
+      "teeth": 3,
+      "anesthesiaBase": 1400,
+      "additionalTeeth": 0,
+      "additionalTeethCost": 0,
+      "anesthesiaTotal": 1400,
+      "anesthesiaDisplay": "1 400 zł",
+      "dentalTreatment": "wycena indywidualna",
+      "total": "1 400 zł + koszt leczenia"
+    },
+    {
+      "label": "6 zębów mlecznych u dziecka",
+      "patientGroup": "dzieci",
+      "teeth": 6,
+      "anesthesiaBase": 1400,
+      "additionalTeeth": 1,
+      "additionalTeethCost": 100,
+      "anesthesiaTotal": 1500,
+      "anesthesiaDisplay": "1 500 zł",
+      "dentalTreatment": "wycena indywidualna",
+      "total": "1 500 zł + koszt leczenia"
+    },
+    {
+      "label": "3 zęby stałe u dorosłego",
+      "patientGroup": "dorosli",
+      "teeth": 3,
+      "anesthesiaBase": 2000,
+      "additionalTeeth": 0,
+      "additionalTeethCost": 0,
+      "anesthesiaTotal": 2000,
+      "anesthesiaDisplay": "2 000 zł",
+      "dentalTreatment": "wycena indywidualna",
+      "total": "2 000 zł + koszt leczenia"
+    },
+    {
+      "label": "7 zębów stałych u dorosłego (rozległy zabieg)",
+      "patientGroup": "dorosli",
+      "teeth": 7,
+      "anesthesiaBase": 2000,
+      "additionalTeeth": 2,
+      "additionalTeethCost": 200,
+      "anesthesiaTotal": 2200,
+      "anesthesiaDisplay": "2 200 zł",
+      "dentalTreatment": "wycena indywidualna",
+      "total": "2 200 zł + koszt leczenia"
+    }
+  ]
+}
