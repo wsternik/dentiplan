@@ -72,7 +72,7 @@ Extend the shared price union to represent every real `price_type`, and define t
 
 ```ts
 z.object({ kind: z.literal("modifier"), amount: z.number() }),  // additive surcharge, e.g. +500
-z.object({ kind: z.literal("from"), amount: z.number() }),      // starting price ("od X")
+z.object({ kind: z.literal("from"), amount: z.number() }),      // starting price ("od X") — anticipatory: documented in pricing.json's $comment but NO item uses price_type "from" today; kept so a future re-export carrying it parses without a schema change.
 ```
 
 `PriceValue` (the `z.infer`) and `PricelistItemRefSchema` need no structural change — they consume the wider union automatically.
@@ -131,10 +131,11 @@ Bring the real exports into the source tree, build the canonical seed (raw price
 **Intent**: Import the JSON, attach DentiPlan annotations (`localAnesthesia`, `validForTooth`, `validForGeneral`) and stable ids to every item inline, derive the anesthesia fee schedule from `pricing-narkoza.json`, validate the whole structure with the Phase 1 schema at module load, and export the typed results. Authoring the annotation map is the one place clinical judgment enters: mark the "Znieczulenie" (50 zł) item `localAnesthesia: true` (FR-041); mark Profilaktyka / consultation / RTG-type items `validForGeneral: true` and treatment items `validForTooth: true` per the dentystka's intent.
 
 **Contract**:
-- Stable id = `${category.slug}:${slugify(item.name)}`.
-- An inline annotation lookup keyed by id supplies `{ localAnesthesia?, validForTooth, validForGeneral }` for every item. **The builder must throw if any JSON item lacks an annotation entry** (completeness guard — see Critical Implementation Details) and if any annotation entry references a non-existent item.
+- Stable id = `${category.slug}:${slugify(item.name)}`. No slug library is in deps, so author a small local `slugify`: NFKD diacritic-fold (ż/ł/ą/ó/ś/ć/ń/ź/ę → ascii — note `ł` needs an explicit map, NFKD won't fold it), lowercase, replace every run of non-`[a-z0-9]` (spaces, em-dashes, `/`, `+`, curly quotes, parens) with a single `-`, trim leading/trailing `-`. Because the id is the stable key S-01 references and freezes into snapshots (FR-050), the completeness guard **also asserts all generated ids are unique** — a collision (two names slugging to the same id within a category) must throw, not silently overwrite.
+- **Exclude the `leczenie-w-narkozie` category from `PRICELIST`.** Its three items (1400 / 2000 base, `+100` per extra tooth) are the anesthesia fee — they are represented by `ANESTHESIA_FEE_SCHEDULE` (derived from `pricing-narkoza.json`) and computed by S-01's formula, not picked as per-tooth or general items. Including them would force a meaningless `validForTooth`/`validForGeneral` annotation and risk leaking the fee into `listGeneralItems()`. The seed builder filters this category out before annotation; a top-of-module comment records why so a future re-import doesn't silently re-add it.
+- An inline annotation lookup keyed by id supplies `{ localAnesthesia?, validForTooth, validForGeneral }` for every **non-excluded** item. **The builder must throw if any included JSON item lacks an annotation entry** (completeness guard — see Critical Implementation Details) and if any annotation entry references a non-existent (or excluded) item.
 - `price_type`/`price_min`/`price_max` map onto the source schema unchanged (the resolver in Phase 3 converts to `PriceValue`).
-- Exports: `PRICELIST: Pricelist` (validated) and `ANESTHESIA_FEE_SCHEDULE: AnesthesiaFeeSchedule` (`{ baseMilk: 1400, basePermanent: 2000, perExtraTooth: 100, includedTeeth: 5 }`, parsed from the narkoza JSON, not hardcoded twice).
+- Exports: `PRICELIST: Pricelist` (validated) and `ANESTHESIA_FEE_SCHEDULE: AnesthesiaFeeSchedule` (`{ baseMilk: 1400, basePermanent: 2000, perExtraTooth: 100, includedTeeth: 5 }`). `baseMilk` / `basePermanent` read from `model.components[0].pricing.base[]` (keyed by `key: "dzieci"` / `"dorosli"`) and `perExtraTooth` from `.modifier.amount` — these are clean numeric fields, read from the JSON, not duplicated. `includedTeeth: 5` has **no** numeric field in `pricing-narkoza.json` (it appears only in prose — `scope: "do 5 zębów…"` and the `formula` string), so it is authored as an explicit constant with a comment citing that prose; do not regex-parse it.
 - Validation runs via `*Schema.parse(...)` at module top level so any import (including the validate script) triggers it.
 
 #### 3. Validation script + npm wiring
@@ -143,7 +144,11 @@ Bring the real exports into the source tree, build the canonical seed (raw price
 
 **Intent**: Provide an automated fail-fast gate that imports the seed (forcing the Zod parse and the completeness guard) and exits non-zero on failure, since there's no test runner yet.
 
-**Contract**: `scripts/validate-pricing.ts` imports `PRICELIST` + `ANESTHESIA_FEE_SCHEDULE`, logs a one-line summary (category count, item count), and exits 0/1. `package.json` gains `"validate:pricing": "tsx scripts/validate-pricing.ts"` (or the project's existing TS-run mechanism — confirm `tsx`/`node --import` availability; fall back to an Astro/`vite-node` invocation if `tsx` is absent).
+**Contract**: `scripts/validate-pricing.ts` imports `PRICELIST` + `ANESTHESIA_FEE_SCHEDULE`, logs a one-line summary (category count, item count), and exits 0/1. `package.json` gains `tsx` as a **devDependency** and the script `"validate:pricing": "tsx scripts/validate-pricing.ts"`.
+
+> **Runner rationale (do not skip):** plain `node script.ts` will NOT work even on Node 24's type-stripping — the import graph reaches `@/lib/pricing` → `@/types` → `@/db/database.types`, and Node does not resolve tsconfig `paths` aliases. `tsx` reads tsconfig `paths` (resolving `@/`) and handles JSON imports, so it is the chosen runner. `vite-node` is not installed and Astro has no run-a-script command, so neither is a viable fallback.
+>
+> **First action of this phase** is a smoke test: after adding `tsx`, run a trivial `scripts/validate-pricing.ts` that imports one symbol through the `@/` alias and confirm it resolves and exits 0 before building out the seed. This de-risks the gate the whole change depends on.
 
 ### Success Criteria:
 
@@ -202,6 +207,14 @@ Add the snapshot resolver and lookup surface S-01 consumes, plus a short doc for
 
 **Contract**: a short markdown note — which JSON file to edit, the `price_type`/`price_min`/`price_max` fields, that a change requires a PR + redeploy, that approved quotes keep their old snapshot (FR-050), and how to run `npm run validate:pricing` before committing.
 
+#### 4. Register the new contract surfaces
+
+**File**: `docs/reference/contract-surfaces.md`
+
+**Intent**: F-02 introduces load-bearing names S-01 contracts on; record them so a future rename is caught as a breaking change (matching the existing F-01 section).
+
+**Contract**: add an `## F-02 — Pricelist Seed` section listing the `@/lib/pricing` barrel exports (`PRICELIST`, `ANESTHESIA_FEE_SCHEDULE`, `resolvePricelistItem`, `findItemById`, `listToothItems`, `listGeneralItems`, `listByCategory`) and the source types. Note the `PriceValueSchema` widening under the existing F-01 entry (additive `modifier`/`from`; no rename) so its registry line stays accurate.
+
 ### Success Criteria:
 
 #### Automated Verification:
@@ -216,6 +229,7 @@ Add the snapshot resolver and lookup surface S-01 consumes, plus a short doc for
 - `listToothItems()` / `listGeneralItems()` return the contextually correct subsets
 - README is clear enough for a non-developer to change a price
 - `@/lib/pricing` import surface exposes everything S-01 needs (resolver, lookups, fee schedule) without reaching into internal files
+- `docs/reference/contract-surfaces.md` has an `## F-02 — Pricelist Seed` section listing the barrel exports, and the F-01 `PriceValueSchema` line reflects the widening
 
 **Implementation Note**: After completing this phase and all automated verification passes, pause for final manual confirmation.
 
@@ -301,3 +315,4 @@ No data migration — the pricelist is not in the database. The only "migration"
 - [ ] 3.5 `listToothItems()` / `listGeneralItems()` return contextually correct subsets
 - [ ] 3.6 README clear enough for a non-developer to change a price
 - [ ] 3.7 `@/lib/pricing` exposes everything S-01 needs without reaching into internals
+- [ ] 3.8 `contract-surfaces.md` gains an F-02 section; F-01 `PriceValueSchema` line reflects the widening
