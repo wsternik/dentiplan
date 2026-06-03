@@ -28,7 +28,14 @@ create table public.quotes (
   patient_email text,                      -- nullable; admin-only reference per FR-072
   content jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
-  approved_at timestamptz                  -- set on draft -> approved transition (S-01)
+  approved_at timestamptz,                 -- set on draft -> approved transition (S-01)
+  -- Approved-row invariants: an approved quote is frozen by the Phase 2 trigger,
+  -- so any missing field would be permanent. A NULL-token approved quote is
+  -- unreachable via get_quote_by_token; a NULL approved_at is a forensic snapshot
+  -- (FR-053) missing its own approval timestamp. Pin both at the schema layer so
+  -- an S-01 approval bug can never persist an invalid approved row.
+  constraint quotes_approved_has_token check (status <> 'approved' or token is not null),
+  constraint quotes_approved_has_timestamp check (status <> 'approved' or approved_at is not null)
 );
 
 comment on table public.quotes is
@@ -80,7 +87,7 @@ create policy quotes_authenticated_delete on public.quotes
 -- approved row is deliberately left to the owner so S-04 retention can purge
 -- aged quotes.
 create function public.prevent_approved_update() returns trigger
-language plpgsql as $$
+language plpgsql set search_path = '' as $$
 begin
   if OLD.status = 'approved' then
     raise exception 'approved quotes are immutable (id=%)', OLD.id;

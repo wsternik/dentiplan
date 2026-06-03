@@ -2,7 +2,7 @@
 change_id: quotes-data-foundation
 roadmap_id: F-01
 title: Domain schema for quotes/teeth/visits/snapshot in Supabase with RLS
-status: implemented
+status: impl_reviewed
 created: 2026-06-03
 updated: 2026-06-03
 prd_refs: [FR-050, FR-051, FR-070, FR-072, FR-053, Access Control]

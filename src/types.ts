@@ -14,7 +14,7 @@
 // `content`. The column whitelist does not protect fields nested in `content`.
 
 import { z } from "zod";
-import type { Tables } from "@/db/database.types";
+import type { Tables, Database } from "@/db/database.types";
 
 export type { Database } from "@/db/database.types";
 
@@ -183,14 +183,17 @@ export type Quote = Omit<QuoteRow, "content" | "status" | "patient_type"> & {
   patient_type: PatientType;
 };
 
+/** A single row of the generated `get_quote_by_token` RPC return shape. */
+type GetQuoteByTokenRow = Database["public"]["Functions"]["get_quote_by_token"]["Returns"][number];
+
 /**
  * The whitelisted shape `get_quote_by_token` returns to the public patient page
- * (FR-060/FR-066): no `patient_email`, `status`, or `token`. Mirrors the RPC's
- * `returns table (...)` column list, with `content` narrowed to `QuoteContent`.
+ * (FR-060/FR-066): no `patient_email`, `status`, or `token`. Derived from the
+ * generated RPC return type so it tracks the migration mechanically — a column
+ * added to or removed from the RPC changes this type — with `content` narrowed
+ * from `Json` to `QuoteContent` and `patient_type` to its domain union.
  */
-export interface PatientView {
-  id: string;
-  patient_type: PatientType;
+export type PatientView = Omit<GetQuoteByTokenRow, "content" | "patient_type"> & {
   content: QuoteContent;
-  created_at: string;
-}
+  patient_type: PatientType;
+};
