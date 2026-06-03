@@ -329,28 +329,28 @@ This is the project's first migration — no existing data to migrate. `supabase
 
 #### Automated
 
-- [x] 2.1 Migration still applies cleanly after RPC + trigger added
-- [x] 2.2 `get_quote_by_token` executable by `anon`; 0 rows for unknown/draft, 1 patient-safe row for approved
-- [x] 2.3 `UPDATE` on approved row raises; draft `UPDATE` incl. draft→approved succeeds
+- [x] 2.1 Migration still applies cleanly after RPC + trigger added — 50f9d8c
+- [x] 2.2 `get_quote_by_token` executable by `anon`; 0 rows for unknown/draft, 1 patient-safe row for approved — 50f9d8c
+- [x] 2.3 `UPDATE` on approved row raises; draft `UPDATE` incl. draft→approved succeeds — 50f9d8c
 
 #### Manual
 
-- [x] 2.4 Confirmed RPC exposes no path to `patient_email`/`status`/`token`
-- [x] 2.5 Confirmed no-disclosure behavior (FR-060): unknown vs draft identical
+- [x] 2.4 Confirmed RPC exposes no path to `patient_email`/`status`/`token` — 50f9d8c
+- [x] 2.5 Confirmed no-disclosure behavior (FR-060): unknown vs draft identical — 50f9d8c
 
 ### Phase 3: Type & Zod contract
 
 #### Automated
 
-- [ ] 3.1 `zod` is a declared dependency in `package.json` (not transitive)
-- [ ] 3.2 Type checking passes: `npm run build` / `astro check`
-- [ ] 3.3 Linting passes: `npm run lint`
-- [ ] 3.4 `z.infer<typeof QuoteContentSchema>` assignable to `QuoteContent`
+- [x] 3.1 `zod` is a declared dependency in `package.json` (not transitive)
+- [x] 3.2 Type checking passes: `npm run build` / `astro check`
+- [x] 3.3 Linting passes: `npm run lint`
+- [x] 3.4 `z.infer<typeof QuoteContentSchema>` assignable to `QuoteContent`
 
 #### Manual
 
-- [ ] 3.5 `QuoteContent` reviewed against FR-021–FR-032 (every form field has a home)
-- [ ] 3.6 `Json` vs `QuoteContent` boundary clear (store reads through Zod)
+- [x] 3.5 `QuoteContent` reviewed against FR-021–FR-032 (every form field has a home)
+- [x] 3.6 `Json` vs `QuoteContent` boundary clear (store reads through Zod)
 
 ### Phase 4: Verification probe & contract registry
 
