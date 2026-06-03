@@ -316,27 +316,27 @@ This is the project's first migration — no existing data to migrate. `supabase
 
 #### Automated
 
-- [x] 1.1 Migration applies cleanly: `supabase db reset`
-- [x] 1.2 Table and columns exist with expected types
-- [x] 1.3 RLS is enabled on `public.quotes` (`relrowsecurity = true`)
+- [x] 1.1 Migration applies cleanly: `supabase db reset` — a33ace7
+- [x] 1.2 Table and columns exist with expected types — a33ace7
+- [x] 1.3 RLS is enabled on `public.quotes` (`relrowsecurity = true`) — a33ace7
 
 #### Manual
 
-- [x] 1.4 Column set reviewed against FR-050/051/070/072 and S-03/S-04 needs
-- [x] 1.5 Constraint choices reviewed as acceptable for MVP
+- [x] 1.4 Column set reviewed against FR-050/051/070/072 and S-03/S-04 needs — a33ace7
+- [x] 1.5 Constraint choices reviewed as acceptable for MVP — a33ace7
 
 ### Phase 2: Patient-read RPC & immutability trigger
 
 #### Automated
 
-- [ ] 2.1 Migration still applies cleanly after RPC + trigger added
-- [ ] 2.2 `get_quote_by_token` executable by `anon`; 0 rows for unknown/draft, 1 patient-safe row for approved
-- [ ] 2.3 `UPDATE` on approved row raises; draft `UPDATE` incl. draft→approved succeeds
+- [x] 2.1 Migration still applies cleanly after RPC + trigger added
+- [x] 2.2 `get_quote_by_token` executable by `anon`; 0 rows for unknown/draft, 1 patient-safe row for approved
+- [x] 2.3 `UPDATE` on approved row raises; draft `UPDATE` incl. draft→approved succeeds
 
 #### Manual
 
-- [ ] 2.4 Confirmed RPC exposes no path to `patient_email`/`status`/`token`
-- [ ] 2.5 Confirmed no-disclosure behavior (FR-060): unknown vs draft identical
+- [x] 2.4 Confirmed RPC exposes no path to `patient_email`/`status`/`token`
+- [x] 2.5 Confirmed no-disclosure behavior (FR-060): unknown vs draft identical
 
 ### Phase 3: Type & Zod contract
 
