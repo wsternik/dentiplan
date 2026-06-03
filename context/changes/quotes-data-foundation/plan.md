@@ -316,14 +316,14 @@ This is the project's first migration — no existing data to migrate. `supabase
 
 #### Automated
 
-- [ ] 1.1 Migration applies cleanly: `supabase db reset`
-- [ ] 1.2 Table and columns exist with expected types
-- [ ] 1.3 RLS is enabled on `public.quotes` (`relrowsecurity = true`)
+- [x] 1.1 Migration applies cleanly: `supabase db reset`
+- [x] 1.2 Table and columns exist with expected types
+- [x] 1.3 RLS is enabled on `public.quotes` (`relrowsecurity = true`)
 
 #### Manual
 
-- [ ] 1.4 Column set reviewed against FR-050/051/070/072 and S-03/S-04 needs
-- [ ] 1.5 Constraint choices reviewed as acceptable for MVP
+- [x] 1.4 Column set reviewed against FR-050/051/070/072 and S-03/S-04 needs
+- [x] 1.5 Constraint choices reviewed as acceptable for MVP
 
 ### Phase 2: Patient-read RPC & immutability trigger
 
