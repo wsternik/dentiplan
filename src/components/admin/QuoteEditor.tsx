@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { computeQuoteTotals } from "@/lib/quote/cost";
 import { isValidToothNumber } from "@/lib/quote/tooth-name";
 import type { GeneralItem, PatientType, PricelistItemRef, ToothEntry, Visit } from "@/types";
+import { ApprovalConfirmation } from "./ApprovalConfirmation";
 import { Section } from "./controls";
 import { GeneralItems } from "./GeneralItems";
 import { ToothRow } from "./ToothRow";
@@ -35,6 +36,11 @@ export default function QuoteEditor({ toothOptions, generalOptions }: QuoteEdito
   const [toothInput, setToothInput] = useState("");
   const [toothWarnings, setToothWarnings] = useState<string[]>([]);
   const generalCounter = useRef(0);
+
+  // --- Approval (Phase 3) ---
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [approvedPath, setApprovedPath] = useState<string | null>(null);
 
   const totals = useMemo(() => computeQuoteTotals({ teeth, visits, generalItems }), [teeth, visits, generalItems]);
 
@@ -132,8 +138,62 @@ export default function QuoteEditor({ toothOptions, generalOptions }: QuoteEdito
       ? "Każdy ząb w planie musi mieć pozycję z cennika."
       : null;
 
-  function handleApprove() {
-    // Wired to POST /api/admin/quotes/approve in Phase 3.
+  // --- Approve: POST the tree by-id; server re-resolves prices and freezes ---
+  async function handleApprove() {
+    if (approveDisabled || submitting) return;
+    setSubmitting(true);
+    setSubmitError(null);
+    // Send pricelist items BY ID only — the resolved client price is preview-only
+    // and is never trusted for the immutable freeze (server re-resolves). rawText
+    // is intentionally absent from the payload (patient-safe invariant).
+    const payload = {
+      patient_type: patientType,
+      teeth: teeth.map((t) => ({
+        number: t.number,
+        treatmentType: t.treatmentType,
+        urgency: t.urgency,
+        status: t.status,
+        note: t.note,
+        pricelistItemIds: t.pricelistItems.map((i) => i.id),
+        visitNumber: t.visitNumber,
+      })),
+      visits,
+      generalItems: generalItems.map((g) => ({ id: g.id, itemId: g.item.id, visitNumber: g.visitNumber })),
+    };
+    try {
+      const res = await fetch("/api/admin/quotes/approve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = (await res.json().catch(() => null)) as { path?: string; error?: string } | null;
+      if (!res.ok || !data?.path) {
+        setSubmitError(data?.error ?? "Nie udało się zatwierdzić kosztorysu.");
+        return;
+      }
+      setApprovedPath(data.path);
+    } catch {
+      setSubmitError("Błąd połączenia. Spróbuj ponownie.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  function resetQuote() {
+    setPatientType("adult");
+    setTeeth([]);
+    setVisits([]);
+    setGeneralItems([]);
+    setRawText("");
+    setToothInput("");
+    setToothWarnings([]);
+    setSubmitError(null);
+    setApprovedPath(null);
+    generalCounter.current = 0;
+  }
+
+  if (approvedPath) {
+    return <ApprovalConfirmation path={approvedPath} onReset={resetQuote} />;
   }
 
   return (
@@ -250,10 +310,11 @@ export default function QuoteEditor({ toothOptions, generalOptions }: QuoteEdito
       </Section>
 
       <div className="flex flex-col items-start gap-2">
-        <Button type="button" size="lg" disabled={approveDisabled} onClick={handleApprove}>
-          Zatwierdź
+        <Button type="button" size="lg" disabled={approveDisabled || submitting} onClick={handleApprove}>
+          {submitting ? "Zatwierdzanie…" : "Zatwierdź"}
         </Button>
         {approveReason && <p className="text-muted-foreground text-sm">{approveReason}</p>}
+        {submitError && <p className="text-destructive text-sm">{submitError}</p>}
       </div>
     </div>
   );

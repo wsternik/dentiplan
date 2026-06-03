@@ -380,33 +380,33 @@ No schema migration — F-01's `quotes` table and RPC are sufficient. Approval w
 
 #### Automated
 
-- [x] 2.1 Type checking passes: `npm run build`
-- [x] 2.2 Linting passes: `npm run lint`
-- [x] 2.3 Unit tests still pass: `npm run test`
+- [x] 2.1 Type checking passes: `npm run build` — e8dc3a1
+- [x] 2.2 Linting passes: `npm run lint` — e8dc3a1
+- [x] 2.3 Unit tests still pass: `npm run test` — e8dc3a1
 
 #### Manual
 
-- [x] 2.4 `/admin` redirects when logged out, renders editor when logged in
-- [x] 2.5 `17,16,34` creates correct rows (names + dentition)
-- [x] 2.6 Out-of-range `99` warns with no priced row
-- [x] 2.7 Adding items/statuses/visits/general items updates both live totals correctly
-- [x] 2.8 Approve disabled (with reason) for empty/unpriced quote
+- [x] 2.4 `/admin` redirects when logged out, renders editor when logged in — e8dc3a1
+- [x] 2.5 `17,16,34` creates correct rows (names + dentition) — e8dc3a1
+- [x] 2.6 Out-of-range `99` warns with no priced row — e8dc3a1
+- [x] 2.7 Adding items/statuses/visits/general items updates both live totals correctly — e8dc3a1
+- [x] 2.8 Approve disabled (with reason) for empty/unpriced quote — e8dc3a1
 
 ### Phase 3: Approval transaction + token + link
 
 #### Automated
 
-- [ ] 3.1 Type checking passes: `npm run build`
-- [ ] 3.2 Linting passes: `npm run lint`
-- [ ] 3.3 Unit tests pass: `npm run test`
+- [x] 3.1 Type checking passes: `npm run build`
+- [x] 3.2 Linting passes: `npm run lint`
+- [x] 3.3 Unit tests pass: `npm run test`
 
 #### Manual
 
-- [ ] 3.4 Valid approve returns token + copyable `/p/<token>` link
-- [ ] 3.5 Inserted row is approved, unique token, `approved_at` set, frozen `content` (snapshot + totals match preview)
-- [ ] 3.6 `content` has no raw text / no PII
-- [ ] 3.7 Re-approve yields new token/row; original unchanged (FR-053)
-- [ ] 3.8 Empty/unpriced approve rejected server-side
+- [x] 3.4 Valid approve returns token + copyable `/p/<token>` link
+- [x] 3.5 Inserted row is approved, unique token, `approved_at` set, frozen `content` (snapshot + totals match preview)
+- [x] 3.6 `content` has no raw text / no PII
+- [x] 3.7 Re-approve yields new token/row; original unchanged (FR-053)
+- [x] 3.8 Empty/unpriced approve rejected server-side
 
 ### Phase 4: Patient page `/p/<token>`
 
