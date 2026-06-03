@@ -3,7 +3,7 @@ project: DentiPlan
 version: 1
 status: draft
 created: 2026-05-25
-updated: 2026-05-25
+updated: 2026-06-03
 prd_version: 1
 main_goal: low-complexity
 top_blocker: decisions
@@ -29,7 +29,7 @@ DentiPlan przekształca półustrukturyzowany wpis diagnozy dentystki (np. `Do l
 
 | ID    | Change ID                            | Outcome (user can …)                                                                          | Prerequisites      | PRD refs                                                                                                                                                                | Status   |
 | ----- | ------------------------------------ | --------------------------------------------------------------------------------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| F-01  | quotes-data-foundation               | (foundation) schemat domeny (quote, tooth, visit, general-item, e-mail, snapshot, token) gotowy w Supabase z RLS | —                  | FR-050, FR-051, FR-070, FR-072, Access Control                                                                                                                          | ready    |
+| F-01  | quotes-data-foundation               | (foundation) schemat domeny (quote, tooth, visit, general-item, e-mail, snapshot, token) gotowy w Supabase z RLS | —                  | FR-050, FR-051, FR-070, FR-072, Access Control                                                                                                                          | done     |
 | F-02  | pricelist-seed-foundation            | (foundation) cennik gabinetu zdefiniowany jako seed w repo, z flagą `local-anesthesia` per pozycja | —                  | FR-025, FR-026, FR-029, FR-041                                                                                                                                          | ready    |
 | S-01  | first-thin-quote-and-patient-link    | dentystka wkleja diagnozę, ręcznie wypełnia formularz, zatwierdza i otrzymuje link `/p/<token>`, który pokazuje pacjentowi dwa warianty side-by-side | F-01, F-02         | US-01, US-02, FR-001, FR-002, FR-003, FR-010, FR-013, FR-020, FR-021, FR-022, FR-023, FR-024, FR-025, FR-026, FR-027, FR-028, FR-029, FR-030, FR-031, FR-032, FR-040, FR-041, FR-042, FR-043, FR-044, FR-050, FR-051, FR-052, FR-053, FR-060, FR-061, FR-062, FR-063, FR-064, FR-065, FR-066 | proposed |
 | S-02  | llm-parsing-prefill                  | dentystka wkleja diagnozę i formularz dostaje wstępnie wypełnione pola z parsowania LLM       | S-01               | FR-011, FR-012                                                                                                                                                          | blocked  |
@@ -72,7 +72,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Najwcześniejszy fundament, bo każdy slice domenowy go używa; źle dobrana granica draftu vs. zatwierdzonego (immutable snapshot wymagany przez FR-053) wymusi późniejszą migrację. Konserwatywna decyzja: snapshot cennika trzymany inline (jsonb) w wierszu quote, żeby zatwierdzony rekord był samowystarczalny — zmiany cennika nie zmieniają historycznych kosztorysów.
-- **Status:** ready
+- **Status:** done
 
 ### F-02: Cennik gabinetu jako seed w repo
 
@@ -208,4 +208,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 ## Done
 
-(Empty on first generation. `/10x-archive` will append entries here when changes whose `Change ID` matches a roadmap item are archived.)
+- **F-01: (foundation) schemat domeny (quote, tooth, visit, general-item, e-mail, snapshot, token) gotowy w Supabase z RLS** — Archived 2026-06-03 → `context/archive/2026-06-03-quotes-data-foundation/`. Lesson: —.
