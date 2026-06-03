@@ -356,10 +356,10 @@ This is the project's first migration — no existing data to migrate. `supabase
 
 #### Automated
 
-- [x] 4.1 Probe passes against fresh local db (`supabase db reset` + probe)
-- [x] 4.2 All four assertion groups report success (RLS deny, RPC, immutability, draft-transition)
+- [x] 4.1 Probe passes against fresh local db (`supabase db reset` + probe) — 4280a79
+- [x] 4.2 All four assertion groups report success (RLS deny, RPC, immutability, draft-transition) — 4280a79
 
 #### Manual
 
-- [x] 4.3 Probe output reviewed; no-disclosure case visually confirmed
-- [x] 4.4 `contract-surfaces.md` reviewed for completeness against shipped names
+- [x] 4.3 Probe output reviewed; no-disclosure case visually confirmed — 4280a79
+- [x] 4.4 `contract-surfaces.md` reviewed for completeness against shipped names — 4280a79
