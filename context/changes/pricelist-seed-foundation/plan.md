@@ -276,14 +276,14 @@ No data migration — the pricelist is not in the database. The only "migration"
 
 #### Automated
 
-- [ ] 1.1 Type checking passes: `npm run lint`
-- [ ] 1.2 Build passes: `npm run build`
-- [ ] 1.3 `PriceValueSchema` parses one fixture of each of the four `kind`s
+- [x] 1.1 Type checking passes: `npm run lint`
+- [x] 1.2 Build passes: `npm run build`
+- [x] 1.3 `PriceValueSchema` parses one fixture of each of the four `kind`s
 
 #### Manual
 
-- [ ] 1.4 Four price kinds cover every `price_type` present in both JSON files
-- [ ] 1.5 Annotation fields present on the source item schema
+- [x] 1.4 Four price kinds cover every `price_type` present in both JSON files
+- [x] 1.5 Annotation fields present on the source item schema
 
 ### Phase 2: Seed data + inline annotations + load-time validation
 

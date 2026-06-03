@@ -61,13 +61,21 @@ export function dentitionForTooth(toothNumber: number): Dentition {
 // ---------------------------------------------------------------------------
 
 /**
- * A resolved price as stored in the approval snapshot: either a single point
- * value or a range (FR-026). Carried inline so an approved quote is self-
+ * A resolved price as stored in the approval snapshot: a single point value, a
+ * range (FR-026), an additive surcharge (`modifier`, e.g. +500 zł re-treatment),
+ * or a starting "od" price (`from`). Carried inline so an approved quote is self-
  * sufficient and later pricelist edits never alter historical quotes.
+ *
+ * `modifier` carries summation semantics S-01 owns: a `modifier` price is an
+ * addition to the tooth's other items, NOT a standalone line. F-02 only defines
+ * and resolves the variant verbatim; the per-tooth/patient-page sum logic that
+ * treats it as an add-on lives in S-01 (see plan Open Risks).
  */
 export const PriceValueSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("fixed"), amount: z.number() }),
   z.object({ kind: z.literal("range"), min: z.number(), max: z.number() }),
+  z.object({ kind: z.literal("modifier"), amount: z.number() }), // additive surcharge, e.g. +500
+  z.object({ kind: z.literal("from"), amount: z.number() }), // starting price ("od X"); anticipatory — no item uses it today
 ]);
 export type PriceValue = z.infer<typeof PriceValueSchema>;
 
