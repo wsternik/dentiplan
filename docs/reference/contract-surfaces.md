@@ -63,7 +63,7 @@ barrel only — never reaching into `./seed`, `./resolver`, or `./data` directly
 - `ANESTHESIA_FEE_SCHEDULE` — fee constants `{ baseMilk, basePermanent, perExtraTooth, includedTeeth }` (FR-042/FR-043); S-01 owns the formula.
 - `resolvePricelistItem(id)` — maps a source item to the F-01 `PricelistItemRef` snapshot (FR-050); throws on unknown id. **S-01 contracts on the stable `id` format `<category-slug>:<slug(name)>`** — renaming an item changes its id and breaks references frozen in historical quotes' snapshots only if re-resolved; live picker references must be updated in the same change.
 - `findItemById(id)` — source item lookup or `undefined`.
-- `listToothItems()` / `listGeneralItems()` — context-filtered item lists (FR-025/FR-029).
+- `listToothItems()` / `listGeneralItems()` — context-filtered item lists (FR-025/FR-029). **Note for S-01:** item names are not globally unique — e.g. "Odbudowa po leczeniu kanałowym" exists in both `leczenie-zachowawcze` and `leczenie-kanalowe` (distinct ids). The per-tooth picker should disambiguate by category (use `listByCategory()` / show the category label), not by name alone.
 - `listByCategory()` — categories for grouped rendering.
 - `PriceType`, `SourcePricelistItem`, `PricelistCategory`, `Pricelist`, `AnesthesiaFeeSchedule` — source-schema types (`src/lib/pricing/schema.ts`).
 

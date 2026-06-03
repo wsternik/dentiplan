@@ -39,8 +39,8 @@ export const SourcePricelistItemSchema = z
     id: z.string(),
     name: z.string(),
     price_type: PriceTypeSchema,
-    price_min: z.number(),
-    price_max: z.number().nullable(),
+    price_min: z.number().nonnegative(),
+    price_max: z.number().nonnegative().nullable(),
     note: z.string().nullable(),
     display: z.string(),
     localAnesthesia: z.boolean().default(false),
@@ -50,6 +50,18 @@ export const SourcePricelistItemSchema = z
   .refine((item) => (item.price_type === "range" ? item.price_max !== null : item.price_max === null), {
     message: "`range` items require a non-null price_max; `fixed`/`modifier`/`from` items require a null price_max",
     path: ["price_max"],
+  })
+  // Guard against an inverted range from a future re-export typo (e.g. min 600 / max 400)
+  // — it would silently mis-total in S-01's sum logic if it slipped through.
+  .refine((item) => item.price_type !== "range" || item.price_max === null || item.price_max >= item.price_min, {
+    message: "`range` items require price_max >= price_min",
+    path: ["price_max"],
+  })
+  // Every item must be pickable somewhere; a both-false typo would make it silently
+  // absent from BOTH listToothItems() and listGeneralItems().
+  .refine((item) => item.validForTooth || item.validForGeneral, {
+    message: "item must be valid for at least one context (validForTooth and/or validForGeneral)",
+    path: ["validForTooth"],
   });
 export type SourcePricelistItem = z.infer<typeof SourcePricelistItemSchema>;
 

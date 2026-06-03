@@ -214,7 +214,10 @@ const NarkozaFeeSourceSchema = z.object({
  */
 function buildFeeSchedule(): AnesthesiaFeeSchedule {
   const { model } = NarkozaFeeSourceSchema.parse(narkozaRaw);
-  const anesthesia = model.components.find((c) => c.order === 1);
+  // Select the anesthesia component by the structural fact that it carries the
+  // base-price array (the dental-treatment component does not), rather than its
+  // `order` — robust to a re-export reordering or dropping `order`.
+  const anesthesia = model.components.find((c) => c.pricing.base !== undefined);
   const base = anesthesia?.pricing.base;
   const perExtraTooth = anesthesia?.pricing.modifier?.amount;
   const baseMilk = base?.find((b) => b.key === "dzieci")?.price;
