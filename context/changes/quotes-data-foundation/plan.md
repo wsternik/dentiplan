@@ -54,7 +54,7 @@ Types flow schema → code: `supabase gen types` produces row types that stay me
 ## Critical Implementation Details
 
 - **`SECURITY DEFINER` hardening.** The RPC must be owned by a role that can read `quotes`, have a pinned `search_path` (e.g. `set search_path = ''` with fully-qualified `public.quotes`) to avoid search-path injection, and be granted `EXECUTE` to `anon` while `anon` has no table privileges. Returning a typed row (or `setof`) of whitelisted columns — never `select *` — is what keeps `patient_email` and draft rows off the public path.
-- **Immutability trigger scope.** The trigger must read `OLD.status`: block when `OLD.status = 'approved'`, allow when `OLD.status = 'draft'` (including the draft→approved transition that sets `approved_at`). A naive "block all updates on approved rows including the approving update" would make approval itself impossible.
+- **Immutability trigger scope.** The trigger must read `OLD.status`: block when `OLD.status = 'approved'`, allow when `OLD.status = 'draft'` (including the draft→approved transition that sets `approved_at`). A naive "block all updates on approved rows including the approving update" would make approval itself impossible. The trigger guards **UPDATE only** — DELETE of approved rows is deliberately left to the row owner, because S-04 retention (FR + 12-month enforcement) must be able to delete aged quotes. "Immutable" here means content/status can never change, not that an approved row can never be removed; the forensic guarantee (FR-053) is that *as long as it exists* it is byte-for-byte unchanged.
 - **Migration ordering.** Table + RLS enable must precede the policies; the RPC and trigger reference the table, so they come after. One timestamped migration file is fine, but order the statements: table → indexes → RLS enable → policies → trigger function + trigger → RPC + grant.
 - **Local-only verification.** The SQL probe runs against local Supabase; it must not be wired into CI's build step (CI has no database). It is a manual/dev-gate artifact.
 
@@ -183,6 +183,12 @@ Produce the TypeScript + Zod layer so the JSONB `content` contract and the row s
 
 ### Changes Required:
 
+#### 0. Declare `zod` as a direct dependency
+
+**Command**: `npm install zod` (pin the major, e.g. `zod@^4`).
+
+**Intent**: Phase 3.3 imports `zod` (`QuoteContentSchema`, `z.infer`) and CLAUDE.md mandates zod for validation, but `zod` is currently present only **transitively** (package-lock pins `^4.3.6`; it is not in `package.json` `dependencies`). Importing a transitive package directly is fragile — a future install/dedupe of the package that pulls it in can change or drop that version and silently break the type layer. Declare it explicitly before building the schemas. Note: target zod **v4** (its import surface differs from v3).
+
 #### 1. Generated database row types
 
 **File**: `src/db/database.types.ts`
@@ -207,10 +213,13 @@ Produce the TypeScript + Zod layer so the JSONB `content` contract and the row s
 
 **Contract**: Export `QuoteContentSchema` (Zod) whose inferred type equals `QuoteContent`, plus `ToothEntrySchema`, `VisitSchema`, `GeneralItemSchema`. Tooth dentition (milk/permanent) is **derived** from the tooth number (FR-022) — model it as a helper/derivation, not a stored field. Use `z.infer` to keep the TS types and Zod schemas from diverging.
 
+**Validation posture (draft vs approval-ready)**: The DB default is `content = '{}'` and drafts are filled incrementally, so the schema must tolerate the empty/partial state. Model the top-level collections (`teeth`, `visits`, `generalItems`) with `.default([])` so `{}` and partially-filled drafts still parse, keeping a single source of truth. "Approval-ready" completeness (e.g. every `in-plan` tooth assigned to a visit, totals resolved) is **not** enforced here — that is an S-01 approval-time check layered on top, not a second schema.
+
 ### Success Criteria:
 
 #### Automated Verification:
 
+- `zod` is a declared dependency in `package.json` (not transitive): `grep '"zod"' package.json`
 - Type checking passes: `npm run build` (runs `astro check`) or `npx astro check`
 - Linting passes: `npm run lint`
 - `z.infer<typeof QuoteContentSchema>` is assignable to `QuoteContent` (compile-time check / no `astro check` error)
@@ -247,6 +256,8 @@ Prove the security guarantees by SQL against local Supabase, and register the lo
 **Intent**: Record the load-bearing names this foundation introduces so downstream slices and reviews treat them as stable contracts.
 
 **Contract**: A markdown registry section listing: table `public.quotes` + its columns, RPC `get_quote_by_token`, trigger `quotes_immutable`, and the exported names from `src/types.ts` (`Quote`, `QuoteContent`, `QuoteContentSchema`, `PatientView`, status/enum unions). One line each, noting "do not rename without a migration + type update."
+
+Record one **invariant** prominently: `get_quote_by_token` returns the entire `content` jsonb verbatim to `anon`, so **`content` must contain ONLY patient-safe data — any admin-only datum (internal notes, margins, raw LLM output, identifiers) belongs in a dedicated column, never inside `content`.** FR-066 depends on this; the column whitelist alone does not protect fields nested in `content`. Downstream slices (S-01/S-02) must honor it.
 
 ### Success Criteria:
 
@@ -331,14 +342,15 @@ This is the project's first migration — no existing data to migrate. `supabase
 
 #### Automated
 
-- [ ] 3.1 Type checking passes: `npm run build` / `astro check`
-- [ ] 3.2 Linting passes: `npm run lint`
-- [ ] 3.3 `z.infer<typeof QuoteContentSchema>` assignable to `QuoteContent`
+- [ ] 3.1 `zod` is a declared dependency in `package.json` (not transitive)
+- [ ] 3.2 Type checking passes: `npm run build` / `astro check`
+- [ ] 3.3 Linting passes: `npm run lint`
+- [ ] 3.4 `z.infer<typeof QuoteContentSchema>` assignable to `QuoteContent`
 
 #### Manual
 
-- [ ] 3.4 `QuoteContent` reviewed against FR-021–FR-032 (every form field has a home)
-- [ ] 3.5 `Json` vs `QuoteContent` boundary clear (store reads through Zod)
+- [ ] 3.5 `QuoteContent` reviewed against FR-021–FR-032 (every form field has a home)
+- [ ] 3.6 `Json` vs `QuoteContent` boundary clear (store reads through Zod)
 
 ### Phase 4: Verification probe & contract registry
 
