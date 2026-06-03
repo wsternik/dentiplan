@@ -41,12 +41,35 @@ Introduced by `context/changes/quotes-data-foundation/` (migration
 - `ToothStatus` / `ToothStatusSchema` — `'in-plan' | 'uncertain' | 'out-of-current-plan'`.
 - `TreatmentType` / `TreatmentTypeSchema`, `Urgency` / `UrgencySchema` — per-tooth enums (FR-023/024).
 - `Dentition` + `dentitionForTooth()` — derived from tooth number (FR-022), never stored.
-- `PriceValue` / `PriceValueSchema`, `PricelistItemRef` / `PricelistItemRefSchema` — snapshot price values (F-02 is the live seed).
+- `PriceValue` / `PriceValueSchema`, `PricelistItemRef` / `PricelistItemRefSchema` — snapshot price values. Widened by F-02 to a 4-member union: `fixed` / `range` / `modifier` (additive surcharge) / `from` (starting price) — additive, no rename. Summation of `modifier` is an S-01 concern.
 - `ToothEntry`, `Visit`, `GeneralItem`, `QuoteTotals` (+ their `*Schema`) — `content` tree members.
 - `QuoteContent` / `QuoteContentSchema` — the full `content` jsonb contract; single source of truth for S-01/S-02 validation (FR-012).
 - `Quote` — row-level type; generated row with `content`/`status`/`patient_type` narrowed to the domain types.
 - `PatientView` — the whitelisted shape `get_quote_by_token` returns (mirrors the RPC column list).
 - `Database` — re-exported from `src/db/database.types.ts` (regenerate with `supabase gen types typescript --local > src/db/database.types.ts`).
+
+---
+
+## F-02 — Pricelist Seed
+
+Introduced by `context/changes/pricelist-seed-foundation/`. The pricelist is
+repo-config (no DB table, no admin UI — roadmap F-02): a bundled, Zod-validated
+TypeScript seed under `src/lib/pricing/`. S-01 imports from the `@/lib/pricing`
+barrel only — never reaching into `./seed`, `./resolver`, or `./data` directly.
+
+### TypeScript / Zod — barrel `@/lib/pricing`
+
+- `PRICELIST` — the validated, annotated pricelist (categories → items with stable `id`, `localAnesthesia`, `validForTooth`, `validForGeneral`). The `leczenie-w-narkozie` category is deliberately excluded (it is the anesthesia fee, not a pickable item).
+- `ANESTHESIA_FEE_SCHEDULE` — fee constants `{ baseMilk, basePermanent, perExtraTooth, includedTeeth }` (FR-042/FR-043); S-01 owns the formula.
+- `resolvePricelistItem(id)` — maps a source item to the F-01 `PricelistItemRef` snapshot (FR-050); throws on unknown id. **S-01 contracts on the stable `id` format `<category-slug>:<slug(name)>`** — renaming an item changes its id and breaks references frozen in historical quotes' snapshots only if re-resolved; live picker references must be updated in the same change.
+- `findItemById(id)` — source item lookup or `undefined`.
+- `listToothItems()` / `listGeneralItems()` — context-filtered item lists (FR-025/FR-029).
+- `listByCategory()` — categories for grouped rendering.
+- `PriceType`, `SourcePricelistItem`, `PricelistCategory`, `Pricelist`, `AnesthesiaFeeSchedule` — source-schema types (`src/lib/pricing/schema.ts`).
+
+### Validation gate
+
+- `npm run validate:pricing` (`scripts/validate-pricing.ts`, run via `tsx`) — imports the seed to force its load-time Zod parse + annotation completeness/uniqueness guards, round-trips representative items through the resolver, exits non-zero on any failure. The fail-fast gate in lieu of a test framework.
 
 ---
 

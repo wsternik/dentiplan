@@ -289,30 +289,30 @@ No data migration — the pricelist is not in the database. The only "migration"
 
 #### Automated
 
-- [x] 2.1 Seed validates: `npm run validate:pricing` exits 0 with expected counts
-- [x] 2.2 Lint passes: `npm run lint`
-- [x] 2.3 Build passes: `npm run build`
-- [x] 2.4 Tampering check: removing an annotation entry fails `validate:pricing`, then restore
+- [x] 2.1 Seed validates: `npm run validate:pricing` exits 0 with expected counts — c851d41
+- [x] 2.2 Lint passes: `npm run lint` — c851d41
+- [x] 2.3 Build passes: `npm run build` — c851d41
+- [x] 2.4 Tampering check: removing an annotation entry fails `validate:pricing`, then restore — c851d41
 
 #### Manual
 
-- [x] 2.5 "Znieczulenie" flagged `localAnesthesia: true`; no other item unless confirmed
-- [x] 2.6 Each item's `validForTooth` / `validForGeneral` matches clinical intent
-- [x] 2.7 `ANESTHESIA_FEE_SCHEDULE` matches `pricing-narkoza.json` (1400 / 2000 / 100 / 5)
-- [x] 2.8 Root JSON files removed; relocated copies byte-identical
+- [x] 2.5 "Znieczulenie" flagged `localAnesthesia: true`; no other item unless confirmed — c851d41
+- [x] 2.6 Each item's `validForTooth` / `validForGeneral` matches clinical intent — c851d41
+- [x] 2.7 `ANESTHESIA_FEE_SCHEDULE` matches `pricing-narkoza.json` (1400 / 2000 / 100 / 5) — c851d41
+- [x] 2.8 Root JSON files removed; relocated copies byte-identical — c851d41
 
 ### Phase 3: Resolver + S-01-facing API + change-price docs
 
 #### Automated
 
-- [ ] 3.1 `npm run validate:pricing` exits 0
-- [ ] 3.2 Lint passes: `npm run lint`
-- [ ] 3.3 Build passes: `npm run build`
-- [ ] 3.4 Resolver round-trips a fixed, a range, and the `modifier` item to correct `PriceValue` shapes
+- [x] 3.1 `npm run validate:pricing` exits 0
+- [x] 3.2 Lint passes: `npm run lint`
+- [x] 3.3 Build passes: `npm run build`
+- [x] 3.4 Resolver round-trips a fixed, a range, and the `modifier` item to correct `PriceValue` shapes
 
 #### Manual
 
-- [ ] 3.5 `listToothItems()` / `listGeneralItems()` return contextually correct subsets
-- [ ] 3.6 README clear enough for a non-developer to change a price
-- [ ] 3.7 `@/lib/pricing` exposes everything S-01 needs without reaching into internals
-- [ ] 3.8 `contract-surfaces.md` gains an F-02 section; F-01 `PriceValueSchema` line reflects the widening
+- [x] 3.5 `listToothItems()` / `listGeneralItems()` return contextually correct subsets
+- [x] 3.6 README clear enough for a non-developer to change a price
+- [x] 3.7 `@/lib/pricing` exposes everything S-01 needs without reaching into internals
+- [x] 3.8 `contract-surfaces.md` gains an F-02 section; F-01 `PriceValueSchema` line reflects the widening
