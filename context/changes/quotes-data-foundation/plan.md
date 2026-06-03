@@ -342,24 +342,24 @@ This is the project's first migration — no existing data to migrate. `supabase
 
 #### Automated
 
-- [x] 3.1 `zod` is a declared dependency in `package.json` (not transitive)
-- [x] 3.2 Type checking passes: `npm run build` / `astro check`
-- [x] 3.3 Linting passes: `npm run lint`
-- [x] 3.4 `z.infer<typeof QuoteContentSchema>` assignable to `QuoteContent`
+- [x] 3.1 `zod` is a declared dependency in `package.json` (not transitive) — 6c1611e
+- [x] 3.2 Type checking passes: `npm run build` / `astro check` — 6c1611e
+- [x] 3.3 Linting passes: `npm run lint` — 6c1611e
+- [x] 3.4 `z.infer<typeof QuoteContentSchema>` assignable to `QuoteContent` — 6c1611e
 
 #### Manual
 
-- [x] 3.5 `QuoteContent` reviewed against FR-021–FR-032 (every form field has a home)
-- [x] 3.6 `Json` vs `QuoteContent` boundary clear (store reads through Zod)
+- [x] 3.5 `QuoteContent` reviewed against FR-021–FR-032 (every form field has a home) — 6c1611e
+- [x] 3.6 `Json` vs `QuoteContent` boundary clear (store reads through Zod) — 6c1611e
 
 ### Phase 4: Verification probe & contract registry
 
 #### Automated
 
-- [ ] 4.1 Probe passes against fresh local db (`supabase db reset` + probe)
-- [ ] 4.2 All four assertion groups report success (RLS deny, RPC, immutability, draft-transition)
+- [x] 4.1 Probe passes against fresh local db (`supabase db reset` + probe)
+- [x] 4.2 All four assertion groups report success (RLS deny, RPC, immutability, draft-transition)
 
 #### Manual
 
-- [ ] 4.3 Probe output reviewed; no-disclosure case visually confirmed
-- [ ] 4.4 `contract-surfaces.md` reviewed for completeness against shipped names
+- [x] 4.3 Probe output reviewed; no-disclosure case visually confirmed
+- [x] 4.4 `contract-surfaces.md` reviewed for completeness against shipped names
