@@ -305,14 +305,14 @@ No data migration — the pricelist is not in the database. The only "migration"
 
 #### Automated
 
-- [x] 3.1 `npm run validate:pricing` exits 0
-- [x] 3.2 Lint passes: `npm run lint`
-- [x] 3.3 Build passes: `npm run build`
-- [x] 3.4 Resolver round-trips a fixed, a range, and the `modifier` item to correct `PriceValue` shapes
+- [x] 3.1 `npm run validate:pricing` exits 0 — 951e545
+- [x] 3.2 Lint passes: `npm run lint` — 951e545
+- [x] 3.3 Build passes: `npm run build` — 951e545
+- [x] 3.4 Resolver round-trips a fixed, a range, and the `modifier` item to correct `PriceValue` shapes — 951e545
 
 #### Manual
 
-- [x] 3.5 `listToothItems()` / `listGeneralItems()` return contextually correct subsets
-- [x] 3.6 README clear enough for a non-developer to change a price
-- [x] 3.7 `@/lib/pricing` exposes everything S-01 needs without reaching into internals
-- [x] 3.8 `contract-surfaces.md` gains an F-02 section; F-01 `PriceValueSchema` line reflects the widening
+- [x] 3.5 `listToothItems()` / `listGeneralItems()` return contextually correct subsets — 951e545
+- [x] 3.6 README clear enough for a non-developer to change a price — 951e545
+- [x] 3.7 `@/lib/pricing` exposes everything S-01 needs without reaching into internals — 951e545
+- [x] 3.8 `contract-surfaces.md` gains an F-02 section; F-01 `PriceValueSchema` line reflects the widening — 951e545
