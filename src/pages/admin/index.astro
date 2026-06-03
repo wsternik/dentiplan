@@ -1,0 +1,32 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import QuoteEditor from "@/components/admin/QuoteEditor";
+import type { PickerOption } from "@/components/admin/types";
+import { listByCategory, resolvePricelistItem } from "@/lib/pricing";
+
+export const prerender = false;
+
+// Serialize RESOLVED picker options (not raw source items): the cost engine's
+// input is `PricelistItemRef[]` (carrying a resolved `price`), so we map each
+// source item through `resolvePricelistItem(id)` server-side and tag it with its
+// category label for the disambiguating picker (item names are not unique).
+// The approval payload (Phase 3) still POSTs by `id`; the server re-resolves
+// independently — this resolved price is for live preview only.
+const categories = listByCategory();
+const toothOptions: PickerOption[] = categories.flatMap((category) =>
+  category.items
+    .filter((item) => item.validForTooth)
+    .map((item) => ({ ...resolvePricelistItem(item.id), category: category.name })),
+);
+const generalOptions: PickerOption[] = categories.flatMap((category) =>
+  category.items
+    .filter((item) => item.validForGeneral)
+    .map((item) => ({ ...resolvePricelistItem(item.id), category: category.name })),
+);
+---
+
+<Layout title="Nowy kosztorys">
+  <main class="bg-background text-foreground min-h-screen">
+    <QuoteEditor toothOptions={toothOptions} generalOptions={generalOptions} client:load />
+  </main>
+</Layout>

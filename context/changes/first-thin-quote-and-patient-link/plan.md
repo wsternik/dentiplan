@@ -367,30 +367,30 @@ No schema migration — F-01's `quotes` table and RPC are sufficient. Approval w
 
 #### Automated
 
-- [x] 1.1 Vitest runs: `npm run test`
-- [x] 1.2 Cost-engine suite passes (FR-026/032/040/041/042/043/044 cases)
-- [x] 1.3 Type checking passes: `npm run build`
-- [x] 1.4 Linting passes: `npm run lint`
+- [x] 1.1 Vitest runs: `npm run test` — 229924f
+- [x] 1.2 Cost-engine suite passes (FR-026/032/040/041/042/043/044 cases) — 229924f
+- [x] 1.3 Type checking passes: `npm run build` — 229924f
+- [x] 1.4 Linting passes: `npm run lint` — 229924f
 
 #### Manual
 
-- [x] 1.5 Two worked examples (ranges+modifier; all-milk anesthesia under/over 5) hand-checked against fixtures
+- [x] 1.5 Two worked examples (ranges+modifier; all-milk anesthesia under/over 5) hand-checked against fixtures — 229924f
 
 ### Phase 2: Admin shell + new-quote editor island
 
 #### Automated
 
-- [ ] 2.1 Type checking passes: `npm run build`
-- [ ] 2.2 Linting passes: `npm run lint`
-- [ ] 2.3 Unit tests still pass: `npm run test`
+- [x] 2.1 Type checking passes: `npm run build`
+- [x] 2.2 Linting passes: `npm run lint`
+- [x] 2.3 Unit tests still pass: `npm run test`
 
 #### Manual
 
-- [ ] 2.4 `/admin` redirects when logged out, renders editor when logged in
-- [ ] 2.5 `17,16,34` creates correct rows (names + dentition)
-- [ ] 2.6 Out-of-range `99` warns with no priced row
-- [ ] 2.7 Adding items/statuses/visits/general items updates both live totals correctly
-- [ ] 2.8 Approve disabled (with reason) for empty/unpriced quote
+- [x] 2.4 `/admin` redirects when logged out, renders editor when logged in
+- [x] 2.5 `17,16,34` creates correct rows (names + dentition)
+- [x] 2.6 Out-of-range `99` warns with no priced row
+- [x] 2.7 Adding items/statuses/visits/general items updates both live totals correctly
+- [x] 2.8 Approve disabled (with reason) for empty/unpriced quote
 
 ### Phase 3: Approval transaction + token + link
 
