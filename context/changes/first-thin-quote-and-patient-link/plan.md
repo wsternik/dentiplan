@@ -367,14 +367,14 @@ No schema migration — F-01's `quotes` table and RPC are sufficient. Approval w
 
 #### Automated
 
-- [ ] 1.1 Vitest runs: `npm run test`
-- [ ] 1.2 Cost-engine suite passes (FR-026/032/040/041/042/043/044 cases)
-- [ ] 1.3 Type checking passes: `npm run build`
-- [ ] 1.4 Linting passes: `npm run lint`
+- [x] 1.1 Vitest runs: `npm run test`
+- [x] 1.2 Cost-engine suite passes (FR-026/032/040/041/042/043/044 cases)
+- [x] 1.3 Type checking passes: `npm run build`
+- [x] 1.4 Linting passes: `npm run lint`
 
 #### Manual
 
-- [ ] 1.5 Two worked examples (ranges+modifier; all-milk anesthesia under/over 5) hand-checked against fixtures
+- [x] 1.5 Two worked examples (ranges+modifier; all-milk anesthesia under/over 5) hand-checked against fixtures
 
 ### Phase 2: Admin shell + new-quote editor island
 
