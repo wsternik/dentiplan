@@ -20,6 +20,7 @@ import { createClient } from "@/lib/supabase";
 import { resolvePricelistItem } from "@/lib/pricing";
 import { computeQuoteTotals } from "@/lib/quote/cost";
 import { generateToken } from "@/lib/quote/token";
+import { isValidToothNumber } from "@/lib/quote/tooth-name";
 import {
   PatientTypeSchema,
   ToothStatusSchema,
@@ -39,19 +40,23 @@ export const prerender = false;
 // price would never be trusted (a buggy/tampered client must not freeze wrong
 // money into an immutable patient quote).
 
+// Re-validate FDI numbers and bound free-text server-side: the editor enforces
+// these client-side, but the freeze is server-authoritative and must not trust a
+// buggy/tampered client to keep structurally-invalid or oversized data out of an
+// immutable, patient-visible quote (the `note` is rendered verbatim to patients).
 const ApproveToothSchema = z.object({
-  number: z.number().int(),
+  number: z.number().int().refine(isValidToothNumber, "Nieprawidłowy numer zęba."),
   treatmentType: TreatmentTypeSchema.nullable().default(null),
   urgency: UrgencySchema.nullable().default(null),
   status: ToothStatusSchema.default("in-plan"),
-  note: z.string().default(""),
-  pricelistItemIds: z.array(z.string()).default([]),
+  note: z.string().max(500).default(""),
+  pricelistItemIds: z.array(z.string().max(64)).default([]),
   visitNumber: z.number().int().nullable().default(null),
 });
 
 const ApproveGeneralSchema = z.object({
-  id: z.string(),
-  itemId: z.string(),
+  id: z.string().max(64),
+  itemId: z.string().max(64),
   visitNumber: z.number().int().nullable().default(null),
 });
 
