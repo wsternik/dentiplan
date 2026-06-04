@@ -412,15 +412,15 @@ No schema migration — F-01's `quotes` table and RPC are sufficient. Approval w
 
 #### Automated
 
-- [x] 4.1 Type checking passes: `npm run build`
-- [x] 4.2 Linting passes: `npm run lint`
-- [x] 4.3 Unit tests pass: `npm run test`
-- [x] 4.4 Generated sitemap contains no `/p/...` URL (SSR dynamic route not enumerated)
+- [x] 4.1 Type checking passes: `npm run build` — 72d7c40
+- [x] 4.2 Linting passes: `npm run lint` — 72d7c40
+- [x] 4.3 Unit tests pass: `npm run test` — 72d7c40
+- [x] 4.4 Generated sitemap contains no `/p/...` URL (SSR dynamic route not enumerated) — 72d7c40
 
 #### Manual
 
-- [ ] 4.5 Valid `/p/<token>` shows both variants (anesthesia recommended), grouped teeth, Odroczone + Scenariusze, disclaimer
-- [ ] 4.6 Page totals match the approved snapshot
-- [ ] 4.7 Unknown and draft tokens render identical generic error (no disclosure)
-- [ ] 4.8 Page source has no PII and includes `noindex` + `Referrer-Policy: no-referrer`
-- [ ] 4.9 Usable on a phone viewport
+- [x] 4.5 Valid `/p/<token>` shows both variants (anesthesia recommended), grouped teeth, Odroczone + Scenariusze, disclaimer — 72d7c40
+- [x] 4.6 Page totals match the approved snapshot — 72d7c40
+- [x] 4.7 Unknown and draft tokens render identical generic error (no disclosure) — 72d7c40
+- [x] 4.8 Page source has no PII and includes `noindex` + `Referrer-Policy: no-referrer` — 72d7c40
+- [x] 4.9 Usable on a phone viewport — 72d7c40
