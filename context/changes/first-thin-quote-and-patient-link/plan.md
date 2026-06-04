@@ -396,26 +396,26 @@ No schema migration — F-01's `quotes` table and RPC are sufficient. Approval w
 
 #### Automated
 
-- [x] 3.1 Type checking passes: `npm run build`
-- [x] 3.2 Linting passes: `npm run lint`
-- [x] 3.3 Unit tests pass: `npm run test`
+- [x] 3.1 Type checking passes: `npm run build` — 41548ce
+- [x] 3.2 Linting passes: `npm run lint` — 41548ce
+- [x] 3.3 Unit tests pass: `npm run test` — 41548ce
 
 #### Manual
 
-- [x] 3.4 Valid approve returns token + copyable `/p/<token>` link
-- [x] 3.5 Inserted row is approved, unique token, `approved_at` set, frozen `content` (snapshot + totals match preview)
-- [x] 3.6 `content` has no raw text / no PII
-- [x] 3.7 Re-approve yields new token/row; original unchanged (FR-053)
-- [x] 3.8 Empty/unpriced approve rejected server-side
+- [x] 3.4 Valid approve returns token + copyable `/p/<token>` link — 41548ce
+- [x] 3.5 Inserted row is approved, unique token, `approved_at` set, frozen `content` (snapshot + totals match preview) — 41548ce
+- [x] 3.6 `content` has no raw text / no PII — 41548ce
+- [x] 3.7 Re-approve yields new token/row; original unchanged (FR-053) — 41548ce
+- [x] 3.8 Empty/unpriced approve rejected server-side — 41548ce
 
 ### Phase 4: Patient page `/p/<token>`
 
 #### Automated
 
-- [ ] 4.1 Type checking passes: `npm run build`
-- [ ] 4.2 Linting passes: `npm run lint`
-- [ ] 4.3 Unit tests pass: `npm run test`
-- [ ] 4.4 Generated sitemap contains no `/p/...` URL (SSR dynamic route not enumerated)
+- [x] 4.1 Type checking passes: `npm run build`
+- [x] 4.2 Linting passes: `npm run lint`
+- [x] 4.3 Unit tests pass: `npm run test`
+- [x] 4.4 Generated sitemap contains no `/p/...` URL (SSR dynamic route not enumerated)
 
 #### Manual
 

@@ -1,0 +1,57 @@
+---
+// Quadrant-grouped in-plan tooth list (FR-061). Teeth are bucketed by FDI
+// quadrant (first digit; permanent 1–4 and milk 5–8 share a side/jaw) and each
+// row shows number + Polish name + treatment + urgency. Empty groups are
+// dropped so the grid only shows quadrants that actually have teeth.
+
+import type { ToothEntry } from "@/types";
+import { toothName } from "@/lib/quote/tooth-name";
+import { TREATMENT_LABELS, URGENCY_LABELS } from "@/lib/quote/labels";
+
+interface Props {
+  teeth: ToothEntry[];
+}
+
+const { teeth } = Astro.props;
+
+const GROUPS: { label: string; quadrants: number[] }[] = [
+  { label: "Górne prawe", quadrants: [1, 5] },
+  { label: "Górne lewe", quadrants: [2, 6] },
+  { label: "Dolne lewe", quadrants: [3, 7] },
+  { label: "Dolne prawe", quadrants: [4, 8] },
+];
+
+const grouped = GROUPS.map((group) => ({
+  label: group.label,
+  teeth: teeth
+    .filter((tooth) => group.quadrants.includes(Math.floor(tooth.number / 10)))
+    .sort((a, b) => a.number - b.number),
+})).filter((group) => group.teeth.length > 0);
+---
+
+<section class="space-y-4">
+  <h2 class="text-lg font-semibold">Zakres leczenia</h2>
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    {
+      grouped.map((group) => (
+        <div class="border-border rounded-md border p-3">
+          <h3 class="text-muted-foreground mb-2 text-xs font-semibold tracking-wide uppercase">{group.label}</h3>
+          <ul class="space-y-2">
+            {group.teeth.map((tooth) => (
+              <li class="text-sm">
+                <span class="font-medium">{toothName(tooth.number)}</span>
+                {(tooth.treatmentType ?? tooth.urgency) && (
+                  <span class="text-muted-foreground block text-xs">
+                    {tooth.treatmentType && TREATMENT_LABELS[tooth.treatmentType]}
+                    {tooth.treatmentType && tooth.urgency && " · "}
+                    {tooth.urgency && URGENCY_LABELS[tooth.urgency]}
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
+  </div>
+</section>

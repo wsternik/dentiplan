@@ -1,0 +1,77 @@
+---
+// Public, token-only patient view (S-01, Phase 4 / FR-060/066).
+//
+// The token in the URL is a capability secret: possession is the only thing that
+// grants access. The frozen quote is read through `get_quote_by_token` (a
+// SECURITY DEFINER RPC granted to anon), so anon access via the shared client is
+// sufficient — no auth, no session needed.
+//
+// NO-DISCLOSURE INVARIANT (FR-060): unknown, draft, missing-env, parse-failure,
+// and RPC-error cases ALL render the identical generic error page. We never
+// distinguish causes and never surface internals.
+//
+// The Supabase client here is untyped (no Database generic), so the RPC result
+// is funnelled through a Zod schema rather than trusted as `any` — this both
+// satisfies the strict type-checked lint rules and validates `content` against
+// the same `QuoteContentSchema` the approval freeze wrote.
+
+import Layout from "@/layouts/Layout.astro";
+import PatientQuote from "@/components/patient/PatientQuote.astro";
+import PatientError from "@/components/patient/PatientError.astro";
+import { createClient } from "@/lib/supabase";
+import { PatientTypeSchema, QuoteContentSchema, type PatientType, type QuoteContent } from "@/types";
+import { z } from "zod";
+
+export const prerender = false;
+
+// The token is a capability secret: keep it out of the Referer header on any
+// outbound request, and out of search indexes (defence-in-depth alongside the
+// <meta> tags below; an SSR dynamic route never enters the generated sitemap).
+Astro.response.headers.set("Referrer-Policy", "no-referrer");
+Astro.response.headers.set("X-Robots-Tag", "noindex, nofollow");
+
+// Validates the whitelisted RPC row shape; `content` is narrowed through the
+// same schema the freeze wrote, so a tampered/garbage row fails closed.
+const PatientRowSchema = z.object({
+  content: QuoteContentSchema,
+  patient_type: PatientTypeSchema,
+  created_at: z.string(),
+});
+
+const { token } = Astro.params;
+
+let quote: { content: QuoteContent; patientType: PatientType; createdAt: string } | null = null;
+
+const supabase = token ? createClient(Astro.request.headers, Astro.cookies) : null;
+if (supabase && token) {
+  const { data, error } = (await supabase.rpc("get_quote_by_token", { p_token: token })) as {
+    data: unknown;
+    error: unknown;
+  };
+  if (!error) {
+    const parsed = z.array(PatientRowSchema).safeParse(data);
+    if (parsed.success && parsed.data.length > 0) {
+      const row = parsed.data[0];
+      quote = { content: row.content, patientType: row.patient_type, createdAt: row.created_at };
+    }
+  }
+}
+
+if (!quote) {
+  Astro.response.status = 404;
+}
+---
+
+<Layout title={quote ? "Kosztorys leczenia" : "Link nieaktywny lub nieprawidłowy"} lang="pl">
+  <Fragment slot="head">
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="referrer" content="no-referrer" />
+  </Fragment>
+  {
+    quote ? (
+      <PatientQuote content={quote.content} patientType={quote.patientType} createdAt={quote.createdAt} />
+    ) : (
+      <PatientError />
+    )
+  }
+</Layout>

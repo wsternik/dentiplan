@@ -1,0 +1,46 @@
+---
+// "Scenariusze, które mogą zmienić koszt" (FR-063): uncertain teeth with their
+// notes, plus any range-driven upside. Per the FR-026 resolution the variant
+// headlines show the lower bound ("od X zł"); the upper bound is a scenario that
+// may raise the cost and is surfaced here rather than printed everywhere. The
+// whole section is omitted when there is nothing uncertain and no range upside.
+
+import type { QuoteTotals, ToothEntry } from "@/types";
+import { toothName } from "@/lib/quote/tooth-name";
+import { formatAmount, hasRangeUpside } from "@/lib/quote/format";
+
+interface Props {
+  uncertain: ToothEntry[];
+  totals?: QuoteTotals;
+}
+
+const { uncertain, totals } = Astro.props;
+const sorted = [...uncertain].sort((a, b) => a.number - b.number);
+
+const grandTotal = totals?.standard?.grandTotal;
+const showRangeUpside = grandTotal ? hasRangeUpside(grandTotal) : false;
+const show = sorted.length > 0 || showRangeUpside;
+---
+
+{
+  show && (
+    <section class="space-y-2">
+      <h2 class="text-lg font-semibold">Scenariusze, które mogą zmienić koszt</h2>
+      <ul class="space-y-2 text-sm">
+        {showRangeUpside && grandTotal && (
+          <li>W zależności od ostatecznego zakresu leczenia koszt może wzrosnąć do {formatAmount(grandTotal.max)}.</li>
+        )}
+        {sorted.map((tooth) => (
+          <li>
+            <span class="font-medium">{toothName(tooth.number)}</span>
+            {tooth.note ? (
+              <span class="text-muted-foreground"> — {tooth.note}</span>
+            ) : (
+              <span class="text-muted-foreground"> — możliwe dodatkowe leczenie</span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}

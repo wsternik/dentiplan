@@ -1,0 +1,38 @@
+---
+// Patient view orchestrator (FR-061–065). Splits the frozen content tree into
+// in-plan / deferred / uncertain buckets and lays out the sections read-only.
+// Renders ONLY what's in `content` — no name, email, or identifier (FR-066).
+
+import type { PatientType, QuoteContent } from "@/types";
+import { formatDate } from "@/lib/quote/format";
+import ToothGroups from "./ToothGroups.astro";
+import VariantComparison from "./VariantComparison.astro";
+import DeferredSection from "./DeferredSection.astro";
+import ScenariosSection from "./ScenariosSection.astro";
+import Disclaimer from "./Disclaimer.astro";
+
+interface Props {
+  content: QuoteContent;
+  patientType: PatientType;
+  createdAt: string;
+}
+
+const { content, patientType, createdAt } = Astro.props;
+const inPlan = content.teeth.filter((tooth) => tooth.status === "in-plan");
+const deferred = content.teeth.filter((tooth) => tooth.status === "out-of-current-plan");
+const uncertain = content.teeth.filter((tooth) => tooth.status === "uncertain");
+const audience = patientType === "child" ? "dla dziecka" : "dla osoby dorosłej";
+---
+
+<main class="mx-auto max-w-3xl space-y-8 px-4 py-8">
+  <header class="space-y-1">
+    <h1 class="text-2xl font-bold">Twój kosztorys leczenia</h1>
+    <p class="text-muted-foreground text-sm">Plan {audience} · sporządzono {formatDate(createdAt)}</p>
+  </header>
+
+  {inPlan.length > 0 && <ToothGroups teeth={inPlan} />}
+  <VariantComparison totals={content.totals} visits={content.visits} />
+  {deferred.length > 0 && <DeferredSection teeth={deferred} />}
+  <ScenariosSection uncertain={uncertain} totals={content.totals} />
+  <Disclaimer />
+</main>

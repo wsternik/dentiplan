@@ -1,0 +1,71 @@
+---
+// Side-by-side variant comparison (FR-064). Standard (multi-visit) on the left
+// with per-visit costs + grand total; anesthesia (single session) on the right,
+// explicitly marked as recommended by the clinic. Ranges render via the "od X zł"
+// headline (FR-026) — the upside is surfaced in the Scenariusze section.
+
+import type { QuoteTotals, Visit } from "@/types";
+import { formatAmount, formatRangeHeadline } from "@/lib/quote/format";
+
+interface Props {
+  totals?: QuoteTotals;
+  visits: Visit[];
+}
+
+const { totals, visits } = Astro.props;
+const standard = totals?.standard;
+const anesthesia = totals?.anesthesia;
+
+function visitLabel(n: number): string {
+  const visit = visits.find((v) => v.number === n);
+  return visit && visit.label.length > 0 ? visit.label : `Wizyta ${n}`;
+}
+---
+
+<section class="space-y-4">
+  <h2 class="text-lg font-semibold">Warianty leczenia</h2>
+  <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+    <div class="border-border rounded-md border p-4">
+      <h3 class="mb-3 font-semibold">Leczenie w kilku wizytach</h3>
+      {
+        standard && standard.perVisit.length > 0 && (
+          <ul class="space-y-1 text-sm">
+            {standard.perVisit.map((entry) => (
+              <li class="flex justify-between gap-4">
+                <span class="text-muted-foreground">{visitLabel(entry.visitNumber)}</span>
+                <span>{formatRangeHeadline(entry.cost)}</span>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+      <div class="border-border mt-3 flex justify-between gap-4 border-t pt-3 font-semibold">
+        <span>Razem</span>
+        <span>{standard?.grandTotal ? formatRangeHeadline(standard.grandTotal) : formatAmount(0)}</span>
+      </div>
+    </div>
+
+    <div class="border-primary rounded-md border-2 p-4">
+      <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <h3 class="font-semibold">Leczenie w znieczuleniu (jedna sesja)</h3>
+        <span class="bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-xs font-medium">
+          rekomendowane przez gabinet
+        </span>
+      </div>
+      {
+        anesthesia && (
+          <div class="space-y-1 text-sm">
+            <div class="flex justify-between gap-4">
+              <span class="text-muted-foreground">Opłata za znieczulenie</span>
+              <span>{formatAmount(anesthesia.fee)}</span>
+            </div>
+            <div class="border-border mt-3 flex justify-between gap-4 border-t pt-3 font-semibold">
+              <span>Razem</span>
+              <span>{formatRangeHeadline(anesthesia.total)}</span>
+            </div>
+          </div>
+        )
+      }
+    </div>
+  </div>
+</section>
