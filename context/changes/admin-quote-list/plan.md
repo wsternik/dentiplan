@@ -370,10 +370,10 @@ No migration. Existing approved rows from S-01 carry `patient_email IS NULL`; th
 
 #### Automated
 
-- [x] 1.1 Linting passes: `npm run lint`
-- [x] 1.2 Type checking passes: `npx astro check`
-- [x] 1.3 Full unit suite passes, including the new service tests: `npm test`
-- [x] 1.4 The existing cost-engine and format suites still pass unchanged: `npm test`
+- [x] 1.1 Linting passes: `npm run lint` — 734e2c9
+- [x] 1.2 Type checking passes: `npx astro check` — 734e2c9
+- [x] 1.3 Full unit suite passes, including the new service tests: `npm test` — 734e2c9
+- [x] 1.4 The existing cost-engine and format suites still pass unchanged: `npm test` — 734e2c9
 
 #### Manual
 
@@ -386,10 +386,10 @@ No migration. Existing approved rows from S-01 carry `patient_email IS NULL`; th
 
 #### Automated
 
-- [ ] 2.1 Linting passes: `npm run lint`
-- [ ] 2.2 Type checking passes: `npx astro check`
-- [ ] 2.3 Unit suite passes: `npm test`
-- [ ] 2.4 Production build succeeds: `npm run build`
+- [x] 2.1 Linting passes: `npm run lint`
+- [x] 2.2 Type checking passes: `npx astro check`
+- [x] 2.3 Unit suite passes: `npm test`
+- [x] 2.4 Production build succeeds: `npm run build`
 
 #### Manual
 
