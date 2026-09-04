@@ -1,7 +1,7 @@
 ---
 change_id: refactor-opportunities
 title: Which of the recorded problems to fix, in what shape, in what order
-status: preparing
+status: planned
 created: 2026-09-04
 updated: 2026-09-04
 archived_at: null
