@@ -3,7 +3,7 @@ project: DentiPlan
 version: 1
 status: draft
 created: 2026-05-25
-updated: 2026-06-04
+updated: 2026-09-04
 prd_version: 1
 main_goal: low-complexity
 top_blocker: decisions
@@ -31,9 +31,9 @@ DentiPlan przekształca półustrukturyzowany wpis diagnozy dentystki (np. `Do l
 | ----- | ------------------------------------ | --------------------------------------------------------------------------------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
 | F-01  | quotes-data-foundation               | (foundation) schemat domeny (quote, tooth, visit, general-item, e-mail, snapshot, token) gotowy w Supabase z RLS | —                  | FR-050, FR-051, FR-070, FR-072, Access Control                                                                                                                          | done     |
 | F-02  | pricelist-seed-foundation            | (foundation) cennik gabinetu zdefiniowany jako seed w repo, z flagą `local-anesthesia` per pozycja | —                  | FR-025, FR-026, FR-029, FR-041                                                                                                                                          | done     |
-| S-01  | first-thin-quote-and-patient-link    | dentystka wkleja diagnozę, ręcznie wypełnia formularz, zatwierdza i otrzymuje link `/p/<token>`, który pokazuje pacjentowi dwa warianty side-by-side | F-01, F-02         | US-01, US-02, FR-001, FR-002, FR-003, FR-010, FR-013, FR-020, FR-021, FR-022, FR-023, FR-024, FR-025, FR-026, FR-027, FR-028, FR-029, FR-030, FR-031, FR-032, FR-040, FR-041, FR-042, FR-043, FR-044, FR-050, FR-051, FR-052, FR-053, FR-060, FR-061, FR-062, FR-063, FR-064, FR-065, FR-066 | proposed |
+| S-01  | first-thin-quote-and-patient-link    | dentystka wkleja diagnozę, ręcznie wypełnia formularz, zatwierdza i otrzymuje link `/p/<token>`, który pokazuje pacjentowi dwa warianty side-by-side | F-01, F-02         | US-01, US-02, FR-001, FR-002, FR-003, FR-010, FR-013, FR-020, FR-021, FR-022, FR-023, FR-024, FR-025, FR-026, FR-027, FR-028, FR-029, FR-030, FR-031, FR-032, FR-040, FR-041, FR-042, FR-043, FR-044, FR-050, FR-051, FR-052, FR-053, FR-060, FR-061, FR-062, FR-063, FR-064, FR-065, FR-066 | done     |
 | S-02  | llm-parsing-prefill                  | dentystka wkleja diagnozę i formularz dostaje wstępnie wypełnione pola z parsowania LLM       | S-01               | FR-011, FR-012                                                                                                                                                          | blocked  |
-| S-03  | admin-quote-list                     | dentystka przegląda listę swoich kosztorysów, otwiera drafty do edycji, widzi e-maile odbiorców | S-01               | FR-070, FR-071, FR-072                                                                                                                                                  | proposed |
+| S-03  | admin-quote-list                     | dentystka przegląda listę swoich kosztorysów, otwiera drafty do edycji, widzi e-maile odbiorców | S-01               | FR-070, FR-071, FR-072                                                                                                                                                  | ready    |
 | S-04  | rodo-retention-enforcement           | link `/p/<token>` po 12 miesiącach od utworzenia zwraca "Link nieaktywny lub nieprawidłowy", e-mail pacjenta jest usuwany z rekordu | S-01               | NFR: Data retention & ochrona danych osobowych                                                                                                                          | proposed |
 | S-05  | auth-hardening                       | dentystka ma chronioną sesję (timeout 8h, ochrona przed credential stuffingiem, brak account lockout po 3 pomyłkach) | —                  | NFR: Privacy & security                                                                                                                                                 | ready    |
 
@@ -103,7 +103,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
   - Czy w UI formularza i na stronie pacjenta dodajemy dodatkową sygnalizację uzębienia mieszanego (badge/ikonka), czy wystarczą nazwy zębów z numerem (PRD Open Q #4)? — Owner: dentystka. Block: no.
   - Finalna nazwa statusu wyświetlana pacjentowi dla `out-of-current-plan` — default v1 "Odroczone" (PRD Open Q #5) — Owner: dentystka. Block: no.
 - **Risk:** Najszerszy slice w roadmapie — pokrywa większość must-have FRs, bo north star wymaga rzeczywiście kompletnej ścieżki end-to-end (admin + patient). Próba dalszego podziału (np. admin osobno, patient osobno) tworzy slice'y, których pojedyncze ukończenie nie udowadnia niczego — admin daje link, który prowadzi do 404, patient renderuje pusty mock. `/10x-plan` na tym slice'ie powinien podzielić pracę wewnętrznie na podzadania, nie jako osobne slice'y roadmapy. Tokeny generowane przez `crypto.getRandomValues` (≥ 128 bit) — nie przez DB sequence.
-- **Status:** proposed
+- **Status:** done
 
 ### S-02: LLM pre-fills the form from raw diagnosis text
 
@@ -130,7 +130,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Bez tej listy panel admin po S-01 jest "trial bez historii" — dentystka generuje link i potem nie wie do kogo poszedł. Ten slice domyka panel admin do realnie używalnego stanu. Risk: lista bez paginacji jest OK przy małej skali (PRD: ~kilkadziesiąt kosztorysów rocznie); paginacja wchodzi w v2 jeśli realna skala rośnie.
-- **Status:** proposed
+- **Status:** ready
 
 ### S-04: 12-month retention enforcement
 
@@ -210,3 +210,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 - **F-01: (foundation) schemat domeny (quote, tooth, visit, general-item, e-mail, snapshot, token) gotowy w Supabase z RLS** — Archived 2026-06-03 → `context/archive/2026-06-03-quotes-data-foundation/`. Lesson: —.
 - **F-02: (foundation) cennik gabinetu zdefiniowany jako seed w repo, z flagą `local-anesthesia` per pozycja** — Archived 2026-06-04 → `context/archive/2026-06-03-pricelist-seed-foundation/`. Lesson: —.
+- **S-01: dentystka wkleja diagnozę, ręcznie wypełnia formularz, zatwierdza i otrzymuje link `/p/<token>`, który pokazuje pacjentowi dwa warianty side-by-side** — Archived 2026-09-04 → `context/archive/2026-06-04-first-thin-quote-and-patient-link/`. Lesson: —.
