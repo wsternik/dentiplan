@@ -211,3 +211,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **F-01: (foundation) schemat domeny (quote, tooth, visit, general-item, e-mail, snapshot, token) gotowy w Supabase z RLS** — Archived 2026-06-03 → `context/archive/2026-06-03-quotes-data-foundation/`. Lesson: —.
 - **F-02: (foundation) cennik gabinetu zdefiniowany jako seed w repo, z flagą `local-anesthesia` per pozycja** — Archived 2026-06-04 → `context/archive/2026-06-03-pricelist-seed-foundation/`. Lesson: —.
 - **S-01: dentystka wkleja diagnozę, ręcznie wypełnia formularz, zatwierdza i otrzymuje link `/p/<token>`, który pokazuje pacjentowi dwa warianty side-by-side** — Archived 2026-09-04 → `context/archive/2026-06-04-first-thin-quote-and-patient-link/`. Lesson: —.
+- **S-03: dentystka widzi w panelu `/admin` listę wszystkich swoich kosztorysów, otwiera drafty do edycji, widzi e-maile odbiorców** — Archived 2026-09-04 → `context/archive/2026-09-04-admin-quote-list/`. Lesson: —.
