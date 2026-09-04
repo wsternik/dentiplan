@@ -327,7 +327,11 @@ the two types derived from it (`Quote`, `PatientView`) are referenced **nowhere
 else in the repo**. The Supabase client is created without the `Database`
 generic. `git log` shows the file has been written **exactly once**, in
 `5f3a546` (2026-06-03) — and the migration was edited _later_, in `656030b`,
-without regenerating it.
+without regenerating it. **Precision added on re-verification:** that particular
+edit added CHECK constraints and a `search_path` setting, neither of which
+changes generated TypeScript, so the checked-in types are **not stale**. The
+finding does not rest on that instance — there is no regeneration gate and no
+consumer either way.
 
 **Inference.** Regenerating after a schema change neither breaks nor catches
 anything today. It is a documented manual step (`src/types.ts:7-8`,
