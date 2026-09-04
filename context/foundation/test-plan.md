@@ -82,26 +82,26 @@ Each row is a discrete rollout phase that will open its own change folder
 via `/10x-new`. Status moves left-to-right through the values below; the
 orchestrator updates Status as artifacts appear on disk.
 
-| #   | Phase name                 | Goal (one line)                                                                                   | Risks covered | Test types        | Status      | Change folder |
-| --- | -------------------------- | ------------------------------------------------------------------------------------------------- | ------------- | ----------------- | ----------- | ------------- |
-| 1   | Approval boundary          | Prove that nothing is frozen without the server checking it, and that a frozen quote stays frozen | #1, #2        | integration       | not started | —             |
-| 2   | Patient link contract      | Prove the patient page carries only quote content, and that a bad token tells a prober nothing    | #3, #4        | integration + e2e | not started | —             |
-| 3   | Cost rules against the PRD | Prove the amounts follow FR-040 – FR-044 rather than the current implementation                   | #5            | unit              | not started | —             |
-| 4   | Access boundary            | Prove admin routes are unreachable without a session                                              | #6            | integration       | not started | —             |
+| #   | Phase name                 | Goal (one line)                                                                                   | Risks covered | Test types        | Status      | Change folder                                                                                                           |
+| --- | -------------------------- | ------------------------------------------------------------------------------------------------- | ------------- | ----------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------- |
+| 1   | Approval boundary          | Prove that nothing is frozen without the server checking it, and that a frozen quote stays frozen | #1, #2        | integration       | not started | —                                                                                                                       |
+| 2   | Patient link contract      | Prove the patient page carries only quote content, and that a bad token tells a prober nothing    | #3, #4        | integration + e2e | complete    | — (standalone `/10x-e2e` run, one risk at a time: `e2e/patient-link-content.spec.ts`, `e2e/patient-link-probe.spec.ts`) |
+| 3   | Cost rules against the PRD | Prove the amounts follow FR-040 – FR-044 rather than the current implementation                   | #5            | unit              | not started | —                                                                                                                       |
+| 4   | Access boundary            | Prove admin routes are unreachable without a session                                              | #6            | integration       | not started | —                                                                                                                       |
 
 ## 4. Stack
 
 The classic test base for this project. AI-native tools (if any) carry a
 `checked:` date so future readers can see which lines need re-verification.
 
-| Layer         | Tool                | Version    | Notes                                                                                                                          |
-| ------------- | ------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| unit          | Vitest              | 4.1.8      | Configured in `vitest.config.ts`; 2 test files, 23 tests, all covering the cost engine. Runs in CI via `npm test`.             |
-| integration   | Vitest              | 4.1.8      | None yet — see §3 Phase 1. The runner is in place; what is missing is the harness for Astro endpoints and a Supabase boundary. |
-| e2e           | none yet            | —          | See §3 Phase 2. Astro SSR on Cloudflare Workers, so a real browser against `npm run dev` is the realistic shape.               |
-| API mocking   | none yet            | —          | Decide during §3 Phase 1 research. The only external boundary today is Supabase.                                               |
-| accessibility | none                | —          | Out of scope: the PRD puts full WCAG-AA compliance in "consciously omitted for MVP".                                           |
-| lint / format | ESLint 9 + Prettier | 9.29 / 3.8 | Wired locally through husky + lint-staged and in CI.                                                                           |
+| Layer         | Tool                | Version    | Notes                                                                                                                                             |
+| ------------- | ------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| unit          | Vitest              | 4.1.8      | Configured in `vitest.config.ts`; 2 test files, 23 tests, all covering the cost engine. Runs in CI via `npm test`.                                |
+| integration   | Vitest              | 4.1.8      | None yet — see §3 Phase 1. The runner is in place; what is missing is the harness for Astro endpoints and a Supabase boundary.                    |
+| e2e           | Playwright          | 1.62.1     | `playwright.config.ts`; `npm run test:e2e`. Chromium against `npm run dev` (`webServer`), signed in once via `storageState`. Local only — see §5. |
+| API mocking   | none yet            | —          | Decide during §3 Phase 1 research. The only external boundary today is Supabase.                                                                  |
+| accessibility | none                | —          | Out of scope: the PRD puts full WCAG-AA compliance in "consciously omitted for MVP".                                                              |
+| lint / format | ESLint 9 + Prettier | 9.29 / 3.8 | Wired locally through husky + lint-staged and in CI.                                                                                              |
 
 **Stack grounding tools (current session):**
 
@@ -123,8 +123,15 @@ phase lands; before that, the gate is planned.
 | unit tests                               | local + CI, on push and PR to `main`    | required                  | logic regressions; blocks the production deploy job              |
 | build                                    | CI, on push and PR to `main`            | required                  | type and bundling errors                                         |
 | integration tests                        | local + CI                              | required after §3 Phase 1 | approval-path and patient-page regressions                       |
-| e2e                                      | local                                   | required after §3 Phase 2 | broken critical user path end to end                             |
+| e2e                                      | local, before opening a PR              | required                  | broken critical user path end to end                             |
 | post-edit hook (lint on the edited file) | local, agent loop                       | recommended               | mistakes at edit time, fed back to the agent in the same session |
+
+**E2E runs locally before a PR; unit tests run in CI.** The pipeline has no
+Supabase environment to point a browser at, and production is not a place to
+create test data — so putting e2e in CI would mean either standing up a second
+Supabase project or writing quotes into the live one on every push. Until that
+trade changes, the gate is the dentystka's own machine: `npm run test:e2e` green
+before opening a PR.
 
 ## 6. Cookbook Patterns
 
@@ -145,7 +152,30 @@ the relevant rollout phase ships; before that, the sub-section reads
 
 ### 6.3 Adding an e2e test
 
-- TBD — see §3 Phase 2, for the "approve a quote, open the link with no session" pattern.
+- **Location**: `e2e/<feature>.spec.ts`, one test per file.
+- **Naming**: the test name opens with the risk it protects (`risk #3: …`), so a
+  failure names the scenario rather than a file.
+- **Reference test**: `e2e/seed.spec.ts` — the exemplar every new test is
+  modelled on. Read it before writing one; the conventions it fixes (role
+  locators, one self-contained test with its own cleanup, waiting for state) are
+  what keeps this layer from becoming the flaky one.
+- **Hydration**: this app is Astro SSR with React islands, so acting on an island
+  before it hydrates is silently discarded. Call `waitForIslands(page)` from
+  `e2e/support/app.ts` after landing on a page with an interactive island —
+  never a timeout.
+- **Auth**: `e2e/auth.setup.ts` signs in once and stores the session; specs start
+  authenticated. A spec that needs an anonymous visitor opts out with
+  `test.use({ storageState: { cookies: [], origins: [] } })` or opens its own
+  context, which is also how "the patient has no session" gets asserted rather
+  than assumed.
+- **Credentials**: `E2E_EMAIL` / `E2E_PASSWORD` in `.env` (gitignored; see
+  `.env.example`).
+- **Data**: there is no local Supabase in this setup, so e2e runs against the
+  real project. Tag every record with a `Date.now()` stamp and clean up at the
+  end of the test. Approved quotes are the exception — FR-053 makes them
+  immutable, so a test that approves one cannot delete it; that is why only one
+  spec approves, and why unique data, not cleanup, is what keeps runs isolated.
+- **Run locally**: `npm run test:e2e` (add a path for a single spec).
 
 ### 6.4 Adding a test for a new API endpoint
 
@@ -153,7 +183,21 @@ the relevant rollout phase ships; before that, the sub-section reads
 
 ### 6.5 Per-rollout-phase notes
 
-(Filled in after each phase lands.)
+**Phase 2 — Patient link contract.** Two things are worth carrying into the
+later phases:
+
+- The leak assertions run against `response.text()`, not the rendered tree, as
+  §2's anti-pattern column demands. Assert _absence_ only next to evidence the
+  data exists at all (this spec first confirms the e-mail on the admin list),
+  otherwise "it is not on the page" is also true of a page that never had it.
+- Both specs were break-verified rather than trusted: rendering the diagnosis
+  note on the patient page turns risk #3 red, and answering `400` instead of
+  `404` for a malformed token turns risk #4 red. A test that stays green when
+  its risk materialises is decorative, and that is only knowable by breaking the
+  thing on purpose.
+
+Phase 2's **integration** half is not covered by these two specs — they are the
+browser-level layer over the same risks. It stays open.
 
 ## 7. What We Deliberately Don't Test
 
