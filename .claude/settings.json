@@ -1,5 +1,19 @@
 {
   "enabledPlugins": {
     "frontend-design@claude-plugins-official": true
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'FILE=$(jq -r \".tool_input.file_path // empty\"); case \"$FILE\" in *.ts|*.tsx|*.astro|*.js|*.mjs) npx eslint --fix \"$FILE\" 1>&2 || exit 2 ;; esac'",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
   }
 }

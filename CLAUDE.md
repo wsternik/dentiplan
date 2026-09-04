@@ -10,8 +10,9 @@ This file provides guidance to AI Agent when working with code in this repositor
 - `npm run lint` — ESLint with type-checked rules
 - `npm run lint:fix` — auto-fix lint issues
 - `npm run format` — Prettier (includes prettier-plugin-astro + prettier-plugin-tailwindcss)
+- `npm test` — Vitest (unit)
 
-Pre-commit hooks: husky + lint-staged runs `eslint --fix` on `*.{ts,tsx,astro}` and `prettier --write` on `*.{json,css,md}`.
+Quality gates and where each one runs are described under [Quality gates](#quality-gates).
 
 ## Architecture
 
@@ -49,9 +50,25 @@ Full server-side rendering (`output: "server"` in astro.config.mjs). All pages a
 - Cloudflare local dev: secrets go in `.dev.vars` (gitignored)
 - Deploy: `npx wrangler deploy` (requires Cloudflare account + `wrangler` auth)
 
-## CI
+## Quality gates
 
-GitHub Actions workflow (`.github/workflows/ci.yml`) runs lint + tests + build on every push and PR to main. Requires `SUPABASE_URL` and `SUPABASE_KEY` repository secrets for the build step.
+Three layers, each holding whatever is cheap enough at that point. The
+strategy behind them — which risks they exist for — is in
+`context/foundation/test-plan.md`.
+
+| When                                   | What runs                                                                                                                                                  | Where it is configured                                       |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| After the agent writes or edits a file | `eslint --fix` on that one file. Exits 2 on a remaining error, so the rule violation lands back in the agent's context and it can fix it in the next turn. | `.claude/settings.json`, `PostToolUse` matcher `Write\|Edit` |
+| On commit                              | `eslint --fix` on staged `*.{ts,tsx,astro}`, `prettier --write` on staged `*.{json,css,md}`, then `astro check` over the project                           | `.husky/pre-commit` + `lint-staged` in `package.json`        |
+| On push and PR to `main`               | lint, `npm test`, build; then the production deploy, which only runs if all three passed                                                                   | `.github/workflows/ci.yml`                                   |
+
+Typecheck sits at the commit layer, not per-edit: `astro check` takes about
+six seconds on this project against roughly three for linting one file, and
+six seconds on every single edit is a tax on the whole session. Linting one
+file is cheap enough to pay each time.
+
+CI needs `SUPABASE_URL` and `SUPABASE_KEY` as repository secrets for the
+build step, and `CLOUDFLARE_API_TOKEN` for the deploy job.
 
 <!-- BEGIN @przeprogramowani/10x-cli -->
 
