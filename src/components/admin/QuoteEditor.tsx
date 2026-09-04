@@ -70,6 +70,13 @@ export default function QuoteEditor({
   const [toothInput, setToothInput] = useState("");
   const [toothWarnings, setToothWarnings] = useState<string[]>([]);
   const generalCounter = useRef(highestGeneralIndex(initialContent?.generalItems ?? []));
+  // Write lock for the two server-writing actions. A ref, because the `saving` /
+  // `submitting` state flags are read through a closure: a second click in the
+  // same tick sees the pre-update value and gets through. On the approval path
+  // that would mint two immutable `approved` rows with two live patient links —
+  // and an approved row can be neither edited nor deleted (FR-053), so the
+  // duplicate would be permanent.
+  const inFlight = useRef(false);
 
   // --- Approval (Phase 3) ---
   const [submitting, setSubmitting] = useState(false);
@@ -193,7 +200,11 @@ export default function QuoteEditor({
   // page-open, and the editor's other actions are deliberate too. The e-mail is
   // optional here — "start now, add the address after the consultation".
   async function handleSaveDraft() {
-    if (saving) return;
+    // Ref, not the `saving` state: a second click landing in the same tick reads
+    // the state through a stale closure and slips past. Two POSTs before
+    // `savedId` is adopted would create two draft rows for one quote.
+    if (inFlight.current) return;
+    inFlight.current = true;
     setSaving(true);
     setSaveError(null);
     const body = { ...treePayload(), patient_email: patientEmail.trim() || null };
@@ -224,6 +235,7 @@ export default function QuoteEditor({
     } catch {
       setSaveError("Błąd połączenia. Spróbuj ponownie.");
     } finally {
+      inFlight.current = false;
       setSaving(false);
     }
   }
@@ -246,7 +258,8 @@ export default function QuoteEditor({
 
   // --- Approve: POST the tree by-id; server re-resolves prices and freezes ---
   async function handleApprove() {
-    if (approveDisabled || submitting) return;
+    if (approveDisabled || inFlight.current) return;
+    inFlight.current = true;
     setSubmitting(true);
     setSubmitError(null);
     // Send pricelist items BY ID only — the resolved client price is preview-only
@@ -277,6 +290,7 @@ export default function QuoteEditor({
     } catch {
       setSubmitError("Błąd połączenia. Spróbuj ponownie.");
     } finally {
+      inFlight.current = false;
       setSubmitting(false);
     }
   }

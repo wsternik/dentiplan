@@ -377,7 +377,7 @@ No migration. Existing approved rows from S-01 carry `patient_email IS NULL`; th
 
 #### Manual
 
-- [ ] 1.5 `POST /api/admin/quotes` without a session cookie returns 401
+- [x] 1.5 `POST /api/admin/quotes` without a session cookie returns 401 — 734e2c9
 - [ ] 1.6 Creating a draft stores `status = 'draft'`, `token IS NULL`, no `totals` in `content`
 - [ ] 1.7 `PUT` against an approved row's id returns 409 and leaves the row untouched
 - [ ] 1.8 Approving with a draft `id` flips that row to `approved` without creating a second row
@@ -397,7 +397,7 @@ No migration. Existing approved rows from S-01 carry `patient_email IS NULL`; th
 - [ ] 2.6 A previously approved quote appears with e-mail, date, and `approved` status
 - [ ] 2.7 `/admin/quotes/new` renders the editor and approval still works end-to-end
 - [ ] 2.8 Delete requires two clicks, removes the draft, absent on approved rows
-- [ ] 2.9 `/admin` and `/admin/quotes/new` redirect to `/auth/signin` when signed out
+- [x] 2.9 `/admin` and `/admin/quotes/new` redirect to `/auth/signin` when signed out — d8e1c0f
 
 ### Phase 3: Draft save and reopening a draft for editing
 
@@ -421,10 +421,10 @@ No migration. Existing approved rows from S-01 carry `patient_email IS NULL`; th
 
 #### Automated
 
-- [x] 4.1 Linting passes: `npm run lint`
-- [x] 4.2 Type checking passes: `npx astro check`
-- [x] 4.3 Unit suite passes: `npm test`
-- [x] 4.4 Production build succeeds: `npm run build`
+- [x] 4.1 Linting passes: `npm run lint` — 42a856c
+- [x] 4.2 Type checking passes: `npx astro check` — 42a856c
+- [x] 4.3 Unit suite passes: `npm test` — 42a856c
+- [x] 4.4 Production build succeeds: `npm run build` — 42a856c
 
 #### Manual
 
