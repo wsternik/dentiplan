@@ -71,6 +71,8 @@ The work splits along a clean seam: everything the server needs to turn a reques
 
 **Ordering of the approval UPDATE.** The `draft → approved` transition must set `status`, `token`, `approved_at`, and the frozen `content` in a _single_ statement. Two statements would leave the row `approved` with a `NULL` token in between, violating `quotes_approved_has_token`, and the second statement would then be rejected by `quotes_immutable` — leaving a permanently broken row that FR-053 makes uncorrectable. Scope the update with `.eq("id", id).eq("status", "draft")` and treat a zero-row result as "already approved or gone", not as success.
 
+**A scoped statement reports nothing unless you ask it to.** Three guards in this plan — `PUT` on a draft, `DELETE` on a draft, and approval by `id` — depend on distinguishing "updated one row" from "matched nothing because the row is already approved or gone". `supabase.from(...).update(...).eq(...)` does **not** return an affected-row count on its own: without a chained `.select("id")` (or `{ count: "exact" }`) the call resolves with `data: null` and no error whether it hit one row or none. Implemented naively, every one of those guards answers 200 to an attempt to modify an approved quote — the exact FR-053 hole this slice exists to close. Chain `.select("id")` on all three and treat an empty array as the 409 case.
+
 **The e-mail is a sibling of `content`, never a member.** Both write endpoints accept `patient_email` at the top level of the request body and pass it straight to the column. It is never an argument to the content builder. See Key Discoveries for why the RPC's column whitelist does not save us if this is violated.
 
 **Tooth ordering on rehydration.** The editor keys tooth rows by `number` and maintains a sorted invariant when adding teeth (`addTeeth` sorts on insert). Content loaded from storage must be sorted the same way on hydration, or a draft saved after an out-of-order manual edit will render in a different order than it was composed in.
@@ -167,7 +169,7 @@ Turn `/admin` into the panel FR-070 describes and give the new-quote editor its 
 
 **Intent**: Replace the editor with the list of all quotes (FR-070), the entry point to every other operation.
 
-**Contract**: Server-side `select` of `id`, `patient_email`, `created_at`, `status`, `token` ordered by `created_at desc` (served by `quotes_created_at_idx`). Renders a table with a short identifier, the e-mail (with a neutral placeholder when a draft has none yet), a formatted date, and a status badge. Each row links to `/admin/quotes/<id>`; drafts additionally carry the delete control. A "Nowy kosztorys" action links to `/admin/quotes/new`, and an empty state covers the no-quotes case. Keeps the existing "Zalogowano: …" affordance.
+**Contract**: Server-side `select` of `id`, `patient_email`, `created_at`, `status`, `token` ordered by `created_at desc` (served by `quotes_created_at_idx`). Renders a table with a short identifier, the e-mail (with a neutral placeholder when a draft has none yet), a formatted date, and a status badge. Drafts carry the delete control. A "Nowy kosztorys" action links to `/admin/quotes/new`, and an empty state covers the no-quotes case. **Rows are not yet clickable** — `/admin/quotes/[id]` does not exist until Phase 3, and since each phase is a commit, linking here would ship a commit whose every row leads to a 404. Phase 3 adds the link together with the route it points at. Keeps the existing "Zalogowano: …" affordance.
 
 #### 3. Delete control
 
@@ -185,6 +187,14 @@ Turn `/admin` into the panel FR-070 describes and give the new-quote editor its 
 
 **Contract**: Renders `<QuoteEditor client:load>` with options from the shared derivation, inside the existing `Layout`. Reachable under the `/admin` prefix, so `PROTECTED_ROUTES` in `src/middleware.ts` already covers it — no middleware change.
 
+#### 5. Post-sign-in destination
+
+**File**: `src/pages/api/auth/signin.ts`
+
+**Intent**: Make the panel reachable. Today `signin.ts:19` redirects to `/`, and nothing anywhere in `src/` links to `/admin` — the only references are the middleware guard, the approval `fetch` URL, and the page itself. Without this, the list exists but the dentystka can only reach it by typing the address, and the end state above is not actually met.
+
+**Contract**: On a successful sign-in, redirect to `/admin` instead of `/`. One line; the error branches are unchanged. `/dashboard` stays as it is — it is scaffold, not a product surface, and removing it is not this slice's business.
+
 ### Success Criteria:
 
 #### Automated Verification:
@@ -196,7 +206,7 @@ Turn `/admin` into the panel FR-070 describes and give the new-quote editor its 
 
 #### Manual Verification:
 
-- Signing in and opening `/admin` shows the list, not the editor.
+- Signing in lands directly on `/admin` and shows the list, not the editor.
 - A previously approved quote appears with its e-mail, date, and `approved` status.
 - Opening `/admin/quotes/new` renders the editor and approval still works end-to-end.
 - The delete control requires two clicks, removes the draft, and does not appear on approved rows.
@@ -236,7 +246,15 @@ Close the C and U halves of the lifecycle in the UI: the editor can save what it
 
 **Intent**: Serve FR-071 — open any quote from the list.
 
-**Contract**: Fetches the row by id server-side; a miss renders a not-found state. Parses `content` through `QuoteContentSchema` before handing it to the island, so a malformed stored tree fails at the boundary rather than inside React. Passes id, content, `patient_type`, and `patient_email` into `<QuoteEditor client:load>`. Approved rows are handled in Phase 4; until then they render the same editable view.
+**Contract**: Fetches the row by id server-side; a miss renders a not-found state. Parses `content` through `QuoteContentSchema` before handing it to the island, so a malformed stored tree fails at the boundary rather than inside React. Passes id, content, `patient_type`, and `patient_email` into `<QuoteEditor client:load>`. Approved rows are handled in Phase 4; until then they render the same editable view — harmless, because both write endpoints are scoped to `status = 'draft'` and reject the attempt server-side.
+
+#### 4. Link the list rows
+
+**File**: `src/pages/admin/index.astro`
+
+**Intent**: Complete what Phase 2 deliberately left open — now that the route exists, the list identifier becomes the link to it (FR-071).
+
+**Contract**: The identifier cell becomes an anchor to `/admin/quotes/<id>` for every row, draft and approved alike.
 
 ### Success Criteria:
 
@@ -250,6 +268,7 @@ Close the C and U halves of the lifecycle in the UI: the editor can save what it
 #### Manual Verification:
 
 - Filling part of a quote, saving it as a draft, and returning to `/admin` shows it as `draft`.
+- Every row in the list is now clickable and opens the right quote.
 - Reopening that draft restores every field — teeth in the same order, visits, general items, general-item ids, patient type, e-mail.
 - Editing and saving again updates the same row rather than creating a second one.
 - "Zatwierdź" stays disabled with an explanatory message until a valid e-mail is entered.
@@ -273,7 +292,7 @@ Make FR-053 visible in the UI: an approved quote can be opened and inspected but
 
 **Intent**: Render an approved quote in the same layout the dentystka composed it in, with every mutating control unavailable.
 
-**Contract**: A `readOnly` flag threads down through the child components; inputs, selects, and pickers become disabled and the add/remove affordances are not rendered. The totals preview stays visible. In the editor shell, "Zapisz szkic" and "Zatwierdź" are replaced by the quote's `/p/<token>` link with the existing copy affordance, reusing the `ApprovalConfirmation` presentation rather than inventing a second one. The raw-diagnosis scratch textarea is hidden — it was never persisted and would render misleadingly empty.
+**Contract**: A `readOnly` flag threads down through the child components; inputs, selects, and pickers become disabled and the add/remove affordances are not rendered. The totals preview stays visible. In the editor shell, "Zapisz szkic" and "Zatwierdź" are replaced by the quote's `/p/<token>` link with the existing copy affordance. Note that `ApprovalConfirmation` cannot be reused wholesale: it requires an `onReset` prop and renders "Kosztorys zatwierdzony" plus a "Nowy kosztorys" button — right after an approval, wrong when reopening an old quote from the list. Lift the copy control (read-only input + "Kopiuj link" button) into a small shared component both can use, rather than duplicating it or bending the confirmation view to two purposes. The raw-diagnosis scratch textarea is hidden — it was never persisted and would render misleadingly empty.
 
 #### 2. Route dispatches on status
 
@@ -374,7 +393,7 @@ No migration. Existing approved rows from S-01 carry `patient_email IS NULL`; th
 
 #### Manual
 
-- [ ] 2.5 `/admin` shows the list, not the editor
+- [ ] 2.5 Signing in lands directly on `/admin`, which shows the list, not the editor
 - [ ] 2.6 A previously approved quote appears with e-mail, date, and `approved` status
 - [ ] 2.7 `/admin/quotes/new` renders the editor and approval still works end-to-end
 - [ ] 2.8 Delete requires two clicks, removes the draft, absent on approved rows
@@ -392,10 +411,11 @@ No migration. Existing approved rows from S-01 carry `patient_email IS NULL`; th
 #### Manual
 
 - [ ] 3.5 A partially filled quote saves as a draft and appears in the list
-- [ ] 3.6 Reopening restores every field, tooth order, and general-item ids
-- [ ] 3.7 Saving again updates the same row rather than creating a second one
-- [ ] 3.8 "Zatwierdź" stays disabled with a message until a valid e-mail is entered
-- [ ] 3.9 Approving a reopened draft yields a working `/p/<token>` and exactly one row
+- [ ] 3.6 Every row in the list is now clickable and opens the right quote
+- [ ] 3.7 Reopening restores every field, tooth order, and general-item ids
+- [ ] 3.8 Saving again updates the same row rather than creating a second one
+- [ ] 3.9 "Zatwierdź" stays disabled with a message until a valid e-mail is entered
+- [ ] 3.10 Approving a reopened draft yields a working `/p/<token>` and exactly one row
 
 ### Phase 4: Read-only view of approved quotes
 
