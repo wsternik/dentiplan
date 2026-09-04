@@ -9,8 +9,8 @@
 // be pure waste (and, for approved quotes, a needless copy of patient-visible
 // data on an admin screen).
 //
-// Rows are not yet clickable — `/admin/quotes/[id]` arrives in the next phase,
-// and linking before the route exists would ship a list where every row 404s.
+// The identifier links to `/admin/quotes/[id]` (FR-071): drafts open editable,
+// approved quotes open read-only.
 
 import Layout from "@/layouts/Layout.astro";
 import { DeleteQuoteButton } from "@/components/admin/DeleteQuoteButton";
@@ -102,7 +102,11 @@ const shortId = (id: string) => id.slice(0, 8);
               <tbody>
                 {quotes.map((quote) => (
                   <tr class="border-b last:border-b-0">
-                    <td class="py-2 pr-4 font-mono">{shortId(quote.id)}</td>
+                    <td class="py-2 pr-4 font-mono">
+                      <a href={`/admin/quotes/${quote.id}`} class="underline underline-offset-4">
+                        {shortId(quote.id)}
+                      </a>
+                    </td>
                     <td class="py-2 pr-4">{quote.patient_email ?? <span class="text-muted-foreground">—</span>}</td>
                     <td class="py-2 pr-4">{formatDate(quote.created_at)}</td>
                     <td class="py-2 pr-4">

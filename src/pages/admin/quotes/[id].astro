@@ -1,0 +1,78 @@
+---
+// Open one quote from the list (S-03, FR-071).
+//
+// Drafts come back editable; approved quotes are handled by the next phase and,
+// until then, render the same editable view — harmless, because both write
+// endpoints are scoped to `status = 'draft'` and reject the attempt server-side.
+//
+// `content` is parsed through `QuoteContentSchema` before it reaches the island,
+// so a malformed stored tree fails here at the boundary rather than somewhere
+// inside React. The DB default is `'{}'::jsonb` and every top-level collection in
+// the schema has a default, so a brand-new draft parses fine.
+
+import Layout from "@/layouts/Layout.astro";
+import QuoteEditor from "@/components/admin/QuoteEditor";
+import { buildPickerOptions } from "@/lib/pricing";
+import { createClient } from "@/lib/supabase";
+import { PatientTypeSchema, QuoteContentSchema, QuoteStatusSchema } from "@/types";
+import { z } from "zod";
+
+export const prerender = false;
+
+const { user } = Astro.locals;
+const { toothOptions, generalOptions } = buildPickerOptions();
+
+// Untyped Supabase client — funnel the row through Zod rather than trusting `any`
+// (same convention as `src/pages/p/[token].astro`).
+const QuoteRowSchema = z.object({
+  id: z.uuid(),
+  patient_type: PatientTypeSchema,
+  patient_email: z.string().nullable(),
+  status: QuoteStatusSchema,
+  content: QuoteContentSchema,
+});
+
+const id = z.uuid().safeParse(Astro.params.id);
+const supabase = createClient(Astro.request.headers, Astro.cookies);
+
+let quote: z.infer<typeof QuoteRowSchema> | null = null;
+if (id.success && supabase) {
+  const { data } = await supabase
+    .from("quotes")
+    .select("id, patient_type, patient_email, status, content")
+    .eq("id", id.data)
+    .maybeSingle();
+  const parsed = QuoteRowSchema.safeParse(data);
+  if (parsed.success) {
+    quote = parsed.data;
+  }
+}
+---
+
+<Layout title={quote ? "Kosztorys" : "Nie znaleziono"}>
+  <main class="bg-background text-foreground min-h-screen">
+    {user?.email && <p class="text-muted-foreground px-6 pt-4 text-right text-sm">Zalogowano: {user.email}</p>}
+
+    {
+      quote ? (
+        <QuoteEditor
+          toothOptions={toothOptions}
+          generalOptions={generalOptions}
+          quoteId={quote.id}
+          initialContent={quote.content}
+          initialPatientType={quote.patient_type}
+          initialPatientEmail={quote.patient_email}
+          client:load
+        />
+      ) : (
+        <div class="mx-auto max-w-2xl space-y-4 p-4">
+          <h1 class="text-2xl font-bold">Nie znaleziono kosztorysu</h1>
+          <p class="text-muted-foreground text-sm">Ten kosztorys nie istnieje albo został usunięty.</p>
+          <a href="/admin" class="text-sm underline underline-offset-4">
+            ← Lista kosztorysów
+          </a>
+        </div>
+      )
+    }
+  </main>
+</Layout>

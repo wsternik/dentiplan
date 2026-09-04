@@ -9,6 +9,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { computeQuoteTotals } from "@/lib/quote/cost";
@@ -27,20 +28,58 @@ function toRef(option: PickerOption): PricelistItemRef {
   return { id: option.id, name: option.name, price: option.price, localAnesthesia: option.localAnesthesia };
 }
 
-export default function QuoteEditor({ toothOptions, generalOptions }: QuoteEditorProps) {
-  const [patientType, setPatientType] = useState<PatientType>("adult");
-  const [teeth, setTeeth] = useState<ToothEntry[]>([]);
-  const [visits, setVisits] = useState<Visit[]>([]);
-  const [generalItems, setGeneralItems] = useState<GeneralItem[]>([]);
+/**
+ * Loose client-side e-mail check, for gating the Approve button only. The server
+ * is authoritative (`PatientEmailSchema` in the payload service); duplicating Zod
+ * here would drag the pricing seed into the browser bundle for nothing.
+ */
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/**
+ * Seed the general-item counter past the highest stored `g-<n>` id, so items
+ * added after rehydrating a draft cannot collide with restored ones.
+ */
+function highestGeneralIndex(items: GeneralItem[]): number {
+  return items.reduce((max, item) => {
+    const n = Number(/^g-(\d+)$/.exec(item.id)?.[1]);
+    return Number.isInteger(n) && n > max ? n : max;
+  }, 0);
+}
+
+export default function QuoteEditor({
+  toothOptions,
+  generalOptions,
+  quoteId,
+  initialContent,
+  initialPatientType,
+  initialPatientEmail,
+}: QuoteEditorProps) {
+  const [patientType, setPatientType] = useState<PatientType>(initialPatientType ?? "adult");
+  // Teeth are sorted on hydration for the same reason `addTeeth` sorts on insert:
+  // rows are keyed by number and the editor's invariant is ascending order.
+  const [teeth, setTeeth] = useState<ToothEntry[]>(() =>
+    [...(initialContent?.teeth ?? [])].sort((a, b) => a.number - b.number),
+  );
+  const [visits, setVisits] = useState<Visit[]>(initialContent?.visits ?? []);
+  const [generalItems, setGeneralItems] = useState<GeneralItem[]>(initialContent?.generalItems ?? []);
+  const [patientEmail, setPatientEmail] = useState(initialPatientEmail ?? "");
   const [rawText, setRawText] = useState("");
   const [toothInput, setToothInput] = useState("");
   const [toothWarnings, setToothWarnings] = useState<string[]>([]);
-  const generalCounter = useRef(0);
+  const generalCounter = useRef(highestGeneralIndex(initialContent?.generalItems ?? []));
 
   // --- Approval (Phase 3) ---
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [approvedPath, setApprovedPath] = useState<string | null>(null);
+
+  // --- Draft persistence (S-03) ---
+  // `savedId` starts as the row this editor was opened from and is adopted after
+  // the first save, so a second "Zapisz szkic" updates rather than duplicating.
+  const [savedId, setSavedId] = useState<string | null>(quoteId ?? null);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [savedAt, setSavedAt] = useState<string | null>(null);
 
   const totals = useMemo(() => computeQuoteTotals({ teeth, visits, generalItems }), [teeth, visits, generalItems]);
 
@@ -128,25 +167,9 @@ export default function QuoteEditor({ toothOptions, generalOptions }: QuoteEdito
     setGeneralItems((prev) => prev.map((g) => (g.id === id ? { ...g, visitNumber } : g)));
   }
 
-  // --- Approve gating (essential guards; server re-checks in Phase 3) ---
-  const isEmpty = teeth.length === 0 && generalItems.length === 0;
-  const hasUnpriced = teeth.some((t) => t.status === "in-plan" && t.pricelistItems.length === 0);
-  const approveDisabled = isEmpty || hasUnpriced;
-  const approveReason = isEmpty
-    ? "Dodaj co najmniej jeden ząb lub pozycję ogólną."
-    : hasUnpriced
-      ? "Każdy ząb w planie musi mieć pozycję z cennika."
-      : null;
-
-  // --- Approve: POST the tree by-id; server re-resolves prices and freezes ---
-  async function handleApprove() {
-    if (approveDisabled || submitting) return;
-    setSubmitting(true);
-    setSubmitError(null);
-    // Send pricelist items BY ID only — the resolved client price is preview-only
-    // and is never trusted for the immutable freeze (server re-resolves). rawText
-    // is intentionally absent from the payload (patient-safe invariant).
-    const payload = {
+  // --- The quote tree as every write endpoint accepts it: items BY ID only ---
+  function treePayload() {
+    return {
       patient_type: patientType,
       teeth: teeth.map((t) => ({
         number: t.number,
@@ -159,6 +182,82 @@ export default function QuoteEditor({ toothOptions, generalOptions }: QuoteEdito
       })),
       visits,
       generalItems: generalItems.map((g) => ({ id: g.id, itemId: g.item.id, visitNumber: g.visitNumber })),
+    };
+  }
+
+  // --- Save as draft (S-03) ---
+  // Explicit, never autosaved: an autosave would write a row for every abandoned
+  // page-open, and the editor's other actions are deliberate too. The e-mail is
+  // optional here — "start now, add the address after the consultation".
+  async function handleSaveDraft() {
+    if (saving) return;
+    setSaving(true);
+    setSaveError(null);
+    const body = { ...treePayload(), patient_email: patientEmail.trim() || null };
+    try {
+      const res = savedId
+        ? await fetch(`/api/admin/quotes/${savedId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          })
+        : await fetch("/api/admin/quotes", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          });
+      if (!res.ok) {
+        const data = (await res.json().catch(() => null)) as { error?: string } | null;
+        setSaveError(data?.error ?? "Nie udało się zapisać szkicu.");
+        return;
+      }
+      if (!savedId) {
+        // Adopt the new row's id so the next save updates it instead of
+        // creating a second draft.
+        const data = (await res.json().catch(() => null)) as { id?: string } | null;
+        if (data?.id) setSavedId(data.id);
+      }
+      setSavedAt(new Date().toLocaleTimeString("pl-PL"));
+    } catch {
+      setSaveError("Błąd połączenia. Spróbuj ponownie.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  // --- Approve gating (essential guards; server re-checks in Phase 3) ---
+  const isEmpty = teeth.length === 0 && generalItems.length === 0;
+  const hasUnpriced = teeth.some((t) => t.status === "in-plan" && t.pricelistItems.length === 0);
+  // The e-mail is required to approve but not to save a draft (FR-070: an
+  // approved quote has been sent to someone, so the list must name them — and an
+  // approved row is immutable, so it could never be filled in afterwards).
+  const emailMissing = !EMAIL_PATTERN.test(patientEmail.trim());
+  const approveDisabled = isEmpty || hasUnpriced || emailMissing;
+  const approveReason = isEmpty
+    ? "Dodaj co najmniej jeden ząb lub pozycję ogólną."
+    : hasUnpriced
+      ? "Każdy ząb w planie musi mieć pozycję z cennika."
+      : emailMissing
+        ? "Podaj e-mail odbiorcy, żeby zatwierdzić kosztorys."
+        : null;
+
+  // --- Approve: POST the tree by-id; server re-resolves prices and freezes ---
+  async function handleApprove() {
+    if (approveDisabled || submitting) return;
+    setSubmitting(true);
+    setSubmitError(null);
+    // Send pricelist items BY ID only — the resolved client price is preview-only
+    // and is never trusted for the immutable freeze (server re-resolves). rawText
+    // is intentionally absent from the payload (patient-safe invariant).
+    //
+    // `id`, when present, turns this into a draft→approved transition on that row
+    // rather than a fresh insert, so reopening and approving a draft leaves one
+    // quote, not two. `patient_email` is a sibling of the tree and lands in its
+    // own column — never inside `content` (FR-072/FR-066).
+    const payload = {
+      ...treePayload(),
+      patient_email: patientEmail.trim(),
+      ...(savedId ? { id: savedId } : {}),
     };
     try {
       const res = await fetch("/api/admin/quotes/approve", {
@@ -184,11 +283,17 @@ export default function QuoteEditor({ toothOptions, generalOptions }: QuoteEdito
     setTeeth([]);
     setVisits([]);
     setGeneralItems([]);
+    setPatientEmail("");
     setRawText("");
     setToothInput("");
     setToothWarnings([]);
     setSubmitError(null);
     setApprovedPath(null);
+    // A fresh quote is a fresh row: drop the id the approved one occupied, or the
+    // next save would try to update a now-immutable record.
+    setSavedId(null);
+    setSaveError(null);
+    setSavedAt(null);
     generalCounter.current = 0;
   }
 
@@ -198,7 +303,27 @@ export default function QuoteEditor({ toothOptions, generalOptions }: QuoteEdito
 
   return (
     <div className="mx-auto max-w-4xl space-y-4 p-4">
-      <h1 className="text-2xl font-bold">Nowy kosztorys</h1>
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="text-2xl font-bold">{savedId ? "Kosztorys (szkic)" : "Nowy kosztorys"}</h1>
+        <a href="/admin" className="text-muted-foreground text-sm underline-offset-4 hover:underline">
+          ← Lista kosztorysów
+        </a>
+      </div>
+
+      <Section title="E-mail odbiorcy">
+        <Label htmlFor="patientEmail" className="text-muted-foreground mb-1">
+          Tylko do Twojej referencji — nigdy nie trafia na stronę pacjenta. Wymagany do zatwierdzenia.
+        </Label>
+        <Input
+          id="patientEmail"
+          type="email"
+          placeholder="pacjent@example.com"
+          value={patientEmail}
+          onChange={(e) => {
+            setPatientEmail(e.target.value);
+          }}
+        />
+      </Section>
 
       <Section title="Notatka z diagnozy (roboczo)">
         <Label htmlFor="rawText" className="text-muted-foreground mb-1">
@@ -310,11 +435,18 @@ export default function QuoteEditor({ toothOptions, generalOptions }: QuoteEdito
       </Section>
 
       <div className="flex flex-col items-start gap-2">
-        <Button type="button" size="lg" disabled={approveDisabled || submitting} onClick={handleApprove}>
-          {submitting ? "Zatwierdzanie…" : "Zatwierdź"}
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button type="button" size="lg" disabled={approveDisabled || submitting} onClick={handleApprove}>
+            {submitting ? "Zatwierdzanie…" : "Zatwierdź"}
+          </Button>
+          <Button type="button" size="lg" variant="outline" disabled={saving} onClick={() => void handleSaveDraft()}>
+            {saving ? "Zapisywanie…" : "Zapisz szkic"}
+          </Button>
+          {savedAt && !saveError && <span className="text-muted-foreground text-sm">Zapisano {savedAt}</span>}
+        </div>
         {approveReason && <p className="text-muted-foreground text-sm">{approveReason}</p>}
         {submitError && <p className="text-destructive text-sm">{submitError}</p>}
+        {saveError && <p className="text-destructive text-sm">{saveError}</p>}
       </div>
     </div>
   );
