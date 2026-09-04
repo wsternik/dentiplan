@@ -5,9 +5,25 @@
 Move the `PickerOption` interface from `src/components/admin/types.ts` to
 `src/lib/pricing/picker-options.ts`, so `src/lib/pricing` stops importing upward
 into `src/components`. This is the single `lib-not-to-components` violation in
-the repository, and it is the reason `npm run depcruise` exits non-zero — which
-in turn is why the layer rules written during the M4L2 mapping cannot yet be a
-quality gate.
+the repository, and it is the reason `npm run depcruise` exits non-zero.
+
+**Why this candidate first.** Not because it unblocks the others — it does not.
+`research.md` §3's verification table shows every other candidate is verified by
+`astro check`, `npm test` or a new unit test, and **none of them is gated by
+depcruise**. The one thing a green cruise concretely unblocks is
+`context/domain/03-anti-corruption-layer.md` A6, which cannot add its own rule
+until the command passes.
+
+The real argument is cost and completeness of proof. This change costs about
+thirty minutes and its verification is total and mechanical — `depcruise` 1 → 0,
+`astro check`, and `verbatimModuleSyntax` making a wrong import uncompilable.
+The strongest candidate, C1 (sharing the approval wire format), has the opposite
+profile: its blocking objection turned out to be stale, and its producer is only
+sixteen lines — but at the moment it needs a safety net it has none.
+`quote-payload.test.ts` builds its own literals and stays green under any
+producer rename, and vitest here cannot reach `treePayload()` where it sits. Its
+only behavioural cover is one e2e spec that does not run in CI. First do the
+change that can be proven; then build the harness the bigger one needs.
 
 ## Current State Analysis
 
@@ -67,8 +83,9 @@ Verified by: `npm run depcruise` exits 0, `astro check` reports 0 errors,
 ## What We're NOT Doing
 
 - **Not touching C1** (sharing the approval wire format). It is the
-  highest-value candidate in the ranking and needs two phases, the first of which
-  restructures a 691-line component. It is a change of its own.
+  highest-value candidate in the ranking, and its blocking objection turned out
+  to be stale — but it needs two phases, and its first phase exists only to build
+  a safety net it currently lacks entirely. It is a change of its own.
 - **Not touching C5** (the `Database` generic). Its prerequisite lives in the
   database, not the repo.
 - **Not touching C6's read side.** Bounding `VisitSchema` in `types.ts` would
@@ -107,8 +124,10 @@ the upward `import type` at `:16` that creates the violation.
 
 **Contract**: `export interface PickerOption extends PricelistItemRef` — the same
 shape as today, with `PricelistItemRef` imported from `@/types` (already the
-module's own dependency direction). Keep the existing `PickerOptions` interface
-immediately below it, unchanged.
+module's own dependency direction). **The declaration's doc comment
+(`types.ts:5-12`) travels with it** — it documents the type, not
+`QuoteEditorProps`, and explains why the resolved `price` is preview-only.
+Keep the existing `PickerOptions` interface immediately below it, unchanged.
 
 #### 2. The barrel
 
@@ -126,9 +145,15 @@ immediately below it, unchanged.
 **Intent**: Stop declaring the type; import it downward instead, so
 `QuoteEditorProps` keeps working unchanged.
 
-**Contract**: remove the `export interface PickerOption` block at `:13`; add
-`import type { PickerOption } from "@/lib/pricing"`. Re-export it if and only if
-that keeps the four island imports unchanged — see the note below.
+**Contract**: remove the `export interface PickerOption` block at `:13` **and
+its doc comment at `:5-12`**; add `import type { PickerOption } from "@/lib/pricing"`.
+**Do not re-export it** — `admin/types.ts` imports it for `QuoteEditorProps`
+only (see the note below).
+
+**Also drop `PricelistItemRef` from the `@/types` import at `:3`.** The removed
+`extends PricelistItemRef` was its only use in the file, and leaving it makes
+`npm run lint` fail on `@typescript-eslint/no-unused-vars` while `astro check`
+still passes — so criterion 1.4 would break on this plan's own instructions.
 
 #### 4. The four islands
 
@@ -142,12 +167,28 @@ imports both `PickerOption` and something that genuinely still lives in
 `./types` (e.g. `QuoteEditorProps` in `QuoteEditor.tsx:25`), the import splits
 into two lines.
 
+**This gives three islands a `@/lib/pricing` edge they do not have today, and
+the repo has a recorded constraint against exactly that** — the archived S-01
+plan says picker data is serialised into the island as props "so the client
+doesn't re-import the seed bundle", and `QuoteEditor.tsx:32-36` repeats it. The
+constraint is untouched here, for two reasons that must be stated rather than
+left for the next reader to re-derive: the new edge is `import type` only and is
+erased under `verbatimModuleSyntax: true` (inherited from
+`astro/tsconfigs/base.json`, so a value import of an interface would not
+compile); and the seed the constraint protects **already ships** to the client
+via `QuoteEditor.tsx → @/lib/quote/cost → @/lib/pricing`, established by
+inspecting the built bundle in `research.md` §2 C1.
+
 **Note on re-exporting.** Re-exporting `PickerOption` from `admin/types.ts`
 would let the four islands keep their imports untouched and shrink the diff to
-two files. It is rejected: a re-export leaves the type looking like it still
-belongs to the UI folder, which is the exact confusion this change exists to
-remove, and dependency-cruiser would still record a `components → lib` edge
-carrying the name. Prefer the honest six-file diff.
+two files. It is rejected for one reason: a re-export leaves the type looking
+like it still belongs to the UI folder, which is the exact confusion this change
+exists to remove. Prefer the honest six-file diff.
+
+(An earlier draft also argued that dependency-cruiser "would still record a
+`components → lib` edge". That is true and irrelevant — `components → lib` is
+the _permitted_ direction, forbidden only in reverse, and both options record it.
+The ownership argument is the whole case.)
 
 ### Success Criteria:
 
@@ -163,8 +204,10 @@ carrying the name. Prefer the honest six-file diff.
 #### Manual Verification:
 
 - The admin quote editor still renders and its two pricelist pickers still list
-  and add items — the one behaviour a wrong import path could plausibly break at
-  runtime despite compiling.
+  and add items — a smoke check that nothing else was disturbed while six files
+  were open. (Not a check that the move itself broke something at runtime: under
+  `verbatimModuleSyntax` a wrong path does not compile, and an interface has no
+  runtime form to break.)
 
 **Implementation Note**: this phase is type-only. If any automated check other
 than `depcruise` changes state, something beyond a type move happened — stop and
@@ -186,16 +229,34 @@ Add `npm run depcruise` to CI, so the layer rules defend themselves from here on
 
 **Intent**: Run the dependency cruise alongside the existing lint step, so a
 future upward import fails the PR rather than being discovered months later by a
-mapping exercise.
+mapping exercise — and add `astro check`, which is this change's _actual_
+verifier and is currently absent from CI.
 
-**Contract**: a step invoking `npm run depcruise`, placed next to `lint` and
-before `build`. It must run on the same trigger as the existing checks.
+**Contract**: two steps in the single `ci` job, between `npm run lint` and
+`npm test`: `npm run depcruise`, and `npx astro check`. Both run on the existing
+triggers (push to `main`, PR to `main`); `npx astro sync` already runs earlier in
+the job, so the prerequisite is in place.
+
+**Why `astro check` belongs here.** This plan states plainly that its verifier is
+the compiler, not a test — criterion 1.2 is `astro check` clean. But `astro check`
+runs only in `.husky/pre-commit`, never in CI (`research.md` §3 measured exactly
+this). Without it, no CI run for this PR can show criterion 1.2 passing, and a
+`--no-verify` or agent-authored commit bypasses the only place it runs. One line
+closes the gap in a file this phase already opens.
+
+**A consequence to sign off on, not discover.** The `deploy-production` job has
+`needs: ci`, so from this phase onward a dependency-cruiser violation or a type
+error blocks the **production deploy**, not merely the PR. That is intended — the
+error-severity rules are narrow, and `no-circular` / `no-orphans` are `warn` and
+do not affect the exit code — but it is a real widening of what can stop a
+release.
 
 ### Success Criteria:
 
 #### Automated Verification:
 
-- The CI run for the PR shows a passing `depcruise` step
+- The CI run for the PR shows a passing `depcruise` step and a passing
+  `astro check` step
 - Deliberately re-introducing the upward import locally makes `npm run depcruise`
   exit non-zero (confirming the gate would actually catch the regression it
   exists for)
@@ -260,11 +321,11 @@ None. No data, no schema, no deployed behaviour changes.
 
 #### Manual
 
-- [ ] 1.7 admin editor renders; both pricelist pickers list and add items
+- [ ] 1.7 smoke check: admin editor renders; both pricelist pickers list and add items
 
 ### Phase 2: Make the cruise a gate
 
 #### Automated
 
-- [ ] 2.1 CI run shows a passing `depcruise` step
+- [ ] 2.1 CI run shows a passing `depcruise` step and a passing `astro check` step
 - [ ] 2.2 re-introducing the upward import locally makes `npm run depcruise` fail

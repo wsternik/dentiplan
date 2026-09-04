@@ -31,21 +31,21 @@ changes. In Phase 2 the cruise joins CI, so the boundary defends itself.
 
 ## Key Decisions Made
 
-| Decision                                            | Choice                              | Why (1 sentence)                                                                                                                                                        | Source   |
-| --------------------------------------------------- | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| Which candidate to implement                        | **C2 — move `PickerOption`**        | It is the smallest option in the ranking that closes in one phase with green checks, and the only one that _unblocks the others_ by making the cruise usable as a gate. | Plan     |
-| Destination for the type                            | `src/lib/pricing/picker-options.ts` | The plural `PickerOptions` already lives there and is already re-exported by the barrel; `src/types.ts` would work but widens a hub that already has 15 dependents.     | Research |
-| Re-export from `admin/types.ts` to shrink the diff? | **No**                              | A re-export leaves the type looking like it still belongs to the UI folder — the exact confusion being removed — and depcruise would still record the edge.             | Plan     |
-| Add `depcruise` to CI in the same commit?           | **No — Phase 2**                    | Enforcement is switched on after the code already complies, so a gate failure can never be confused with this change's own failure.                                     | Plan     |
-| Add a unit test for the moved type                  | **No**                              | It is an `interface`, erased at build; `astro check` proves everything a test could.                                                                                    | Plan     |
+| Decision                                            | Choice                                            | Why (1 sentence)                                                                                                                                                    | Source        |
+| --------------------------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| Which candidate to implement                        | **C2 — move `PickerOption`**                      | Its cost is ~30 min and its proof is total and mechanical; the strongest candidate (C1) has no safety net at the moment it needs one.                               | Plan          |
+| Destination for the type                            | `src/lib/pricing/picker-options.ts`               | The plural `PickerOptions` already lives there and is already re-exported by the barrel; `src/types.ts` would work but widens a hub that already has 15 dependents. | Research      |
+| Re-export from `admin/types.ts` to shrink the diff? | **No**                                            | A re-export leaves the type looking like it still belongs to the UI folder — the exact confusion being removed.                                                     | Plan          |
+| Add `depcruise` to CI in the same commit?           | **No — Phase 2**, with `astro check` alongside it | Enforcement is switched on after the code already complies; `astro check` joins it because it is this change's real verifier and is absent from CI today.           | Plan / Review |
+| Add a unit test for the moved type                  | **No**                                            | It is an `interface`, erased at build; `astro check` proves everything a test could.                                                                                | Plan          |
 
 ## Scope
 
 **In scope:** move one interface declaration; re-point six imports; add
 `npm run depcruise` to CI in Phase 2.
 
-**Out of scope:** C1 (sharing the approval wire format — two phases, restructures
-a 691-line component); C5 (the `Database` generic — prerequisite lives in the
+**Out of scope:** C1 (sharing the approval wire format — two phases, the first
+of which exists only to build the safety net it currently lacks); C5 (the `Database` generic — prerequisite lives in the
 database); C6's read side (would apply a bound to already-stored immutable rows
 and silently 404 patient links); any rename; any restructuring of
 `QuoteEditorProps`.
