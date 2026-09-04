@@ -378,9 +378,9 @@ No migration. Existing approved rows from S-01 carry `patient_email IS NULL`; th
 #### Manual
 
 - [x] 1.5 `POST /api/admin/quotes` without a session cookie returns 401 — 734e2c9
-- [ ] 1.6 Creating a draft stores `status = 'draft'`, `token IS NULL`, no `totals` in `content`
-- [ ] 1.7 `PUT` against an approved row's id returns 409 and leaves the row untouched
-- [ ] 1.8 Approving with a draft `id` flips that row to `approved` without creating a second row
+- [x] 1.6 Creating a draft stores `status = 'draft'`, `token IS NULL`, no `totals` in `content` — 734e2c9
+- [x] 1.7 `PUT` against an approved row's id returns 409 and leaves the row untouched — 734e2c9
+- [x] 1.8 Approving with a draft `id` flips that row to `approved` without creating a second row — 734e2c9
 
 ### Phase 2: Quote list at `/admin`, editor moved to `/admin/quotes/new`
 
@@ -393,10 +393,10 @@ No migration. Existing approved rows from S-01 carry `patient_email IS NULL`; th
 
 #### Manual
 
-- [ ] 2.5 Signing in lands directly on `/admin`, which shows the list, not the editor
-- [ ] 2.6 A previously approved quote appears with e-mail, date, and `approved` status
-- [ ] 2.7 `/admin/quotes/new` renders the editor and approval still works end-to-end
-- [ ] 2.8 Delete requires two clicks, removes the draft, absent on approved rows
+- [x] 2.5 Signing in lands directly on `/admin`, which shows the list, not the editor — d8e1c0f
+- [x] 2.6 A previously approved quote appears with e-mail, date, and `approved` status — d8e1c0f
+- [x] 2.7 `/admin/quotes/new` renders the editor and approval still works end-to-end — d8e1c0f
+- [x] 2.8 Delete requires two clicks, removes the draft, absent on approved rows — d8e1c0f
 - [x] 2.9 `/admin` and `/admin/quotes/new` redirect to `/auth/signin` when signed out — d8e1c0f
 
 ### Phase 3: Draft save and reopening a draft for editing
@@ -410,12 +410,12 @@ No migration. Existing approved rows from S-01 carry `patient_email IS NULL`; th
 
 #### Manual
 
-- [ ] 3.5 A partially filled quote saves as a draft and appears in the list
-- [ ] 3.6 Every row in the list is now clickable and opens the right quote
-- [ ] 3.7 Reopening restores every field, tooth order, and general-item ids
-- [ ] 3.8 Saving again updates the same row rather than creating a second one
-- [ ] 3.9 "Zatwierdź" stays disabled with a message until a valid e-mail is entered
-- [ ] 3.10 Approving a reopened draft yields a working `/p/<token>` and exactly one row
+- [x] 3.5 A partially filled quote saves as a draft and appears in the list — 5f1e1ac
+- [x] 3.6 Every row in the list is now clickable and opens the right quote — 5f1e1ac
+- [x] 3.7 Reopening restores every field, tooth order, and general-item ids — 5f1e1ac
+- [x] 3.8 Saving again updates the same row rather than creating a second one — 5f1e1ac
+- [x] 3.9 "Zatwierdź" stays disabled with a message until a valid e-mail is entered — 5f1e1ac
+- [x] 3.10 Approving a reopened draft yields a working `/p/<token>` and exactly one row — 5f1e1ac
 
 ### Phase 4: Read-only view of approved quotes
 
@@ -428,7 +428,7 @@ No migration. Existing approved rows from S-01 carry `patient_email IS NULL`; th
 
 #### Manual
 
-- [ ] 4.5 An approved quote opens fully populated with no mutating control
-- [ ] 4.6 The `/p/<token>` link is present, copyable, and opens the correct patient page
-- [ ] 4.7 The patient page response body contains no e-mail address
-- [ ] 4.8 A draft opened from the same route is still fully editable
+- [x] 4.5 An approved quote opens fully populated with no mutating control — 42a856c
+- [x] 4.6 The `/p/<token>` link is present, copyable, and opens the correct patient page — 42a856c
+- [x] 4.7 The patient page response body contains no e-mail address — 42a856c
+- [x] 4.8 A draft opened from the same route is still fully editable — 42a856c

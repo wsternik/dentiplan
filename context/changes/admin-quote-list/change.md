@@ -1,7 +1,7 @@
 ---
 change_id: admin-quote-list
 title: Admin quote list
-status: impl_reviewed
+status: implemented
 created: 2026-09-04
 updated: 2026-09-04
 archived_at: null
