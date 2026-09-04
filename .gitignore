@@ -28,3 +28,11 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# 10x-cli lesson packs — fetched with `npx @przeprogramowani/10x-cli get`,
+# not part of the project's own source
+.claude/skills/10x-*/
+.claude/prompts/
+
+# sample diagnosis documents used while developing the editor
+example-doctor-input/
