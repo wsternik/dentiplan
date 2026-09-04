@@ -36,3 +36,8 @@ pnpm-debug.log*
 
 # sample diagnosis documents used while developing the editor
 example-doctor-input/
+
+# playwright
+playwright/.auth/
+test-results/
+playwright-report/
