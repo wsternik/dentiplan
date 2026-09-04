@@ -403,10 +403,10 @@ No migration. Existing approved rows from S-01 carry `patient_email IS NULL`; th
 
 #### Automated
 
-- [x] 3.1 Linting passes: `npm run lint`
-- [x] 3.2 Type checking passes: `npx astro check`
-- [x] 3.3 Unit suite passes: `npm test`
-- [x] 3.4 Production build succeeds: `npm run build`
+- [x] 3.1 Linting passes: `npm run lint` — 5f1e1ac
+- [x] 3.2 Type checking passes: `npx astro check` — 5f1e1ac
+- [x] 3.3 Unit suite passes: `npm test` — 5f1e1ac
+- [x] 3.4 Production build succeeds: `npm run build` — 5f1e1ac
 
 #### Manual
 
@@ -421,10 +421,10 @@ No migration. Existing approved rows from S-01 carry `patient_email IS NULL`; th
 
 #### Automated
 
-- [ ] 4.1 Linting passes: `npm run lint`
-- [ ] 4.2 Type checking passes: `npx astro check`
-- [ ] 4.3 Unit suite passes: `npm test`
-- [ ] 4.4 Production build succeeds: `npm run build`
+- [x] 4.1 Linting passes: `npm run lint`
+- [x] 4.2 Type checking passes: `npx astro check`
+- [x] 4.3 Unit suite passes: `npm test`
+- [x] 4.4 Production build succeeds: `npm run build`
 
 #### Manual
 

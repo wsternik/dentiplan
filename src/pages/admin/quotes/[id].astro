@@ -1,9 +1,9 @@
 ---
 // Open one quote from the list (S-03, FR-071).
 //
-// Drafts come back editable; approved quotes are handled by the next phase and,
-// until then, render the same editable view — harmless, because both write
-// endpoints are scoped to `status = 'draft'` and reject the attempt server-side.
+// Drafts come back editable; approved quotes render the same layout with every
+// mutating control gone (FR-053) and their `/p/<token>` link ready to copy —
+// one component and one layout, so the two views cannot drift apart.
 //
 // `content` is parsed through `QuoteContentSchema` before it reaches the island,
 // so a malformed stored tree fails here at the boundary rather than somewhere
@@ -29,6 +29,7 @@ const QuoteRowSchema = z.object({
   patient_type: PatientTypeSchema,
   patient_email: z.string().nullable(),
   status: QuoteStatusSchema,
+  token: z.string().nullable(),
   content: QuoteContentSchema,
 });
 
@@ -39,7 +40,7 @@ let quote: z.infer<typeof QuoteRowSchema> | null = null;
 if (id.success && supabase) {
   const { data } = await supabase
     .from("quotes")
-    .select("id, patient_type, patient_email, status, content")
+    .select("id, patient_type, patient_email, status, token, content")
     .eq("id", id.data)
     .maybeSingle();
   const parsed = QuoteRowSchema.safeParse(data);
@@ -62,6 +63,8 @@ if (id.success && supabase) {
           initialContent={quote.content}
           initialPatientType={quote.patient_type}
           initialPatientEmail={quote.patient_email}
+          readOnly={quote.status === "approved"}
+          patientToken={quote.token}
           client:load
         />
       ) : (

@@ -24,9 +24,11 @@ interface Props {
   onAddItem: (option: PickerOption) => void;
   onRemoveItem: (index: number) => void;
   onRemove: () => void;
+  /** Approved quotes are frozen (FR-053): render the values, never a way to change them. */
+  readOnly?: boolean;
 }
 
-export function ToothRow({ tooth, visits, options, onPatch, onAddItem, onRemoveItem, onRemove }: Props) {
+export function ToothRow({ tooth, visits, options, onPatch, onAddItem, onRemoveItem, onRemove, readOnly }: Props) {
   const dentition = dentitionForTooth(tooth.number);
   const isInPlan = tooth.status === "in-plan";
   const unpriced = isInPlan && tooth.pricelistItems.length === 0;
@@ -40,13 +42,16 @@ export function ToothRow({ tooth, visits, options, onPatch, onAddItem, onRemoveI
             {DENTITION_LABELS[dentition]}
           </Badge>
         </div>
-        <Button type="button" variant="ghost" size="icon" aria-label={`Usuń ząb ${tooth.number}`} onClick={onRemove}>
-          <X />
-        </Button>
+        {!readOnly && (
+          <Button type="button" variant="ghost" size="icon" aria-label={`Usuń ząb ${tooth.number}`} onClick={onRemove}>
+            <X />
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
         <NativeSelect
+          disabled={readOnly}
           aria-label="Rodzaj leczenia"
           value={tooth.treatmentType ?? ""}
           onChange={(e) => {
@@ -62,6 +67,7 @@ export function ToothRow({ tooth, visits, options, onPatch, onAddItem, onRemoveI
         </NativeSelect>
 
         <NativeSelect
+          disabled={readOnly}
           aria-label="Pilność"
           value={tooth.urgency ?? ""}
           onChange={(e) => {
@@ -77,6 +83,7 @@ export function ToothRow({ tooth, visits, options, onPatch, onAddItem, onRemoveI
         </NativeSelect>
 
         <NativeSelect
+          disabled={readOnly}
           aria-label="Status"
           value={tooth.status}
           onChange={(e) => {
@@ -95,6 +102,7 @@ export function ToothRow({ tooth, visits, options, onPatch, onAddItem, onRemoveI
 
       <Input
         className="mt-2"
+        readOnly={readOnly}
         placeholder="Notatka (opcjonalnie)"
         value={tooth.note}
         onChange={(e) => {
@@ -103,34 +111,39 @@ export function ToothRow({ tooth, visits, options, onPatch, onAddItem, onRemoveI
       />
 
       <div className="mt-2">
-        <PricelistPicker options={options} onAdd={onAddItem} />
+        {!readOnly && <PricelistPicker options={options} onAdd={onAddItem} />}
         {tooth.pricelistItems.length > 0 && (
           <ul className="mt-2 flex flex-wrap gap-2">
             {tooth.pricelistItems.map((item, index) => (
               <li key={`${item.id}-${index}`}>
                 <Badge variant="outline" className="gap-1">
                   {item.name} · {formatPriceValue(item.price)}
-                  <button
-                    type="button"
-                    aria-label={`Usuń pozycję ${item.name}`}
-                    onClick={() => {
-                      onRemoveItem(index);
-                    }}
-                    className="text-muted-foreground hover:text-foreground ml-0.5"
-                  >
-                    <X className="size-3" />
-                  </button>
+                  {!readOnly && (
+                    <button
+                      type="button"
+                      aria-label={`Usuń pozycję ${item.name}`}
+                      onClick={() => {
+                        onRemoveItem(index);
+                      }}
+                      className="text-muted-foreground hover:text-foreground ml-0.5"
+                    >
+                      <X className="size-3" />
+                    </button>
+                  )}
                 </Badge>
               </li>
             ))}
           </ul>
         )}
-        {unpriced && <p className="text-destructive mt-1 text-xs">Ząb w planie wymaga pozycji z cennika.</p>}
+        {unpriced && !readOnly && (
+          <p className="text-destructive mt-1 text-xs">Ząb w planie wymaga pozycji z cennika.</p>
+        )}
       </div>
 
       {isInPlan && visits.length > 0 && (
         <NativeSelect
           className="mt-2"
+          disabled={readOnly}
           aria-label="Wizyta"
           value={tooth.visitNumber ?? ""}
           onChange={(e) => {

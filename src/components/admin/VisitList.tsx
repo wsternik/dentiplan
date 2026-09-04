@@ -12,9 +12,11 @@ interface Props {
   onAdd: () => void;
   onRemove: (number: number) => void;
   onLabelChange: (number: number, label: string) => void;
+  /** Approved quotes are frozen (FR-053). */
+  readOnly?: boolean;
 }
 
-export function VisitList({ visits, onAdd, onRemove, onLabelChange }: Props) {
+export function VisitList({ visits, onAdd, onRemove, onLabelChange, readOnly }: Props) {
   return (
     <div className="space-y-2">
       {visits.length === 0 && <p className="text-muted-foreground text-sm">Brak wizyt. Dodaj pierwszą wizytę.</p>}
@@ -22,28 +24,33 @@ export function VisitList({ visits, onAdd, onRemove, onLabelChange }: Props) {
         <div key={visit.number} className="flex items-center gap-2">
           <span className="text-foreground w-20 shrink-0 text-sm font-medium">Wizyta {visit.number}</span>
           <Input
+            readOnly={readOnly}
             placeholder="Opis wizyty (opcjonalnie)"
             value={visit.label}
             onChange={(e) => {
               onLabelChange(visit.number, e.target.value);
             }}
           />
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            aria-label={`Usuń wizytę ${visit.number}`}
-            onClick={() => {
-              onRemove(visit.number);
-            }}
-          >
-            <X />
-          </Button>
+          {!readOnly && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label={`Usuń wizytę ${visit.number}`}
+              onClick={() => {
+                onRemove(visit.number);
+              }}
+            >
+              <X />
+            </Button>
+          )}
         </div>
       ))}
-      <Button type="button" variant="outline" size="sm" onClick={onAdd}>
-        <Plus /> Dodaj wizytę
-      </Button>
+      {!readOnly && (
+        <Button type="button" variant="outline" size="sm" onClick={onAdd}>
+          <Plus /> Dodaj wizytę
+        </Button>
+      )}
     </div>
   );
 }

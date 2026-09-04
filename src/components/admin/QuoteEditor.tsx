@@ -17,6 +17,7 @@ import { isValidToothNumber } from "@/lib/quote/tooth-name";
 import type { GeneralItem, PatientType, PricelistItemRef, ToothEntry, Visit } from "@/types";
 import { ApprovalConfirmation } from "./ApprovalConfirmation";
 import { Section } from "./controls";
+import { CopyLink } from "./CopyLink";
 import { GeneralItems } from "./GeneralItems";
 import { ToothRow } from "./ToothRow";
 import { TotalsPreview } from "./TotalsPreview";
@@ -53,6 +54,8 @@ export default function QuoteEditor({
   initialContent,
   initialPatientType,
   initialPatientEmail,
+  readOnly = false,
+  patientToken,
 }: QuoteEditorProps) {
   const [patientType, setPatientType] = useState<PatientType>(initialPatientType ?? "adult");
   // Teeth are sorted on hydration for the same reason `addTeeth` sorts on insert:
@@ -304,46 +307,57 @@ export default function QuoteEditor({
   return (
     <div className="mx-auto max-w-4xl space-y-4 p-4">
       <div className="flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold">{savedId ? "Kosztorys (szkic)" : "Nowy kosztorys"}</h1>
+        <h1 className="text-2xl font-bold">
+          {readOnly ? "Kosztorys zatwierdzony" : savedId ? "Kosztorys (szkic)" : "Nowy kosztorys"}
+        </h1>
         <a href="/admin" className="text-muted-foreground text-sm underline-offset-4 hover:underline">
           ← Lista kosztorysów
         </a>
       </div>
 
       <Section title="E-mail odbiorcy">
-        <Label htmlFor="patientEmail" className="text-muted-foreground mb-1">
-          Tylko do Twojej referencji — nigdy nie trafia na stronę pacjenta. Wymagany do zatwierdzenia.
-        </Label>
-        <Input
-          id="patientEmail"
-          type="email"
-          placeholder="pacjent@example.com"
-          value={patientEmail}
-          onChange={(e) => {
-            setPatientEmail(e.target.value);
-          }}
-        />
+        {readOnly ? (
+          <p className="text-sm">{patientEmail || <span className="text-muted-foreground">— brak —</span>}</p>
+        ) : (
+          <>
+            <Label htmlFor="patientEmail" className="text-muted-foreground mb-1">
+              Tylko do Twojej referencji — nigdy nie trafia na stronę pacjenta. Wymagany do zatwierdzenia.
+            </Label>
+            <Input
+              id="patientEmail"
+              type="email"
+              placeholder="pacjent@example.com"
+              value={patientEmail}
+              onChange={(e) => {
+                setPatientEmail(e.target.value);
+              }}
+            />
+          </>
+        )}
       </Section>
 
-      <Section title="Notatka z diagnozy (roboczo)">
-        <Label htmlFor="rawText" className="text-muted-foreground mb-1">
-          Pole robocze — nie jest zapisywane ani widoczne dla pacjenta.
-        </Label>
-        <Textarea
-          id="rawText"
-          rows={4}
-          placeholder="Wklej opis diagnozy do pomocy przy wypełnianiu…"
-          value={rawText}
-          onChange={(e) => {
-            setRawText(e.target.value);
-          }}
-        />
-      </Section>
+      {!readOnly && (
+        <Section title="Notatka z diagnozy (roboczo)">
+          <Label htmlFor="rawText" className="text-muted-foreground mb-1">
+            Pole robocze — nie jest zapisywane ani widoczne dla pacjenta.
+          </Label>
+          <Textarea
+            id="rawText"
+            rows={4}
+            placeholder="Wklej opis diagnozy do pomocy przy wypełnianiu…"
+            value={rawText}
+            onChange={(e) => {
+              setRawText(e.target.value);
+            }}
+          />
+        </Section>
+      )}
 
       <Section title="Typ pacjenta">
         <div className="flex gap-2">
           <Button
             type="button"
+            disabled={readOnly}
             variant={patientType === "child" ? "default" : "outline"}
             onClick={() => {
               setPatientType("child");
@@ -353,6 +367,7 @@ export default function QuoteEditor({
           </Button>
           <Button
             type="button"
+            disabled={readOnly}
             variant={patientType === "adult" ? "default" : "outline"}
             onClick={() => {
               setPatientType("adult");
@@ -364,25 +379,27 @@ export default function QuoteEditor({
       </Section>
 
       <Section title="Zęby">
-        <div className="flex gap-2">
-          <input
-            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
-            placeholder="Numery FDI, np. 17,16,34"
-            value={toothInput}
-            onChange={(e) => {
-              setToothInput(e.target.value);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                addTeeth();
-              }
-            }}
-          />
-          <Button type="button" onClick={addTeeth}>
-            Dodaj
-          </Button>
-        </div>
+        {!readOnly && (
+          <div className="flex gap-2">
+            <input
+              className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
+              placeholder="Numery FDI, np. 17,16,34"
+              value={toothInput}
+              onChange={(e) => {
+                setToothInput(e.target.value);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addTeeth();
+                }
+              }}
+            />
+            <Button type="button" onClick={addTeeth}>
+              Dodaj
+            </Button>
+          </div>
+        )}
         {toothWarnings.length > 0 && (
           <ul className="text-destructive mt-2 space-y-0.5 text-xs">
             {toothWarnings.map((w) => (
@@ -391,7 +408,11 @@ export default function QuoteEditor({
           </ul>
         )}
         <div className="mt-3 space-y-3">
-          {teeth.length === 0 && <p className="text-muted-foreground text-sm">Brak zębów. Dodaj numery powyżej.</p>}
+          {teeth.length === 0 && (
+            <p className="text-muted-foreground text-sm">
+              {readOnly ? "Brak zębów w kosztorysie." : "Brak zębów. Dodaj numery powyżej."}
+            </p>
+          )}
           {teeth.map((tooth) => (
             <ToothRow
               key={tooth.number}
@@ -410,13 +431,20 @@ export default function QuoteEditor({
               onRemove={() => {
                 removeTooth(tooth.number);
               }}
+              readOnly={readOnly}
             />
           ))}
         </div>
       </Section>
 
       <Section title="Wizyty">
-        <VisitList visits={visits} onAdd={addVisit} onRemove={removeVisit} onLabelChange={setVisitLabel} />
+        <VisitList
+          visits={visits}
+          onAdd={addVisit}
+          onRemove={removeVisit}
+          onLabelChange={setVisitLabel}
+          readOnly={readOnly}
+        />
       </Section>
 
       <Section title="Pozycje ogólne">
@@ -427,6 +455,7 @@ export default function QuoteEditor({
           onAdd={addGeneral}
           onRemove={removeGeneral}
           onVisitChange={setGeneralVisit}
+          readOnly={readOnly}
         />
       </Section>
 
@@ -434,20 +463,33 @@ export default function QuoteEditor({
         <TotalsPreview totals={totals} />
       </Section>
 
-      <div className="flex flex-col items-start gap-2">
-        <div className="flex flex-wrap items-center gap-2">
-          <Button type="button" size="lg" disabled={approveDisabled || submitting} onClick={handleApprove}>
-            {submitting ? "Zatwierdzanie…" : "Zatwierdź"}
-          </Button>
-          <Button type="button" size="lg" variant="outline" disabled={saving} onClick={() => void handleSaveDraft()}>
-            {saving ? "Zapisywanie…" : "Zapisz szkic"}
-          </Button>
-          {savedAt && !saveError && <span className="text-muted-foreground text-sm">Zapisano {savedAt}</span>}
+      {readOnly ? (
+        <Section title="Link dla pacjenta">
+          <p className="text-muted-foreground mb-2 text-sm">
+            Kosztorys jest zatwierdzony, więc nie da się go już zmienić (nowa wersja = nowy kosztorys i nowy link).
+          </p>
+          {patientToken ? (
+            <CopyLink path={`/p/${patientToken}`} />
+          ) : (
+            <p className="text-destructive text-sm">Ten kosztorys nie ma linku dla pacjenta.</p>
+          )}
+        </Section>
+      ) : (
+        <div className="flex flex-col items-start gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <Button type="button" size="lg" disabled={approveDisabled || submitting} onClick={handleApprove}>
+              {submitting ? "Zatwierdzanie…" : "Zatwierdź"}
+            </Button>
+            <Button type="button" size="lg" variant="outline" disabled={saving} onClick={() => void handleSaveDraft()}>
+              {saving ? "Zapisywanie…" : "Zapisz szkic"}
+            </Button>
+            {savedAt && !saveError && <span className="text-muted-foreground text-sm">Zapisano {savedAt}</span>}
+          </div>
+          {approveReason && <p className="text-muted-foreground text-sm">{approveReason}</p>}
+          {submitError && <p className="text-destructive text-sm">{submitError}</p>}
+          {saveError && <p className="text-destructive text-sm">{saveError}</p>}
         </div>
-        {approveReason && <p className="text-muted-foreground text-sm">{approveReason}</p>}
-        {submitError && <p className="text-destructive text-sm">{submitError}</p>}
-        {saveError && <p className="text-destructive text-sm">{saveError}</p>}
-      </div>
+      )}
     </div>
   );
 }

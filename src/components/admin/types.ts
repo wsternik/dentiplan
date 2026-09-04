@@ -31,4 +31,12 @@ export interface QuoteEditorProps {
   initialPatientType?: PatientType;
   /** Admin-only recipient e-mail (FR-072); never part of `content`. */
   initialPatientEmail?: string | null;
+  /**
+   * Render an approved quote as it was composed, with nothing that could change
+   * it (FR-053). Paired with `patientToken` so the patient link stays reachable
+   * from the panel.
+   */
+  readOnly?: boolean;
+  /** The approved quote's patient token; only meaningful with `readOnly`. */
+  patientToken?: string | null;
 }
