@@ -6,7 +6,7 @@
 import { useMemo } from "react";
 import { NativeSelect } from "./controls";
 import { formatPriceValue } from "./format";
-import type { PickerOption } from "./types";
+import type { PickerOption } from "@/lib/pricing";
 
 interface Props {
   options: PickerOption[];

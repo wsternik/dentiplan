@@ -22,7 +22,8 @@ import { GeneralItems } from "./GeneralItems";
 import { ToothRow } from "./ToothRow";
 import { TotalsPreview } from "./TotalsPreview";
 import { VisitList } from "./VisitList";
-import type { PickerOption, QuoteEditorProps } from "./types";
+import type { PickerOption } from "@/lib/pricing";
+import type { QuoteEditorProps } from "./types";
 
 /** Drop the picker-only `category` field down to the stored snapshot ref. */
 function toRef(option: PickerOption): PricelistItemRef {
