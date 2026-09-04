@@ -1,37 +1,129 @@
 ---
+// Admin quote list (S-03, FR-070). The panel's entry point: every quote the
+// dentystka has made, newest first, with the recipient's e-mail so she knows who
+// each link went to.
+//
+// Server-rendered on purpose — the only interactive element is the delete
+// control, which is its own small island. `content` is deliberately NOT selected:
+// the list renders none of it, and shipping quote trees the page never uses would
+// be pure waste (and, for approved quotes, a needless copy of patient-visible
+// data on an admin screen).
+//
+// The identifier links to `/admin/quotes/[id]` (FR-071): drafts open editable,
+// approved quotes open read-only.
+
 import Layout from "@/layouts/Layout.astro";
-import QuoteEditor from "@/components/admin/QuoteEditor";
-import type { PickerOption } from "@/components/admin/types";
-import { listByCategory, resolvePricelistItem } from "@/lib/pricing";
+import { DeleteQuoteButton } from "@/components/admin/DeleteQuoteButton";
+import { Badge } from "@/components/ui/badge";
+import { createClient } from "@/lib/supabase";
+import { z } from "zod";
 
 export const prerender = false;
 
 // `/admin` is gated by middleware (PROTECTED_ROUTES); read the resolved user so
-// the shell can attribute the session (matches the dashboard page pattern).
+// the shell can attribute the session.
 const { user } = Astro.locals;
 
-// Serialize RESOLVED picker options (not raw source items): the cost engine's
-// input is `PricelistItemRef[]` (carrying a resolved `price`), so we map each
-// source item through `resolvePricelistItem(id)` server-side and tag it with its
-// category label for the disambiguating picker (item names are not unique).
-// The approval payload (Phase 3) still POSTs by `id`; the server re-resolves
-// independently — this resolved price is for live preview only.
-const categories = listByCategory();
-const toothOptions: PickerOption[] = categories.flatMap((category) =>
-  category.items
-    .filter((item) => item.validForTooth)
-    .map((item) => ({ ...resolvePricelistItem(item.id), category: category.name })),
-);
-const generalOptions: PickerOption[] = categories.flatMap((category) =>
-  category.items
-    .filter((item) => item.validForGeneral)
-    .map((item) => ({ ...resolvePricelistItem(item.id), category: category.name })),
-);
+// The Supabase client is untyped (no `Database` generic), so the result is
+// funnelled through a Zod schema rather than trusted as `any` — same convention
+// as the patient page's RPC call in `src/pages/p/[token].astro`.
+const QuoteRowSchema = z.object({
+  id: z.uuid(),
+  patient_email: z.string().nullable(),
+  created_at: z.string(),
+  status: z.enum(["draft", "approved"]),
+});
+
+const supabase = createClient(Astro.request.headers, Astro.cookies);
+let quotes: z.infer<typeof QuoteRowSchema>[] = [];
+let loadError = false;
+
+if (supabase) {
+  // Ordered by `created_at desc` — served by `quotes_created_at_idx`. No
+  // pagination: the PRD scales this at a few dozen quotes a year.
+  const { data, error } = await supabase
+    .from("quotes")
+    .select("id, patient_email, created_at, status")
+    .order("created_at", { ascending: false });
+  const parsed = z.array(QuoteRowSchema).safeParse(data);
+  if (error || !parsed.success) {
+    loadError = true;
+  } else {
+    quotes = parsed.data;
+  }
+} else {
+  loadError = true;
+}
+
+const dateFormatter = new Intl.DateTimeFormat("pl-PL", { dateStyle: "medium", timeStyle: "short" });
+const formatDate = (iso: string) => dateFormatter.format(new Date(iso));
+/** Short, stable handle for a row — the full uuid is noise on screen. */
+const shortId = (id: string) => id.slice(0, 8);
 ---
 
-<Layout title="Nowy kosztorys">
+<Layout title="Kosztorysy">
   <main class="bg-background text-foreground min-h-screen">
     {user?.email && <p class="text-muted-foreground px-6 pt-4 text-right text-sm">Zalogowano: {user.email}</p>}
-    <QuoteEditor toothOptions={toothOptions} generalOptions={generalOptions} client:load />
+
+    <div class="mx-auto max-w-4xl space-y-4 p-4">
+      <div class="flex items-center justify-between gap-4">
+        <h1 class="text-2xl font-bold">Kosztorysy</h1>
+        <a
+          href="/admin/quotes/new"
+          class="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-9 items-center rounded-md px-4 text-sm font-medium shadow-xs"
+        >
+          Nowy kosztorys
+        </a>
+      </div>
+
+      {loadError && <p class="text-destructive text-sm">Nie udało się wczytać listy kosztorysów.</p>}
+
+      {
+        !loadError && quotes.length === 0 && (
+          <p class="text-muted-foreground text-sm">
+            Nie masz jeszcze żadnych kosztorysów. Zacznij od „Nowy kosztorys”.
+          </p>
+        )
+      }
+
+      {
+        quotes.length > 0 && (
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead class="text-muted-foreground border-b">
+                <tr>
+                  <th class="py-2 pr-4 font-medium">Identyfikator</th>
+                  <th class="py-2 pr-4 font-medium">E-mail odbiorcy</th>
+                  <th class="py-2 pr-4 font-medium">Utworzono</th>
+                  <th class="py-2 pr-4 font-medium">Status</th>
+                  <th class="py-2 font-medium" />
+                </tr>
+              </thead>
+              <tbody>
+                {quotes.map((quote) => (
+                  <tr class="border-b last:border-b-0">
+                    <td class="py-2 pr-4 font-mono">
+                      <a href={`/admin/quotes/${quote.id}`} class="underline underline-offset-4">
+                        {shortId(quote.id)}
+                      </a>
+                    </td>
+                    <td class="py-2 pr-4">{quote.patient_email ?? <span class="text-muted-foreground">—</span>}</td>
+                    <td class="py-2 pr-4">{formatDate(quote.created_at)}</td>
+                    <td class="py-2 pr-4">
+                      <Badge variant={quote.status === "approved" ? "default" : "secondary"}>
+                        {quote.status === "approved" ? "Zatwierdzony" : "Szkic"}
+                      </Badge>
+                    </td>
+                    <td class="py-2 text-right">
+                      {quote.status === "draft" && <DeleteQuoteButton id={quote.id} client:load />}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )
+      }
+    </div>
   </main>
 </Layout>

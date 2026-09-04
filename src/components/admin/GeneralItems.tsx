@@ -18,12 +18,14 @@ interface Props {
   onAdd: (option: PickerOption) => void;
   onRemove: (id: string) => void;
   onVisitChange: (id: string, visitNumber: number | null) => void;
+  /** Approved quotes are frozen (FR-053). */
+  readOnly?: boolean;
 }
 
-export function GeneralItems({ items, options, visits, onAdd, onRemove, onVisitChange }: Props) {
+export function GeneralItems({ items, options, visits, onAdd, onRemove, onVisitChange, readOnly }: Props) {
   return (
     <div className="space-y-2">
-      <PricelistPicker options={options} onAdd={onAdd} placeholder="Dodaj pozycję ogólną…" />
+      {!readOnly && <PricelistPicker options={options} onAdd={onAdd} placeholder="Dodaj pozycję ogólną…" />}
       {items.length === 0 && <p className="text-muted-foreground text-sm">Brak pozycji ogólnych.</p>}
       {items.map((general) => (
         <div key={general.id} className="flex items-center gap-2">
@@ -33,6 +35,7 @@ export function GeneralItems({ items, options, visits, onAdd, onRemove, onVisitC
           {visits.length > 0 && (
             <NativeSelect
               className="max-w-56"
+              disabled={readOnly}
               aria-label="Wizyta dla pozycji ogólnej"
               value={general.visitNumber ?? ""}
               onChange={(e) => {
@@ -47,17 +50,19 @@ export function GeneralItems({ items, options, visits, onAdd, onRemove, onVisitC
               ))}
             </NativeSelect>
           )}
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            aria-label={`Usuń pozycję ${general.item.name}`}
-            onClick={() => {
-              onRemove(general.id);
-            }}
-          >
-            <X />
-          </Button>
+          {!readOnly && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label={`Usuń pozycję ${general.item.name}`}
+              onClick={() => {
+                onRemove(general.id);
+              }}
+            >
+              <X />
+            </Button>
+          )}
         </div>
       ))}
     </div>

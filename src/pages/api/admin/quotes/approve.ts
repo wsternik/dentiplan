@@ -1,70 +1,46 @@
-// Server-authoritative quote approval (S-01, Phase 3).
+// Server-authoritative quote approval (S-01 Phase 3, extended by S-03).
 //
 // Turns a validated editor payload into a frozen, immutable `approved` quote and
 // returns its patient-link token. This is the ONLY place money is frozen, so the
 // server never trusts client-sent prices: items arrive by `id` and are re-resolved
-// here via `resolvePricelistItem` (FR-050). Totals are recomputed with the same
-// pure engine the editor previews with, so the stored number equals the previewed
-// number. The whole thing is one INSERT-as-approved (status/token/approved_at/
-// frozen content set atomically) — never INSERT-draft-then-UPDATE, which would
-// trip the `quotes_immutable` trigger (see plan Critical Implementation Details).
+// by the shared payload service (FR-050). Totals are recomputed with the same pure
+// engine the editor previews with, so the stored number equals the previewed one.
+//
+// Two entry branches (S-03):
+//   - no `id`  → one INSERT of an already-`approved` row. Never INSERT-draft-then-
+//                UPDATE, which would trip the `quotes_immutable` trigger.
+//   - with `id`→ one UPDATE of an existing draft, setting status/token/approved_at/
+//                content together. A single statement is load-bearing: splitting it
+//                would leave the row `approved` with a NULL token, violating
+//                `quotes_approved_has_token`, and the follow-up statement would then
+//                be rejected by the trigger — a permanently broken row that FR-053
+//                makes uncorrectable.
 //
 // PATIENT-SAFE INVARIANT (FR-066): `content` is returned verbatim to anon callers.
-// We build `content` from ONLY the patient-safe tree (teeth/visits/generalItems/
-// totals). The raw diagnosis textarea is held in island state and is never part of
-// this payload — nothing here can leak it.
+// It is built by `buildQuoteContent`, whose types have no e-mail slot; the patient's
+// e-mail travels as a sibling of the tree and lands in its own column (FR-072).
 
 import type { APIRoute } from "astro";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase";
-import { resolvePricelistItem } from "@/lib/pricing";
 import { computeQuoteTotals } from "@/lib/quote/cost";
 import { generateToken } from "@/lib/quote/token";
-import { isValidToothNumber } from "@/lib/quote/tooth-name";
 import {
-  PatientTypeSchema,
-  ToothStatusSchema,
-  TreatmentTypeSchema,
-  UrgencySchema,
-  VisitSchema,
-  type GeneralItem,
-  type QuoteContent,
-  type ToothEntry,
-} from "@/types";
+  approvalBlockReason,
+  buildQuoteContent,
+  PatientEmailSchema,
+  QuotePayloadSchema,
+} from "@/lib/services/quote-payload";
+import type { QuoteContent } from "@/types";
 
 export const prerender = false;
 
-// --- Request schema -------------------------------------------------------
-// Mirrors the editor's working tree but carries pricelist items BY ID only.
-// The server re-resolves each id into a frozen `PricelistItemRef`; a client-sent
-// price would never be trusted (a buggy/tampered client must not freeze wrong
-// money into an immutable patient quote).
-
-// Re-validate FDI numbers and bound free-text server-side: the editor enforces
-// these client-side, but the freeze is server-authoritative and must not trust a
-// buggy/tampered client to keep structurally-invalid or oversized data out of an
-// immutable, patient-visible quote (the `note` is rendered verbatim to patients).
-const ApproveToothSchema = z.object({
-  number: z.number().int().refine(isValidToothNumber, "Nieprawidłowy numer zęba."),
-  treatmentType: TreatmentTypeSchema.nullable().default(null),
-  urgency: UrgencySchema.nullable().default(null),
-  status: ToothStatusSchema.default("in-plan"),
-  note: z.string().max(500).default(""),
-  pricelistItemIds: z.array(z.string().max(64)).default([]),
-  visitNumber: z.number().int().nullable().default(null),
-});
-
-const ApproveGeneralSchema = z.object({
-  id: z.string().max(64),
-  itemId: z.string().max(64),
-  visitNumber: z.number().int().nullable().default(null),
-});
-
-const ApproveRequestSchema = z.object({
-  patient_type: PatientTypeSchema,
-  teeth: z.array(ApproveToothSchema).default([]),
-  visits: z.array(VisitSchema).default([]),
-  generalItems: z.array(ApproveGeneralSchema).default([]),
+// The e-mail is REQUIRED here (unlike on a draft): FR-070 promises the admin list
+// shows the recipient for every quote, and an approved row is immutable, so a
+// missing e-mail could never be filled in afterwards.
+const ApproveRequestSchema = QuotePayloadSchema.extend({
+  id: z.uuid().optional(),
+  patient_email: PatientEmailSchema,
 });
 
 function jsonError(message: string, status: number): Response {
@@ -97,50 +73,62 @@ export const POST: APIRoute = async (context) => {
   }
 
   // (3) Build the patient-safe content, freezing each pricelist item by id.
-  let teeth: ToothEntry[];
-  let generalItems: GeneralItem[];
+  let content: QuoteContent;
   try {
-    teeth = payload.teeth.map((tooth) => ({
-      number: tooth.number,
-      treatmentType: tooth.treatmentType,
-      urgency: tooth.urgency,
-      status: tooth.status,
-      note: tooth.note,
-      pricelistItems: tooth.pricelistItemIds.map((id) => resolvePricelistItem(id)),
-      visitNumber: tooth.visitNumber,
-    }));
-    generalItems = payload.generalItems.map((general) => ({
-      id: general.id,
-      item: resolvePricelistItem(general.itemId),
-      visitNumber: general.visitNumber,
-    }));
+    content = buildQuoteContent(payload);
   } catch {
-    // resolvePricelistItem throws on an unknown id — a dangling reference.
+    // buildQuoteContent throws on an unknown id — a dangling reference.
     return jsonError("Nieznana pozycja z cennika.", 400);
   }
 
-  // (4) Server-side approval guards (don't rely on the client guard).
-  const isEmpty = teeth.length === 0 && generalItems.length === 0;
-  const hasUnpriced = teeth.some((t) => t.status === "in-plan" && t.pricelistItems.length === 0);
-  if (isEmpty || hasUnpriced) {
-    return jsonError(isEmpty ? "Kosztorys jest pusty." : "Każdy ząb w planie musi mieć pozycję z cennika.", 400);
+  // (4) Server-side approval guards (don't rely on the client gate).
+  const blocked = approvalBlockReason(content);
+  if (blocked) {
+    return jsonError(blocked, 400);
   }
 
   // (5) Compute authoritative totals with the same pure engine the editor previews with.
-  const content: QuoteContent = { teeth, visits: payload.visits, generalItems };
   content.totals = computeQuoteTotals(content);
 
-  // (6) Generate the capability token and INSERT one immutable approved row.
+  // (6) Freeze: one statement, either branch.
   const token = generateToken();
-  const { error } = await supabase.from("quotes").insert({
-    status: "approved",
-    patient_type: payload.patient_type,
-    content,
-    token,
-    approved_at: new Date().toISOString(),
-  });
-  if (error) {
-    return jsonError("Nie udało się zapisać kosztorysu.", 500);
+  const approvedAt = new Date().toISOString();
+
+  if (payload.id) {
+    // `.eq("status", "draft")` keeps an already-approved row unreachable, and
+    // `.select("id")` is what makes a zero-row match observable at all — without
+    // it the call resolves with `data: null` whether it hit one row or none.
+    const { data, error } = await supabase
+      .from("quotes")
+      .update({
+        status: "approved",
+        patient_type: payload.patient_type,
+        patient_email: payload.patient_email,
+        content,
+        token,
+        approved_at: approvedAt,
+      })
+      .eq("id", payload.id)
+      .eq("status", "draft")
+      .select("id");
+    if (error) {
+      return jsonError("Nie udało się zapisać kosztorysu.", 500);
+    }
+    if (data.length === 0) {
+      return jsonError("Kosztorys nie istnieje albo został już zatwierdzony.", 409);
+    }
+  } else {
+    const { error } = await supabase.from("quotes").insert({
+      status: "approved",
+      patient_type: payload.patient_type,
+      patient_email: payload.patient_email,
+      content,
+      token,
+      approved_at: approvedAt,
+    });
+    if (error) {
+      return jsonError("Nie udało się zapisać kosztorysu.", 500);
+    }
   }
 
   // (7) Return the token (and the patient path for convenience).

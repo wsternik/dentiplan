@@ -34,6 +34,33 @@ This file is the audit trail of what was supposed to happen during the first pro
 - `.github/workflows/ci.yml` — lint + build runs on push/PR to `main`; `deploy-production` job runs `npx wrangler deploy` on push to `main` only (gated on `ci` job success). Requires repo secrets `SUPABASE_URL`, `SUPABASE_KEY`, `CLOUDFLARE_API_TOKEN`.
 - `.dev.vars.example` — template for local Cloudflare dev secrets (mirrors `.env.example`).
 
+## Database migrations are not part of the deploy pipeline
+
+`.github/workflows/ci.yml` deploys the Worker. It does **not** run
+`supabase db push`, and nothing else does either — so a migration merged to
+`main` reaches the repo but never the database until someone applies it by
+hand.
+
+This bit once, and silently: the F-01 migration
+(`supabase/migrations/20260603194110_quotes_foundation.sql`) sat in the repo
+from June while the hosted project had no `public.quotes` table at all. The
+failure was invisible because the patient page translates every read failure
+into the same generic "Link nieaktywny lub nieprawidłowy" it shows for an
+unknown token (FR-060) — correct, fail-closed behaviour that also happens to
+hide a missing table. Applied 2026-09-04, and the schema-migration registry was
+back-dated to the file's own `20260603194110` version so `supabase db push`
+agrees with the database.
+
+One thing to know if you apply a migration outside the CLI: Supabase's default
+privileges did not grant the `authenticated` role table access, so `GRANT
+select, insert, update, delete on public.quotes to authenticated` had to be
+issued separately. `anon` deliberately holds no table privileges — the
+`get_quote_by_token` RPC is its only read path.
+
+Until a migration step exists in CI, applying a migration is a manual
+deploy step: run it, then confirm the table, its RLS policies, the
+`quotes_immutable` trigger and the RPC all exist before calling the slice done.
+
 ## Decisions explicitly deferred
 
 Captured here so a future agent doesn't propose re-litigating them without cause.

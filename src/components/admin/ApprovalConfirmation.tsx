@@ -1,11 +1,13 @@
 // Post-approval confirmation view (S-01, Phase 3 / FR-052).
 //
-// Shown after a successful approve: presents the immutable patient link in a
-// copy-friendly form and a way to start a fresh quote. No list navigation — S-01
-// has no browsable quote list (that's S-03).
+// Shown immediately after a successful approve: announces the freeze, presents
+// the immutable patient link, and offers a way to start a fresh quote. The link
+// control itself lives in `CopyLink` — the read-only view of an approved quote
+// reopened from the list (S-03) shares that, but not this view's wording or its
+// reset action.
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { CopyLink } from "./CopyLink";
 
 interface Props {
   /** The `/p/<token>` path returned by the approval endpoint. */
@@ -15,22 +17,6 @@ interface Props {
 }
 
 export function ApprovalConfirmation({ path, onReset }: Props) {
-  const [copied, setCopied] = useState(false);
-  // Absolute URL for the dentystka to share; origin is only known client-side.
-  const url = typeof window !== "undefined" ? `${window.location.origin}${path}` : path;
-
-  async function copy() {
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => {
-        setCopied(false);
-      }, 2000);
-    } catch {
-      setCopied(false);
-    }
-  }
-
   return (
     <div className="mx-auto max-w-2xl space-y-4 p-4">
       <h1 className="text-2xl font-bold">Kosztorys zatwierdzony</h1>
@@ -39,23 +25,19 @@ export function ApprovalConfirmation({ path, onReset }: Props) {
         już edytować.
       </p>
 
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-        <input
-          readOnly
-          value={url}
-          className="border-input h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 font-mono text-sm shadow-xs outline-none"
-          onFocus={(e) => {
-            e.currentTarget.select();
-          }}
-        />
-        <Button type="button" onClick={copy}>
-          {copied ? "Skopiowano ✓" : "Kopiuj link"}
-        </Button>
-      </div>
+      <CopyLink path={path} />
 
-      <Button type="button" variant="outline" onClick={onReset}>
-        Nowy kosztorys
-      </Button>
+      <div className="flex flex-wrap gap-2">
+        <Button type="button" variant="outline" onClick={onReset}>
+          Nowy kosztorys
+        </Button>
+        <a
+          href="/admin"
+          className="border-input hover:bg-accent inline-flex h-9 items-center rounded-md border px-4 text-sm font-medium"
+        >
+          Lista kosztorysów
+        </a>
+      </div>
     </div>
   );
 }

@@ -16,5 +16,7 @@ export const POST: APIRoute = async (context) => {
     return context.redirect(`/auth/signin?error=${encodeURIComponent(error.message)}`);
   }
 
-  return context.redirect("/");
+  // Land on the quote list (S-03): it is the panel the dentystka signs in to use,
+  // and nothing else in the app links to it.
+  return context.redirect("/admin");
 };
