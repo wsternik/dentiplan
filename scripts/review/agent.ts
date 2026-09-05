@@ -15,7 +15,7 @@
 import { readFile } from "node:fs/promises";
 import { generateText, Output } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
-import { REVIEW_SCHEMA, SYSTEM_PROMPT, type Review } from "./schema.ts";
+import { REVIEW_SCHEMA, buildSystemPrompt, type Review } from "./schema.ts";
 
 const MODEL = "claude-sonnet-5";
 
@@ -59,7 +59,7 @@ export async function review(rawDiff: string): Promise<Review> {
 
   const { output, usage } = await generateText({
     model: anthropic(MODEL),
-    system: SYSTEM_PROMPT,
+    system: await buildSystemPrompt(),
     output: Output.object({ schema: REVIEW_SCHEMA }),
     prompt: `Review this diff:\n\n${diff}`,
   });
