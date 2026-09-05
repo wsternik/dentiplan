@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
 import { computeQuoteTotals } from "@/lib/quote/cost";
 import { isValidToothNumber } from "@/lib/quote/tooth-name";
 import type { GeneralItem, PatientType, PricelistItemRef, ToothEntry, Visit } from "@/types";
@@ -389,10 +388,7 @@ export default function QuoteEditor({
   }
 
   return (
-    // The bottom padding is not decoration: it reserves the height of the
-    // anchored action bar below, so the bar never covers the last tooth row or
-    // the "Zapisano <time>" confirmation.
-    <div className={cn("mx-auto max-w-4xl space-y-4 px-4 py-8", !readOnly && "pb-28")}>
+    <div className="mx-auto max-w-4xl space-y-4 px-4 py-8">
       <div className="border-border flex flex-wrap items-baseline justify-between gap-4 border-b pb-4">
         <h1 className="font-serif text-2xl font-medium tracking-tight">
           {readOnly ? "Kosztorys zatwierdzony" : savedId ? "Kosztorys (szkic)" : "Nowy kosztorys"}
@@ -579,13 +575,20 @@ export default function QuoteEditor({
           )}
         </Section>
       ) : (
-        // The two actions that end the task, anchored so they stay reachable
-        // from anywhere in a form that gets long. Same buttons, same names, same
-        // order, same gating — only the position changed. Everything that
-        // reports on them lives INSIDE the bar rather than under it, so the bar
-        // cannot cover its own confirmation.
-        <div className="border-border bg-background/95 fixed inset-x-0 bottom-0 z-10 border-t backdrop-blur-sm">
-          <div className="mx-auto flex max-w-4xl flex-wrap items-center gap-x-3 gap-y-1.5 px-4 py-3">
+        // The two actions that end the task, kept reachable from anywhere in a
+        // form that gets long. Same buttons, same names, same order, same
+        // gating — only the position changed.
+        //
+        // `sticky`, not `fixed`. A fixed bar sits outside the flow, so it needs
+        // the container to reserve its height by hand — and a hand-picked
+        // reserve is wrong the moment the bar grows a wrapped error line, at
+        // which point it covers the last tooth row. Worse, a fixed bar can park
+        // itself over a control that Playwright has just scrolled to and eat the
+        // click, failing a spec with a message that never mentions a bar. Sticky
+        // occupies real space at the end of the flow, so it cannot overlap
+        // anything, and still pins to the bottom while there is more form below.
+        <div className="border-border bg-background/95 no-print sticky bottom-0 z-10 -mx-4 border-t px-4 backdrop-blur-sm">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 py-3">
             <Button type="button" size="lg" disabled={approveDisabled || submitting} onClick={handleApprove}>
               {submitting ? "Zatwierdzanie…" : "Zatwierdź"}
             </Button>

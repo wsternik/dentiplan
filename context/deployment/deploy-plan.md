@@ -16,7 +16,7 @@ This file is the audit trail of what was supposed to happen during the first pro
 
 - Astro 6 SSR scaffold (`@astrojs/cloudflare` v13.5.4) deployed to Cloudflare Workers as worker `dentiplan-production`.
 - Public URL: `https://dentiplan-production.wsternik.workers.dev`.
-- Auth flow live (Supabase SSR cookie sessions): `/`, `/auth/signin`, `/auth/signup`, `/auth/confirm-email`, `/dashboard` (protected, redirects to `/auth/signin` when unauthenticated).
+- Auth flow live (Supabase SSR cookie sessions): `/`, `/auth/signin`, `/auth/signup`, `/auth/confirm-email`, `/admin` (protected, redirects to `/auth/signin` when unauthenticated; `/dashboard` was starter scaffolding and was removed with the redesign).
 - KV namespace `dentiplan-production-session` auto-provisioned by Astro 6 for sessions.
 - Cloudflare PoP serving traffic: WAW (Warsaw) — confirmed via smoke test `cf-ray` header.
 

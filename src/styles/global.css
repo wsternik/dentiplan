@@ -202,10 +202,10 @@
     background: #fff;
   }
 
-  /* Screen chrome: the panel header, the editor's anchored action bar, and the
-     dev toolbar have no business on paper. */
-  header.sticky,
-  .fixed,
+  /* Screen chrome has no business on paper. Marked by intent (`no-print`) rather
+     than by positioning: a rule like `.fixed { display: none }` silently eats
+     any future dialog or toast that happens to be fixed, with nothing to grep. */
+  .no-print,
   astro-dev-toolbar {
     display: none !important;
   }
@@ -216,13 +216,27 @@
   }
 
   /* The comparison is the point of the page; it does not get to reflow into one
-     column just because the medium changed. */
+     column just because the medium changed — and it nearly did. The grid is
+     `md:grid-cols-2` (768px), while A4 at default margins gives about 717px of
+     printable width, so on paper the tabs stacked. Screenshotting with print
+     media emulated at a 1280px viewport hid that completely; it only shows up
+     when you measure at the width a printer actually has. */
+  .variant-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
   .variant {
     animation: none !important;
     break-inside: avoid;
   }
 
-  section {
+  /* Applied to the units that are actually page-sized. A blanket rule on
+     `section` covers blocks that grow with the tooth count, and `break-inside:
+     avoid` on a block taller than a page is a hint the engine has to violate —
+     usually by pushing the whole thing to a fresh page and leaving a blank one
+     behind. */
+  .quadrant,
+  li {
     break-inside: avoid;
   }
 

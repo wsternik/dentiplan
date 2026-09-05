@@ -58,7 +58,9 @@ missingConfigs : publicMissingConfigs`. The layout is shared with `/p/<token>`,
   carries both `opsz` and `wght` (7 `@font-face` rules, `unicode-range`-split, family
   `Literata Variable`); `@fontsource-variable/archivo/wght.css` carries `wght`
   (family `Archivo Variable`). Both include `latin-ext`, which is what makes the
-  Polish diacritics render.
+  Polish diacritics render. **What shipped is `wght.css` for both** — the `opsz`
+  axis more than doubles Literata (195 KB vs 93 KB across the two cuts a Polish
+  reader fetches) and was cut after measuring the build.
 
 ### The frozen contract
 
@@ -191,8 +193,11 @@ bytes), and no custom-property name containing `quotes` or `draft`.
 title, Polish as the default language, and the base typographic setting.
 
 **Contract**: Frontmatter imports
-`@fontsource-variable/literata/standard.css` and
+`@fontsource-variable/literata/wght.css` and
 `@fontsource-variable/archivo/wght.css` next to the existing `global.css` import.
+(`standard.css` was the original choice; measuring the build showed Literata's
+optical-size axis costs 102 KB of the 261 KB a Polish reader fetches, so the
+weight axis alone ships — see the `perf(ui-redesign)` commit.)
 Default props become `title = "DentiPlan"` and `lang = "pl"` (every page that
 matters is Polish; `p/[token].astro` already passes `pl` explicitly and can keep
 doing so harmlessly). `<body>` gets the base font, `font-optical-sizing: auto`,
@@ -549,7 +554,7 @@ badges, no screenshots-as-decoration.
 
 #### Automated Verification
 
-- `grep -rn "dashboard\|Welcome\|LibBadge\|bg-cosmic" src/ e2e/` returns nothing
+- `grep -rn "dashboard\|Welcome\|LibBadge\|bg-cosmic" src/ e2e/` returns no _live reference_ (a comment in `middleware.ts` explaining the removal is expected, and is the only hit)
 - `npm run lint` exits 0, `npx astro check` 0 errors, `npm test` passes
 - `npm run build` completes
 - `npm run test:e2e` passes 4/4
@@ -687,7 +692,7 @@ Rollback is `git revert -m 1 <merge-sha>` through a PR.
 
 #### Automated
 
-- [x] 5.1 `grep` finds no `dashboard`/`Welcome`/`LibBadge`/`bg-cosmic` in `src/` or `e2e/` — 52b6048
+- [x] 5.1 `grep` finds no live `dashboard`/`Welcome`/`LibBadge`/`bg-cosmic` reference in `src/` or `e2e/` — 52b6048
 - [x] 5.2 `npm run lint` exits 0, `astro check` 0 errors, `npm test` passes — 52b6048
 - [x] 5.3 `npm run build` completes — 52b6048
 - [x] 5.4 `npm run test:e2e` passes 4/4 — 52b6048

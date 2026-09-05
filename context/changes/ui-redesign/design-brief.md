@@ -103,9 +103,15 @@ reproduced in the tooth chart:
 | --------------------- | ------------------------------------ | -------------------------------------------------- |
 | `in-plan`             | solid fill, solid 1px outline        | the default, needs no marking                      |
 | `uncertain`           | **dashed** outline, unfilled         | sits under a heading that says the cost may change |
-| `out-of-current-plan` | 55% opacity, hairline diagonal hatch | sits under its own "Odroczone" heading             |
+| `out-of-current-plan` | 65% opacity, hairline diagonal hatch | sits under its own "Odroczone" heading             |
 
 Nothing above depends on the reader distinguishing red from green.
+
+The dimming is 65%. This brief first specified 55%, and the code shipped 65% —
+reconciled here in favour of what shipped, because deferred teeth are still
+clinical information about the reader's own mouth. The section has to recede
+without becoming hard to read, and the number was chosen here before there was
+anything to read it against.
 
 ## 3. Type
 
@@ -189,7 +195,7 @@ Zakres leczenia
 │ 47 …                │ 34 …                │     the odontogram into
 └─────────────────────┴─────────────────────┘
 
-Odroczone           (55% opacity, hatched rule)
+Odroczone           (65% opacity, hatched rule)
 Scenariusze, które mogą zmienić koszt   (dashed rule)
 ──────────────────────────────────────────────────
 To jest kosztorys szacunkowy            ← colophon at the foot

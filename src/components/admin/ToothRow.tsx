@@ -12,34 +12,11 @@ import type { ToothEntry, ToothStatus, TreatmentType, Urgency, Visit } from "@/t
 import { DENTITION_LABELS, STATUS_LABELS, TREATMENT_LABELS, URGENCY_LABELS } from "@/lib/quote/labels";
 import { toothName } from "@/lib/quote/tooth-name";
 import { cn } from "@/lib/utils";
+import { STATUS_OUTLINE, URGENCY_MARK } from "@/lib/quote/marks";
 import { NativeSelect } from "./controls";
 import { formatPriceValue } from "./format";
 import { PricelistPicker } from "./PricelistPicker";
 import type { PickerOption } from "@/lib/pricing";
-
-/**
- * The clinical palette, applied for the first time. Urgency is a mark; status is
- * an outline treatment, never a hue — the same two rules the tooth chart (S-06)
- * will draw teeth with, rehearsed here on a form row where they are cheap to
- * get wrong. Tailwind resolves class names at build time, so these are lookup
- * tables rather than interpolated strings.
- *
- * `Urgency` has three members; "not recorded" is `null`, and a row with no
- * urgency simply shows no mark — a grey dot on every fresh tooth would be noise
- * that says nothing. The `--urgency-unknown` token exists for S-06, where a
- * tooth still has to be drawn whether or not its urgency was filled in.
- */
-const URGENCY_MARK: Record<Urgency, string> = {
-  urgent: "bg-urgency-urgent",
-  moderate: "bg-urgency-moderate",
-  mild: "bg-urgency-mild",
-};
-
-const STATUS_OUTLINE: Record<ToothStatus, string> = {
-  "in-plan": "border-border",
-  uncertain: "border-border border-dashed",
-  "out-of-current-plan": "border-border opacity-65",
-};
 
 interface Props {
   tooth: ToothEntry;
