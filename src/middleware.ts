@@ -1,7 +1,9 @@
 import { defineMiddleware } from "astro:middleware";
 import { createClient } from "@/lib/supabase";
 
-const PROTECTED_ROUTES = ["/dashboard", "/admin"];
+// `/dashboard` was the starter's demo page and is gone; leaving a protected
+// route pointing at a deleted page is a redirect nobody would ever explain.
+const PROTECTED_ROUTES = ["/admin"];
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const supabase = createClient(context.request.headers, context.cookies);

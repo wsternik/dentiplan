@@ -388,13 +388,13 @@ export default function QuoteEditor({
   }
 
   return (
-    <div className="mx-auto max-w-4xl space-y-4 p-4">
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold">
+    <div className="mx-auto max-w-4xl space-y-4 px-4 py-8">
+      <div className="border-border flex flex-wrap items-baseline justify-between gap-4 border-b pb-4">
+        <h1 className="font-serif text-2xl font-medium tracking-tight">
           {readOnly ? "Kosztorys zatwierdzony" : savedId ? "Kosztorys (szkic)" : "Nowy kosztorys"}
         </h1>
-        <a href="/admin" className="text-muted-foreground text-sm underline-offset-4 hover:underline">
-          ← Lista kosztorysów
+        <a href="/admin" className="text-muted-foreground text-sm underline underline-offset-4">
+          Lista kosztorysów
         </a>
       </div>
 
@@ -479,8 +479,10 @@ export default function QuoteEditor({
       <Section title="Zęby">
         {!readOnly && (
           <div className="flex gap-2">
-            <input
-              className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
+            {/* The placeholder IS this field's accessible name — `seed.spec.ts`
+                and `patient-link-content.spec.ts` both locate it that way. It
+                does not move. */}
+            <Input
               placeholder="Numery FDI, np. 17,16,34"
               value={toothInput}
               onChange={(e) => {
@@ -499,7 +501,7 @@ export default function QuoteEditor({
           </div>
         )}
         {toothWarnings.length > 0 && (
-          <ul className="text-destructive mt-2 space-y-0.5 text-xs">
+          <ul className="text-urgency-moderate-ink border-urgency-moderate/50 mt-2 space-y-0.5 border-l-2 pl-3 text-xs">
             {toothWarnings.map((w) => (
               <li key={w}>{w}</li>
             ))}
@@ -573,8 +575,20 @@ export default function QuoteEditor({
           )}
         </Section>
       ) : (
-        <div className="flex flex-col items-start gap-2">
-          <div className="flex flex-wrap items-center gap-2">
+        // The two actions that end the task, kept reachable from anywhere in a
+        // form that gets long. Same buttons, same names, same order, same
+        // gating — only the position changed.
+        //
+        // `sticky`, not `fixed`. A fixed bar sits outside the flow, so it needs
+        // the container to reserve its height by hand — and a hand-picked
+        // reserve is wrong the moment the bar grows a wrapped error line, at
+        // which point it covers the last tooth row. Worse, a fixed bar can park
+        // itself over a control that Playwright has just scrolled to and eat the
+        // click, failing a spec with a message that never mentions a bar. Sticky
+        // occupies real space at the end of the flow, so it cannot overlap
+        // anything, and still pins to the bottom while there is more form below.
+        <div className="border-border bg-background/95 no-print sticky bottom-0 z-10 -mx-4 border-t px-4 backdrop-blur-sm">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 py-3">
             <Button type="button" size="lg" disabled={approveDisabled || submitting} onClick={handleApprove}>
               {submitting ? "Zatwierdzanie…" : "Zatwierdź"}
             </Button>
@@ -582,10 +596,10 @@ export default function QuoteEditor({
               {saving ? "Zapisywanie…" : "Zapisz szkic"}
             </Button>
             {savedAt && !saveError && <span className="text-muted-foreground text-sm">Zapisano {savedAt}</span>}
+            {approveReason && <p className="text-muted-foreground basis-full text-sm">{approveReason}</p>}
+            {submitError && <p className="text-destructive basis-full text-sm">{submitError}</p>}
+            {saveError && <p className="text-destructive basis-full text-sm">{saveError}</p>}
           </div>
-          {approveReason && <p className="text-muted-foreground text-sm">{approveReason}</p>}
-          {submitError && <p className="text-destructive text-sm">{submitError}</p>}
-          {saveError && <p className="text-destructive text-sm">{saveError}</p>}
         </div>
       )}
     </div>

@@ -2,6 +2,10 @@
 // Patient view orchestrator (FR-061–065). Splits the frozen content tree into
 // in-plan / deferred / uncertain buckets and lays out the sections read-only.
 // Renders ONLY what's in `content` — no name, email, or identifier (FR-066).
+//
+// The comparison leads. The reader's question is how much and which way; the
+// tooth inventory is the evidence for that answer, not the answer, so it follows
+// rather than precedes it.
 
 import type { PatientType, QuoteContent } from "@/types";
 import { formatDate } from "@/lib/quote/format";
@@ -24,15 +28,32 @@ const uncertain = content.teeth.filter((tooth) => tooth.status === "uncertain");
 const audience = patientType === "child" ? "dla dziecka" : "dla osoby dorosłej";
 ---
 
-<main class="mx-auto max-w-3xl space-y-8 px-4 py-8">
-  <header class="space-y-1">
-    <h1 class="text-2xl font-bold">Twój kosztorys leczenia</h1>
-    <p class="text-muted-foreground text-sm">Plan {audience} · sporządzono {formatDate(createdAt)}</p>
+{
+  /* 17px at 1.65 is the brief's reading setting, and it belongs on the container
+    rather than on each section — the sections inherited 14px `text-sm` from the
+    admin conventions they were built alongside, which is a form size, not a
+    document size. `max-w-[68ch]` caps the measure. */
+}
+<main class="mx-auto max-w-3xl px-5 py-10 font-serif text-[17px] leading-[1.65] sm:py-14">
+  <header class="border-border border-b pb-6">
+    <h1 class="text-3xl leading-tight font-medium tracking-tight sm:text-4xl">Twój kosztorys leczenia</h1>
+    <p class="text-muted-foreground mt-2 font-sans text-sm">
+      Plan {audience}, sporządzony {formatDate(createdAt)}.
+    </p>
   </header>
 
-  {inPlan.length > 0 && <ToothGroups teeth={inPlan} />}
-  <VariantComparison totals={content.totals} visits={content.visits} />
-  {deferred.length > 0 && <DeferredSection teeth={deferred} />}
-  <ScenariosSection uncertain={uncertain} totals={content.totals} />
+  <div class="mt-10 space-y-12">
+    <VariantComparison totals={content.totals} visits={content.visits} />
+    {inPlan.length > 0 && <ToothGroups teeth={inPlan} />}
+    {deferred.length > 0 && <DeferredSection teeth={deferred} />}
+    <ScenariosSection uncertain={uncertain} totals={content.totals} />
+  </div>
+
   <Disclaimer />
+
+  {
+    /* Reserved for the QR code S-07 puts on the printed page. Hidden on screen;
+      `@media print` in `global.css` reveals it. */
+  }
+  <footer id="patient-print-footer" class="hidden pt-8"></footer>
 </main>

@@ -18,9 +18,9 @@ interface Props {
 
 export function ApprovalConfirmation({ path, onReset }: Props) {
   return (
-    <div className="mx-auto max-w-2xl space-y-4 p-4">
-      <h1 className="text-2xl font-bold">Kosztorys zatwierdzony</h1>
-      <p className="text-muted-foreground text-sm">
+    <div className="mx-auto max-w-2xl space-y-4 px-4 py-8">
+      <h1 className="font-serif text-2xl font-medium tracking-tight">Kosztorys zatwierdzony</h1>
+      <p className="text-muted-foreground max-w-prose text-sm leading-relaxed">
         Skopiuj poniższy link i przekaż go pacjentowi. Link jest aktywny od razu; zatwierdzonego kosztorysu nie można
         już edytować.
       </p>
@@ -33,7 +33,7 @@ export function ApprovalConfirmation({ path, onReset }: Props) {
         </Button>
         <a
           href="/admin"
-          className="border-input hover:bg-accent inline-flex h-9 items-center rounded-md border px-4 text-sm font-medium"
+          className="border-border bg-card hover:bg-accent inline-flex h-9 items-center rounded-md border px-4 text-sm font-medium tracking-tight transition-colors"
         >
           Lista kosztorysów
         </a>

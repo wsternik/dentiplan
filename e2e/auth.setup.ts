@@ -1,5 +1,7 @@
 import { test as setup, expect } from "@playwright/test";
 
+import { waitForIslands } from "./support/app";
+
 // One real sign-in per run; every other spec starts already authenticated from
 // the stored state (E2E rule: authenticate without going through the UI). The
 // credentials belong to the dentystka's test account and live in `.env`, which
@@ -13,6 +15,13 @@ setup("authenticate as the dentystka", async ({ page }) => {
   expect(password, "E2E_PASSWORD must be set in .env").toBeTruthy();
 
   await page.goto("/auth/signin");
+  // The sign-in form is a React island. Typing into it before it hydrates is
+  // silently thrown away when React takes over and re-renders the controlled
+  // inputs from their initial state — the run then fails on "Email is required",
+  // which reads like a broken form rather than a race. Every other spec already
+  // waits for this; on a cold `astro dev`, and now that the app bundles two
+  // webfonts, this one has to as well.
+  await waitForIslands(page);
   await page.getByRole("textbox", { name: "Email" }).fill(email ?? "");
   // `getByLabel("Password")` would also match the "Show password" toggle button.
   await page.getByRole("textbox", { name: "Password" }).fill(password ?? "");

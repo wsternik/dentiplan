@@ -11,6 +11,8 @@ import { dentitionForTooth } from "@/types";
 import type { ToothEntry, ToothStatus, TreatmentType, Urgency, Visit } from "@/types";
 import { DENTITION_LABELS, STATUS_LABELS, TREATMENT_LABELS, URGENCY_LABELS } from "@/lib/quote/labels";
 import { toothName } from "@/lib/quote/tooth-name";
+import { cn } from "@/lib/utils";
+import { STATUS_OUTLINE, URGENCY_MARK } from "@/lib/quote/marks";
 import { NativeSelect } from "./controls";
 import { formatPriceValue } from "./format";
 import { PricelistPicker } from "./PricelistPicker";
@@ -34,10 +36,15 @@ export function ToothRow({ tooth, visits, options, onPatch, onAddItem, onRemoveI
   const unpriced = isInPlan && tooth.pricelistItems.length === 0;
 
   return (
-    <div className="border-border rounded-md border p-3">
+    <div className={cn("rounded-md border p-3", STATUS_OUTLINE[tooth.status])}>
       <div className="mb-2 flex items-start justify-between gap-2">
         <div>
-          <div className="text-foreground text-sm font-medium">{toothName(tooth.number)}</div>
+          <div className="text-foreground flex items-center gap-2 text-sm font-medium">
+            {tooth.urgency && (
+              <span aria-hidden="true" className={cn("size-2 shrink-0 rounded-full", URGENCY_MARK[tooth.urgency])} />
+            )}
+            {toothName(tooth.number)}
+          </div>
           <Badge variant="secondary" className="mt-1">
             {DENTITION_LABELS[dentition]}
           </Badge>
@@ -136,7 +143,7 @@ export function ToothRow({ tooth, visits, options, onPatch, onAddItem, onRemoveI
           </ul>
         )}
         {unpriced && !readOnly && (
-          <p className="text-destructive mt-1 text-xs">Ząb w planie wymaga pozycji z cennika.</p>
+          <p className="text-urgency-moderate-ink mt-1.5 text-xs">Ząb w planie wymaga pozycji z cennika.</p>
         )}
       </div>
 

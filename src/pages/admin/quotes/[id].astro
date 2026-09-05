@@ -11,6 +11,7 @@
 // the schema has a default, so a brand-new draft parses fine.
 
 import Layout from "@/layouts/Layout.astro";
+import Topbar from "@/components/Topbar.astro";
 import QuoteEditor from "@/components/admin/QuoteEditor";
 import { buildPickerOptions } from "@/lib/pricing";
 import { createClient } from "@/lib/supabase";
@@ -19,7 +20,6 @@ import { z } from "zod";
 
 export const prerender = false;
 
-const { user } = Astro.locals;
 const { toothOptions, generalOptions } = buildPickerOptions();
 
 // Untyped Supabase client — funnel the row through Zod rather than trusting `any`
@@ -51,9 +51,8 @@ if (id.success && supabase) {
 ---
 
 <Layout title={quote ? "Kosztorys" : "Nie znaleziono"}>
-  <main class="bg-background text-foreground min-h-screen">
-    {user?.email && <p class="text-muted-foreground px-6 pt-4 text-right text-sm">Zalogowano: {user.email}</p>}
-
+  <Topbar />
+  <main>
     {
       quote ? (
         <QuoteEditor
@@ -68,11 +67,13 @@ if (id.success && supabase) {
           client:load
         />
       ) : (
-        <div class="mx-auto max-w-2xl space-y-4 p-4">
-          <h1 class="text-2xl font-bold">Nie znaleziono kosztorysu</h1>
-          <p class="text-muted-foreground text-sm">Ten kosztorys nie istnieje albo został usunięty.</p>
-          <a href="/admin" class="text-sm underline underline-offset-4">
-            ← Lista kosztorysów
+        <div class="mx-auto max-w-2xl px-4 py-12">
+          <h1 class="font-serif text-2xl font-medium tracking-tight">Nie znaleziono kosztorysu</h1>
+          <p class="text-muted-foreground mt-2 text-sm leading-relaxed">
+            Ten kosztorys nie istnieje albo został usunięty.
+          </p>
+          <a href="/admin" class="mt-6 inline-block text-sm underline underline-offset-4">
+            Lista kosztorysów
           </a>
         </div>
       )

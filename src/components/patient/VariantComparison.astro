@@ -1,8 +1,21 @@
 ---
-// Side-by-side variant comparison (FR-064). Standard (multi-visit) on the left
-// with per-visit costs + grand total; anesthesia (single session) on the right,
-// explicitly marked as recommended by the clinic. Ranges render via the "od X zł"
-// headline (FR-026) — the upside is surfaced in the Scenariusze section.
+// Side-by-side variant comparison (FR-064) — the page's hero and its one
+// memorable device.
+//
+// Both options are the same squared tab; the recommended one is marked by a
+// heavier grip edge and by saying so in words, never by being brighter or
+// bigger. A recommendation on a medical bill that shouts is a recommendation
+// nobody trusts.
+//
+// Ranges render via the "od X zł" headline (FR-026); the upside is surfaced in
+// the Scenariusze section.
+//
+// The anaesthesia total is omitted rather than shown as "0 zł" when the variant
+// is absent. `computeQuoteTotals` always produces both, so this cannot happen
+// for a quote this app made — but `QuoteTotals` marks both optional and the
+// patient page renders whatever the frozen row validates to. Printing
+// "Razem 0 zł" on a treatment estimate would be inventing a price, and nothing
+// is a better answer than a wrong number.
 
 import type { QuoteTotals, Visit } from "@/types";
 import { formatAmount, formatRangeHeadline } from "@/lib/quote/format";
@@ -22,50 +35,81 @@ function visitLabel(n: number): string {
 }
 ---
 
-<section class="space-y-4">
-  <h2 class="text-lg font-semibold">Warianty leczenia</h2>
-  <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-    <div class="border-border rounded-md border p-4">
-      <h3 class="mb-3 font-semibold">Leczenie w kilku wizytach</h3>
+<section class="space-y-5">
+  <h2 class="text-xl font-medium tracking-tight">Warianty leczenia</h2>
+
+  <div class="variant-grid grid grid-cols-1 gap-4 md:grid-cols-2">
+    <article class="variant border-border border-l-border/80 bg-card rounded-md border border-l-[3px] p-5">
+      <h3 class="text-base leading-snug font-medium">Leczenie w kilku wizytach</h3>
+      <p class="text-muted-foreground mt-1 font-sans text-xs">Koszt rozłożony na kolejne wizyty.</p>
       {
         standard && standard.perVisit.length > 0 && (
-          <ul class="space-y-1 text-sm">
+          <dl class="mt-5 space-y-2 font-sans text-sm">
             {standard.perVisit.map((entry) => (
-              <li class="flex justify-between gap-4">
-                <span class="text-muted-foreground">{visitLabel(entry.visitNumber)}</span>
-                <span>{formatRangeHeadline(entry.cost)}</span>
-              </li>
+              <div class="flex justify-between gap-4">
+                <dt class="text-muted-foreground">{visitLabel(entry.visitNumber)}</dt>
+                <dd class="numeric m-0 whitespace-nowrap">{formatRangeHeadline(entry.cost)}</dd>
+              </div>
             ))}
-          </ul>
+          </dl>
         )
       }
-      <div class="border-border mt-3 flex justify-between gap-4 border-t pt-3 font-semibold">
+      <div class="border-border mt-5 flex justify-between gap-4 border-t pt-4 font-sans text-sm font-semibold">
         <span>Razem</span>
-        <span>{standard?.grandTotal ? formatRangeHeadline(standard.grandTotal) : formatAmount(0)}</span>
-      </div>
-    </div>
-
-    <div class="border-primary rounded-md border-2 p-4">
-      <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <h3 class="font-semibold">Leczenie w znieczuleniu (jedna sesja)</h3>
-        <span class="bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-xs font-medium">
-          rekomendowane przez gabinet
+        <span class="numeric whitespace-nowrap">
+          {standard?.grandTotal ? formatRangeHeadline(standard.grandTotal) : formatAmount(0)}
         </span>
       </div>
+    </article>
+
+    <article class="variant border-border border-l-primary bg-card rounded-md border border-l-[6px] p-5">
+      <h3 class="text-base leading-snug font-medium">Leczenie w znieczuleniu (jedna sesja)</h3>
+      <p class="text-muted-foreground mt-1 font-sans text-xs">
+        Całe leczenie za jednym razem — rekomendowane przez gabinet.
+      </p>
       {
         anesthesia && (
-          <div class="space-y-1 text-sm">
+          <dl class="mt-5 space-y-2 font-sans text-sm">
             <div class="flex justify-between gap-4">
-              <span class="text-muted-foreground">Opłata za znieczulenie</span>
-              <span>{formatAmount(anesthesia.fee)}</span>
+              <dt class="text-muted-foreground">Opłata za znieczulenie</dt>
+              <dd class="numeric m-0 whitespace-nowrap">{formatAmount(anesthesia.fee)}</dd>
             </div>
-            <div class="border-border mt-3 flex justify-between gap-4 border-t pt-3 font-semibold">
-              <span>Razem</span>
-              <span>{formatRangeHeadline(anesthesia.total)}</span>
-            </div>
+          </dl>
+        )
+      }
+      {
+        anesthesia && (
+          <div class="border-border mt-5 flex justify-between gap-4 border-t pt-4 font-sans text-sm font-semibold">
+            <span>Razem</span>
+            <span class="numeric whitespace-nowrap">{formatRangeHeadline(anesthesia.total)}</span>
           </div>
         )
       }
-    </div>
+    </article>
   </div>
 </section>
+
+<style>
+  /* The one orchestrated moment in the whole application: these two tabs settle
+     in on load, 60ms apart. Nothing else on this page moves by itself, and
+     nothing anywhere moves on hover. */
+  @media (prefers-reduced-motion: no-preference) {
+    .variant {
+      animation: settle 220ms cubic-bezier(0.2, 0, 0.2, 1) both;
+    }
+    .variant:nth-child(2) {
+      animation-delay: 60ms;
+    }
+  }
+
+  @keyframes settle {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+</style>
