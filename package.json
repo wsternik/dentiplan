@@ -15,7 +15,8 @@
     "lint:fix": "eslint . --fix",
     "validate:pricing": "tsx scripts/validate-pricing.ts",
     "format": "prettier --write .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "review": "tsx --env-file-if-exists=.env scripts/review/agent.ts"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.9",
