@@ -28,9 +28,16 @@ export const URGENCY_MARK: Record<Urgency, string> = {
 };
 
 /**
- * Outline treatment for a tooth's plan status. Deliberately no opacity: dimming
- * a container also dims whatever sits inside it, which on a form makes live
- * controls look disabled and pushes muted text under the contrast floor.
+ * Outline treatment for a tooth's plan status.
+ *
+ * Deliberately no CSS `opacity`: that dims a container AND everything inside it,
+ * which on a form makes live controls look disabled and multiplies with muted
+ * text until it falls under the contrast floor. Both of those were real defects
+ * here before review caught them.
+ *
+ * `bg-muted/40` is a different mechanism and is safe: an alpha channel on one
+ * element's background does not cascade to descendants, so the text on top keeps
+ * its full contrast. The rule is "no inherited transparency", not "no alpha".
  */
 export const STATUS_OUTLINE: Record<ToothStatus, string> = {
   "in-plan": "border-border",
