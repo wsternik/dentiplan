@@ -1,0 +1,23 @@
+{
+  "teeth": [
+    {
+      "number": 99,
+      "treatmentType": "extraction",
+      "urgency": "urgent",
+      "status": "in-plan",
+      "pricelistItemIds": ["chirurgia-stomatologiczna:ekstrakcja-zeba"],
+      "visitNumber": 0
+    },
+    {
+      "number": 16,
+      "treatmentType": "extraction",
+      "urgency": "urgent",
+      "status": "in-plan",
+      "pricelistItemIds": ["chirurgia-stomatologiczna:ekstrakcja-zeba"],
+      "visitNumber": 0
+    }
+  ],
+  "generalItemIds": [],
+  "visits": [],
+  "warnings": []
+}

@@ -7,7 +7,7 @@
 // state only. It is never part of the approval payload and never persisted —
 // `content` returned to anon callers must never carry the raw diagnosis.
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +16,7 @@ import { computeQuoteTotals } from "@/lib/quote/cost";
 import { isValidToothNumber } from "@/lib/quote/tooth-name";
 import type { GeneralItem, PatientType, PricelistItemRef, ToothEntry, Visit } from "@/types";
 import { ApprovalConfirmation } from "./ApprovalConfirmation";
+import { ParseWarnings } from "./ParseWarnings";
 import { Section } from "./controls";
 import { CopyLink } from "./CopyLink";
 import { GeneralItems } from "./GeneralItems";
@@ -23,6 +24,8 @@ import { ToothRow } from "./ToothRow";
 import { TotalsPreview } from "./TotalsPreview";
 import { VisitList } from "./VisitList";
 import type { PickerOption } from "@/lib/pricing";
+import { mergePrefill } from "@/lib/llm/merge";
+import type { PrefillResult } from "@/lib/llm/schema";
 import type { QuoteEditorProps } from "./types";
 
 /** Drop the picker-only `category` field down to the stored snapshot ref. */
@@ -70,6 +73,11 @@ export default function QuoteEditor({
   const [rawText, setRawText] = useState("");
   const [toothInput, setToothInput] = useState("");
   const [toothWarnings, setToothWarnings] = useState<string[]>([]);
+
+  // --- Note prefill (S-02, FR-011/FR-012) ---
+  const [parsing, setParsing] = useState(false);
+  const [parseError, setParseError] = useState<string | null>(null);
+  const [parseWarnings, setParseWarnings] = useState<string[]>([]);
   const generalCounter = useRef(highestGeneralIndex(initialContent?.generalItems ?? []));
   // Write lock for the two server-writing actions. A ref, because the `saving` /
   // `submitting` state flags are read through a closure: a second click in the
@@ -78,6 +86,20 @@ export default function QuoteEditor({
   // and an approved row can be neither edited nor deleted (FR-053), so the
   // duplicate would be permanent.
   const inFlight = useRef(false);
+
+  // Latest-value mirrors of the working tree, for `applyPrefill`.
+  //
+  // The prefill's round trip can take up to 30s, and nothing stops the dentystka
+  // from adding a tooth or a visit by hand while she waits. `applyPrefill` runs
+  // after the `await`, so reading `teeth`/`visits`/`generalItems` from its
+  // closure would see the tree as it was when she pressed the button: a tooth
+  // she typed in the meantime would not be recognised as a duplicate (two rows,
+  // one React key), and a visit she added would shift the numbering the
+  // prefilled teeth are remapped onto.
+  const treeRef = useRef({ teeth, visits, generalItems });
+  useEffect(() => {
+    treeRef.current = { teeth, visits, generalItems };
+  }, [teeth, visits, generalItems]);
 
   // --- Approval (Phase 3) ---
   const [submitting, setSubmitting] = useState(false);
@@ -241,6 +263,52 @@ export default function QuoteEditor({
     }
   }
 
+  // --- Note prefill (S-02) ---
+  //
+  // The merge itself is a pure function in `@/lib/llm/merge` with its own tests:
+  // it has produced two defects already (a tooth proposed twice sharing a React
+  // key, a merge computed against a stale snapshot) and a component is the wrong
+  // place to argue about that. All this does is hand it the CURRENT tree — the
+  // round trip is long enough for her to have added a tooth while she waited —
+  // and put the answer back.
+  //
+  // `rawText` is the only thing sent, and it still never enters `treePayload()`.
+  function applyPrefill(result: PrefillResult): string[] {
+    const merged = mergePrefill(treeRef.current, result, generalCounter.current);
+    generalCounter.current = merged.generalIdSeed;
+    setTeeth(merged.teeth);
+    setVisits(merged.visits);
+    setGeneralItems(merged.generalItems);
+    return merged.warnings;
+  }
+
+  async function handlePrefill() {
+    if (inFlight.current) return;
+    inFlight.current = true;
+    setParsing(true);
+    setParseError(null);
+    try {
+      const res = await fetch("/api/admin/quotes/parse", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: rawText }),
+      });
+      if (!res.ok) {
+        // FR-013: the prefill is never a gate. Say so plainly and change nothing.
+        const data = (await res.json().catch(() => null)) as { error?: string } | null;
+        setParseError(data?.error ?? "Nie udało się przetworzyć notatki — wypełnij formularz ręcznie.");
+        return;
+      }
+      const result = (await res.json()) as PrefillResult;
+      setParseWarnings(applyPrefill(result));
+    } catch {
+      setParseError("Nie udało się przetworzyć notatki — wypełnij formularz ręcznie.");
+    } finally {
+      inFlight.current = false;
+      setParsing(false);
+    }
+  }
+
   // --- Approve gating (essential guards; server re-checks in Phase 3) ---
   const isEmpty = teeth.length === 0 && generalItems.length === 0;
   const hasUnpriced = teeth.some((t) => t.status === "in-plan" && t.pricelistItems.length === 0);
@@ -365,6 +433,21 @@ export default function QuoteEditor({
               setRawText(e.target.value);
             }}
           />
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={parsing || rawText.trim().length === 0}
+              onClick={() => void handlePrefill()}
+            >
+              {parsing ? "Wypełnianie…" : "Wypełnij z notatki"}
+            </Button>
+            <span className="text-muted-foreground text-xs">
+              Uzupełnia formularz — niczego nie nadpisuje i nie zatwierdza.
+            </span>
+          </div>
+          {parseError && <p className="text-destructive mt-2 text-sm">{parseError}</p>}
+          <ParseWarnings warnings={parseWarnings} />
         </Section>
       )}
 
