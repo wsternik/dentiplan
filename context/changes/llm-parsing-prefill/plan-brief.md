@@ -32,16 +32,16 @@ fails she sees one sentence and the form still works.
 
 ## Key Decisions Made
 
-| Decision          | Choice                                           | Why                                                                                                                                                            | Source                                                        |
-| ----------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| Provider          | Anthropic via the AI SDK, `claude-sonnet-5`      | The stack the repo already speaks (`scripts/review/agent.ts`); a second SDK would buy nothing                                                                  | Session plan                                                  |
-| Response contract | The write endpoints' request, run backwards      | One contract for "a quote tree in transit" instead of two                                                                                                      | Research                                                      |
-| Id resolution     | Server-side, via the non-throwing `findItemById` | `resolvePricelistItem` throws, which is right for a write and wrong for a prefill                                                                              | Research                                                      |
-| **`note` field**  | **The model may not write it**                   | `note` is inside `content`, which is served verbatim to anyone with the patient link; a model that just read the confidential note gets no pen there (risk #3) | Research — **narrows the schema the session plan wrote down** |
-| Nullables         | Closed enums with `"unknown"`, `visitNumber: 0`  | Anthropic's structured output has already rejected one JSON-Schema construct on this repo; translation belongs in the tested mapper                            | Plan                                                          |
-| Merge behaviour   | Appends; duplicates warn                         | Nothing the dentystka typed is overwritten                                                                                                                     | Session plan                                                  |
-| Tests             | Unit on fixtures, no e2e                         | The assertion would depend on model output — a flaky test of someone else's service                                                                            | Session plan                                                  |
-| Text cap          | 4000 characters                                  | The app has no request-size bound anywhere; this call costs money                                                                                              | Research                                                      |
+| Decision          | Choice                                           | Why                                                                                                                                                            | Source                                     |
+| ----------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| Provider          | Anthropic via the AI SDK, `claude-sonnet-5`      | The stack the repo already speaks (`scripts/review/agent.ts`); a second SDK would buy nothing                                                                  | `tech-stack.md`                            |
+| Response contract | The write endpoints' request, run backwards      | One contract for "a quote tree in transit" instead of two                                                                                                      | Research                                   |
+| Id resolution     | Server-side, via the non-throwing `findItemById` | `resolvePricelistItem` throws, which is right for a write and wrong for a prefill                                                                              | Research                                   |
+| **`note` field**  | **The model may not write it**                   | `note` is inside `content`, which is served verbatim to anyone with the patient link; a model that just read the confidential note gets no pen there (risk #3) | Research — **narrows the sketched schema** |
+| Nullables         | Closed enums with `"unknown"`, `visitNumber: 0`  | Anthropic's structured output has already rejected one JSON-Schema construct on this repo; translation belongs in the tested mapper                            | Plan                                       |
+| Merge behaviour   | Appends; duplicates warn                         | Nothing the dentystka typed is overwritten                                                                                                                     | Plan                                       |
+| Tests             | Unit on fixtures, no e2e                         | The assertion would depend on model output — a flaky test of someone else's service                                                                            | Plan                                       |
+| Text cap          | 4000 characters                                  | The app has no request-size bound anywhere; this call costs money                                                                                              | Research                                   |
 
 ## Scope
 
@@ -95,7 +95,7 @@ the regression baseline (done, 4/4).
 - **Dropping `note` costs context.** `(32?)` becomes `uncertain` with no
   explanation attached. The warnings list carries that instead, where only she
   sees it.
-- **Cost control is a user action (B10)** and is not verified by this plan.
+- **A spend cap on the Anthropic account is an operator action** and is not verified by this plan.
 
 ## Success Criteria (Summary)
 

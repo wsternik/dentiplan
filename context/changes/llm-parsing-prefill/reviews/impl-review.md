@@ -134,10 +134,9 @@ key removed), 3.5–3.9 by driving the real UI in Chromium.
   directly. Any authenticated user could loop it at Anthropic's expense.
 - **Decision**: SKIPPED — the app has exactly one operator and no rate limiting
   anywhere (roadmap S-05 `auth-hardening` owns that whole subject, including
-  credential stuffing). Cost control for this key is a user action (B10 in the
-  session plan: a spend cap on the Anthropic account), which is the right place
-  for it — a per-user limit in a single-user app protects nothing a spend cap
-  does not. Revisit with S-05 or the second operator, whichever comes first.
+  credential stuffing). Cost control for this key belongs on the Anthropic
+  account as a spend cap, which is the right place for it — a per-user limit in
+  a single-user app protects nothing a spend cap does not. Revisit with S-05 or the second operator, whichever comes first.
 
 ### F6 — Two status codes for "this integration is not configured"
 

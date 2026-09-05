@@ -65,8 +65,8 @@ approves. Verified on production, not just locally.
 
 ## What We're NOT Doing
 
-- **No `note` in the parse schema.** Deliberate narrowing of the schema written
-  down in the session plan. `note` lives inside `content`, which is served
+- **No `note` in the parse schema.** Deliberate narrowing of the schema this
+  slice was first sketched with. `note` lives inside `content`, which is served
   verbatim to anyone holding the patient link, and the archived impl-review
   already flagged it as unbounded patient-visible free text (risk #3). A model
   that has just read the confidential note does not get a pen on the patient's
