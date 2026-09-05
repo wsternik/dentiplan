@@ -1,11 +1,13 @@
 ---
 // Non-dismissible estimate disclaimer (FR-065). Always rendered on the patient
 // page; the patient view has no dismiss affordance by design.
+//
+// Set as a colophon at the foot of the document: visible, and not shouting.
 ---
 
-<section class="border-border bg-muted rounded-md border p-4 text-sm" role="note" aria-label="Zastrzeżenie">
-  <p class="font-semibold">To jest kosztorys szacunkowy</p>
-  <p class="text-muted-foreground mt-1">
+<section class="border-border mt-14 border-t pt-6" role="note" aria-label="Zastrzeżenie">
+  <p class="text-sm font-medium">To jest kosztorys szacunkowy</p>
+  <p class="text-muted-foreground mt-2 max-w-prose font-sans text-xs leading-relaxed">
     Przedstawione kwoty są szacunkiem przygotowanym na podstawie planu leczenia. Ostateczny koszt może się zmienić po
     badaniu klinicznym oraz w zależności od faktycznego przebiegu leczenia. Kosztorys nie stanowi oferty handlowej w
     rozumieniu przepisów prawa.

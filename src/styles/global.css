@@ -191,3 +191,63 @@
     text-rendering: optimizeLegibility;
   }
 }
+
+/* The patient page is a document, so it has to survive being printed — a
+   treatment estimate gets taken home, shown to whoever is paying, and put in a
+   drawer. White ground, black ink, both variants still side by side, chrome
+   gone. The grip edge survives as a solid bar, so the recommendation is still
+   marked on paper where colour may not reproduce at all.
+
+   The footer slot is reserved for the QR code S-07 puts there. */
+@media print {
+  :root {
+    --background: #fff;
+    --card: #fff;
+    --foreground: #000;
+    --muted-foreground: #333;
+    --border: #999;
+    --primary: #000;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  /* Screen chrome: the panel header, the editor's anchored action bar, and the
+     dev toolbar have no business on paper. */
+  header.sticky,
+  .fixed,
+  astro-dev-toolbar {
+    display: none !important;
+  }
+
+  main {
+    max-width: none;
+    padding: 0;
+  }
+
+  /* The comparison is the point of the page; it does not get to reflow into one
+     column just because the medium changed. */
+  .variant {
+    animation: none !important;
+    break-inside: avoid;
+  }
+
+  section {
+    break-inside: avoid;
+  }
+
+  /* Deferred teeth are dimmed on screen; on paper, opacity prints as grey mush,
+     so the hatched rule and the heading carry the distinction instead. */
+  .deferred {
+    opacity: 1;
+  }
+
+  a[href]::after {
+    content: "";
+  }
+
+  #patient-print-footer {
+    display: block;
+  }
+}

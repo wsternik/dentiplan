@@ -4,6 +4,9 @@
 // headlines show the lower bound ("od X zł"); the upper bound is a scenario that
 // may raise the cost and is surfaced here rather than printed everywhere. The
 // whole section is omitted when there is nothing uncertain and no range upside.
+//
+// Uncertainty is drawn as a dashed rule — the same treatment the editor gives an
+// uncertain tooth row, and one that survives being printed in black and white.
 
 import type { QuoteTotals, ToothEntry } from "@/types";
 import { toothName } from "@/lib/quote/tooth-name";
@@ -24,19 +27,25 @@ const show = sorted.length > 0 || showRangeUpside;
 
 {
   show && (
-    <section class="space-y-2">
-      <h2 class="text-lg font-semibold">Scenariusze, które mogą zmienić koszt</h2>
-      <ul class="space-y-2 text-sm">
+    <section class="space-y-3">
+      <div>
+        <h2 class="text-xl font-medium tracking-tight">Scenariusze, które mogą zmienić koszt</h2>
+        <div class="border-border mt-2 border-t border-dashed" />
+      </div>
+      <ul class="space-y-2.5 text-sm">
         {showRangeUpside && grandTotal && (
-          <li>W zależności od ostatecznego zakresu leczenia koszt może wzrosnąć do {formatAmount(grandTotal.max)}.</li>
+          <li>
+            W zależności od ostatecznego zakresu leczenia koszt może wzrosnąć do{" "}
+            <span class="numeric whitespace-nowrap">{formatAmount(grandTotal.max)}</span>.
+          </li>
         )}
         {sorted.map((tooth) => (
           <li>
-            <span class="font-medium">{toothName(tooth.number)}</span>
+            {toothName(tooth.number)}
             {tooth.note ? (
-              <span class="text-muted-foreground"> — {tooth.note}</span>
+              <span class="text-muted-foreground font-sans"> — {tooth.note}</span>
             ) : (
-              <span class="text-muted-foreground"> — możliwe dodatkowe leczenie</span>
+              <span class="text-muted-foreground font-sans"> — możliwe dodatkowe leczenie</span>
             )}
           </li>
         ))}

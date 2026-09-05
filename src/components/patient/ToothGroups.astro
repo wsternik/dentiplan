@@ -3,8 +3,15 @@
 // quadrant (first digit; permanent 1–4 and milk 5–8 share a side/jaw) and each
 // row shows number + Polish name + treatment + urgency. Empty groups are
 // dropped so the grid only shows quadrants that actually have teeth.
+//
+// Quadrants are laid out two to a row in chart reading order — upper before
+// lower, right before left within a jaw — and this is the block S-06 replaces
+// with the drawing itself. It is NOT a faithful 2×2 chart: empty quadrants are
+// dropped, so two populated quadrants sit side by side whatever their jaw. That
+// is right for a list and wrong for a chart, which is exactly the difference
+// S-06 exists to close.
 
-import type { ToothEntry } from "@/types";
+import type { ToothEntry, Urgency } from "@/types";
 import { toothName } from "@/lib/quote/tooth-name";
 import { TREATMENT_LABELS, URGENCY_LABELS } from "@/lib/quote/labels";
 
@@ -13,6 +20,14 @@ interface Props {
 }
 
 const { teeth } = Astro.props;
+
+// Tailwind resolves class names at build time, so this is a lookup rather than
+// an interpolated string. Same marks the editor's tooth rows use.
+const URGENCY_MARK: Record<Urgency, string> = {
+  urgent: "bg-urgency-urgent",
+  moderate: "bg-urgency-moderate",
+  mild: "bg-urgency-mild",
+};
 
 const GROUPS: { label: string; quadrants: number[] }[] = [
   { label: "Górne prawe", quadrants: [1, 5] },
@@ -29,24 +44,35 @@ const grouped = GROUPS.map((group) => ({
 })).filter((group) => group.teeth.length > 0);
 ---
 
-<section class="space-y-4">
-  <h2 class="text-lg font-semibold">Zakres leczenia</h2>
-  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+<section class="space-y-5">
+  <h2 class="text-xl font-medium tracking-tight">Zakres leczenia</h2>
+
+  <div class="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
     {
       grouped.map((group) => (
-        <div class="border-border rounded-md border p-3">
-          <h3 class="text-muted-foreground mb-2 text-xs font-semibold tracking-wide uppercase">{group.label}</h3>
-          <ul class="space-y-2">
+        <div>
+          <h3 class="text-muted-foreground border-border border-b pb-1.5 font-sans text-xs font-medium">
+            {group.label}
+          </h3>
+          <ul class="mt-3 space-y-2.5">
             {group.teeth.map((tooth) => (
-              <li class="text-sm">
-                <span class="font-medium">{toothName(tooth.number)}</span>
-                {(tooth.treatmentType ?? tooth.urgency) && (
-                  <span class="text-muted-foreground block text-xs">
-                    {tooth.treatmentType && TREATMENT_LABELS[tooth.treatmentType]}
-                    {tooth.treatmentType && tooth.urgency && " · "}
-                    {tooth.urgency && URGENCY_LABELS[tooth.urgency]}
-                  </span>
+              <li class="flex items-baseline gap-2.5 text-sm">
+                {tooth.urgency && (
+                  <span
+                    aria-hidden="true"
+                    class:list={["mt-1.5 size-2 shrink-0 rounded-full", URGENCY_MARK[tooth.urgency]]}
+                  />
                 )}
+                <span>
+                  {toothName(tooth.number)}
+                  {(tooth.treatmentType ?? tooth.urgency) && (
+                    <span class="text-muted-foreground block font-sans text-xs">
+                      {tooth.treatmentType && TREATMENT_LABELS[tooth.treatmentType]}
+                      {tooth.treatmentType && tooth.urgency && ", "}
+                      {tooth.urgency && URGENCY_LABELS[tooth.urgency]}
+                    </span>
+                  )}
+                </span>
               </li>
             ))}
           </ul>

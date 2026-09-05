@@ -453,8 +453,11 @@ under `prefers-reduced-motion: reduce`.
 **Intent**: Lay the quadrants out in true chart orientation and drop the
 tracked-capitals label treatment.
 
-**Contract**: The four `GROUPS` and their quadrant mapping are unchanged. The 2×2
-grid is ordered upper-row-then-lower-row. Quadrant headings become sentence case
+**Contract**: The four `GROUPS` and their quadrant mapping are unchanged.
+Quadrants render two to a row in chart reading order. Note this is _not_ a
+faithful 2×2 chart — empty quadrants are dropped, so two populated quadrants sit
+side by side whatever their jaw. That is correct for a list and is exactly the
+gap S-06 closes; the block is shaped so the drawing replaces it. Quadrant headings become sentence case
 in Archivo over a hairline rule (`uppercase tracking-wide` is removed). Urgency
 renders through the clinical tokens; treatment and urgency labels still come from
 `TREATMENT_LABELS` / `URGENCY_LABELS`.
@@ -653,32 +656,32 @@ Rollback is `git revert -m 1 <merge-sha>` through a PR.
 
 #### Automated
 
-- [x] 3.1 `npm run lint` exits 0, `astro check` 0 errors
-- [x] 3.2 `npm test` passes
-- [x] 3.3 `npm run test:e2e` passes 4/4
-- [x] 3.4 `npm run depcruise` 0 violations
+- [x] 3.1 `npm run lint` exits 0, `astro check` 0 errors — 9f59cbb
+- [x] 3.2 `npm test` passes — 9f59cbb
+- [x] 3.3 `npm run test:e2e` passes 4/4 — 9f59cbb
+- [x] 3.4 `npm run depcruise` 0 violations — 9f59cbb
 
 #### Manual
 
-- [x] 3.5 Draft creates, saves, reopens, deletes
-- [x] 3.6 Action bar reachable with 20 teeth and covers nothing
-- [x] 3.7 Note prefill still fills the form and shows warnings
-- [x] 3.8 Approved quote opens read-only with its link
+- [x] 3.5 Draft creates, saves, reopens, deletes — 9f59cbb
+- [x] 3.6 Action bar reachable with 20 teeth and covers nothing — 9f59cbb
+- [x] 3.7 Note prefill still fills the form and shows warnings — 9f59cbb
+- [x] 3.8 Approved quote opens read-only with its link — 9f59cbb
 
 ### Phase 4: The patient page
 
 #### Automated
 
-- [ ] 4.1 `npm run test:e2e` passes 4/4
-- [ ] 4.2 `npm run lint` exits 0, `astro check` 0 errors
-- [ ] 4.3 `npm run build` completes
+- [x] 4.1 `npm run test:e2e` passes 4/4
+- [x] 4.2 `npm run lint` exits 0, `astro check` 0 errors
+- [x] 4.3 `npm run build` completes
 
 #### Manual
 
-- [ ] 4.4 Reads well at 375px and 1280px, comparison first
-- [ ] 4.5 Print preview keeps both variants side by side
-- [ ] 4.6 Deferred and uncertain distinguishable in greyscale
-- [ ] 4.7 Entrance absent under `prefers-reduced-motion`
+- [x] 4.4 Reads well at 375px and 1280px, comparison first
+- [x] 4.5 Print preview keeps both variants side by side
+- [x] 4.6 Deferred and uncertain distinguishable in greyscale
+- [x] 4.7 Entrance absent under `prefers-reduced-motion`
 
 ### Phase 5: Starter cleanup and README
 
