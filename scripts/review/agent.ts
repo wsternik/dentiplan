@@ -15,9 +15,14 @@
 import { readFile } from "node:fs/promises";
 import { generateText, Output } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
-import { REVIEW_SCHEMA, buildSystemPrompt, type Review } from "./schema.ts";
+import { CRITERION_KEYS, REVIEW_SCHEMA, buildSystemPrompt, type Review } from "./schema.ts";
 
-const MODEL = "claude-sonnet-5";
+// Pinned rather than discovered. The ai-sdk skill's advice — never hardcode a
+// model id, fetch the current list — is about writing code from memory; here
+// the id is the one knob a change to this agent most needs to be deliberate
+// about, since a swap changes every verdict downstream. REVIEW_MODEL overrides
+// it for a one-off comparison without a commit.
+const MODEL = process.env.REVIEW_MODEL ?? "claude-sonnet-5";
 
 // A large diff costs tokens and buys nothing: past a point the model is
 // skimming, and the verdict gets vaguer rather than sharper. Callers should
@@ -51,6 +56,18 @@ function truncate(diff: string): { diff: string; truncated: boolean } {
   };
 }
 
+// The 1-10 range lives in the prompt and the field descriptions, not in the
+// schema — Anthropic's structured output rejects minimum/maximum on a number —
+// so an out-of-range or fractional score would otherwise pass validation and
+// land in the PR comment. Clamp on the way out.
+function clampScores(review: Review): Review {
+  const clamped = { ...review };
+  for (const key of CRITERION_KEYS) {
+    clamped[key] = Math.min(10, Math.max(1, Math.round(review[key])));
+  }
+  return clamped;
+}
+
 export async function review(rawDiff: string): Promise<Review> {
   const { diff, truncated } = truncate(rawDiff);
   if (truncated) {
@@ -65,7 +82,7 @@ export async function review(rawDiff: string): Promise<Review> {
   });
 
   console.error(`tokens: ${usage.inputTokens} in, ${usage.outputTokens} out`);
-  return output;
+  return clampScores(output);
 }
 
 const diff = await readDiff();
