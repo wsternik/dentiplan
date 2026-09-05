@@ -1,0 +1,71 @@
+# First-pass AI review on every pull request.
+#
+# Deliberately a separate workflow from ci.yml and deliberately not a required
+# check: the verdict is advisory, and a model's opinion should never be the
+# thing that stops a merge. It fails only when the agent itself fails, which is
+# a signal about the pipeline rather than about the code under review.
+name: AI review
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+# A new push supersedes the review of the previous one; no point paying for both.
+concurrency:
+  group: ai-review-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    # A pull request from a fork gets no secrets, so the agent could not run.
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The agent diffs against the merge base, which shallow clones do not have.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Documentation is excluded on purpose. This repository carries a lot of
+      # it — a single change can run to thousands of lines of Markdown under
+      # context/ — and feeding that to the agent costs tokens while diluting a
+      # judgement whose five criteria are all about code.
+      - name: Collect the diff
+        id: diff
+        run: |
+          git diff "origin/${{ github.base_ref || 'main' }}...HEAD" -- . \
+            ':(exclude)context/**' \
+            ':(exclude)package-lock.json' > review.diff
+          BYTES=$(wc -c < review.diff | tr -d ' ')
+          echo "bytes=$BYTES" >> "$GITHUB_OUTPUT"
+          echo "Diff is $BYTES bytes over $(git diff --name-only "origin/${{ github.base_ref || 'main' }}...HEAD" -- . ':(exclude)context/**' ':(exclude)package-lock.json' | wc -l) files."
+
+      - name: Run the review agent
+        if: steps.diff.outputs.bytes != '0'
+        run: npm run --silent review -- --diff review.diff > review.json
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Comment on the pull request
+        if: steps.diff.outputs.bytes != '0' && github.event_name == 'pull_request'
+        run: |
+          npx tsx scripts/review/format-comment.ts < review.json > comment.md
+          gh pr comment "${{ github.event.pull_request.number }}" --body-file comment.md
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Say so when there was nothing to review
+        if: steps.diff.outputs.bytes == '0'
+        run: echo "No code outside context/ changed — skipping the review."

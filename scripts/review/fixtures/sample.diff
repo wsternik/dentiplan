@@ -1,0 +1,81 @@
+This is not real code and it is not a pattern to copy. It is a fabricated diff
+used to exercise the review agent, with defects planted on purpose: a PostgREST
+filter built by string interpolation, no authorization check on an /api/admin/
+route, an unbounded limit, patient e-mail rendered client-side, and no tests.
+A run that misses those is a run to go and fix the prompt over.
+
+Everything below is the fixture.
+
+diff --git a/src/pages/api/admin/quotes/search.ts b/src/pages/api/admin/quotes/search.ts
+new file mode 100644
+index 0000000..8a1f4c2
+--- /dev/null
++++ b/src/pages/api/admin/quotes/search.ts
+@@ -0,0 +1,38 @@
++import type { APIRoute } from "astro";
++import { createClient } from "@/lib/supabase";
++
++export const prerender = false;
++
++// Search quotes by patient name or e-mail. Used by the new search box on the
++// admin list.
++export const GET: APIRoute = async (context) => {
++  const supabase = createClient(context.request.headers, context.cookies);
++  if (!supabase) {
++    return new Response("no supabase", { status: 500 });
++  }
++
++  const url = new URL(context.request.url);
++  const q = url.searchParams.get("q") || "";
++  const limit = Number(url.searchParams.get("limit") ?? "50");
++
++  const { data, error } = await supabase
++    .from("quotes")
++    .select("id, patient_name, patient_email, status, token, content")
++    .or(`patient_name.ilike.%${q}%,patient_email.ilike.%${q}%`)
++    .limit(limit);
++
++  if (error) {
++    console.log("search failed", error, q);
++    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
++  }
++
++  return new Response(JSON.stringify({ quotes: data }), {
++    status: 200,
++    headers: { "Content-Type": "application/json" },
++  });
++};
+diff --git a/src/components/QuoteSearchBox.tsx b/src/components/QuoteSearchBox.tsx
+new file mode 100644
+index 0000000..3c9d201
+--- /dev/null
++++ b/src/components/QuoteSearchBox.tsx
+@@ -0,0 +1,26 @@
++import { useEffect, useState } from "react";
++
++interface Quote {
++  id: string;
++  patient_name: string;
++  patient_email: string | null;
++  token: string | null;
++}
++
++export function QuoteSearchBox() {
++  const [q, setQ] = useState("");
++  const [results, setResults] = useState<Quote[]>([]);
++
++  useEffect(() => {
++    fetch("/api/admin/quotes/search?q=" + q)
++      .then((r) => r.json())
++      .then((d) => setResults(d.quotes));
++  }, [q]);
++
++  return (
++    <div className={"flex flex-col gap-2 " + (results.length ? "pb-4" : "")}>
++      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Szukaj pacjenta" />
++      {results.map((r) => (
++        <a key={r.id} href={`/p/${r.token}`}>{r.patient_name} — {r.patient_email}</a>
++      ))}
++    </div>
++  );
++}
