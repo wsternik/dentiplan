@@ -36,7 +36,7 @@ const sorted = [...teeth].sort((a, b) => a.number - b.number);
     <div class="hatched mt-2 h-1"></div>
   </div>
   <p class="font-sans text-sm">Te zęby nie są częścią bieżącego planu leczenia.</p>
-  <ul class="space-y-1.5 text-sm">
+  <ul class="max-w-[68ch] space-y-1.5 text-sm">
     {
       sorted.map((tooth) => (
         <li>
