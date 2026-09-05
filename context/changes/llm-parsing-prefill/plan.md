@@ -114,7 +114,7 @@ translation in the tested function rather than in the wire format.
 
 ---
 
-## Phase 1: The parsing boundary — schema, prompt, mapper, and the risk #7 tests
+## Phase 1: The parsing boundary
 
 ### Overview
 
@@ -230,10 +230,16 @@ Model id pinned to `claude-sonnet-5`, overridable via `LLM_MODEL`, with the same
 `maxRetries` are set explicitly rather than left to defaults, because this call
 sits on a request path.
 
-`parseDiagnosis(text: string, model: DiagnosisModel = anthropicModel()): Promise<PrefillResult>`
-lives in `parse-diagnosis.ts` and is the composition. **Its signature takes a
-string and nothing else** — that is how "no PII in the prompt" (FR-011, FR-072)
-is enforced structurally rather than by review.
+`parseDiagnosis(text: string, model: DiagnosisModel): Promise<PrefillResult>`
+lives in `parse-diagnosis.ts` and is the composition. **The model is a required
+parameter, not a default**, so `parse-diagnosis.ts` never imports `client.ts`:
+`client.ts` reads `astro:env/server`, `vitest.config.ts` has no stub for that
+module, and a static import of it would kill the whole Phase 1 suite before the
+first assertion. The endpoint is the only module that composes the two, and the
+only one that touches `astro:env`.
+
+The text parameter is a `string` and nothing else — that is how "no PII in the
+prompt" (FR-011, FR-072) is enforced structurally rather than by review.
 
 #### 6. Fixtures and tests
 
@@ -317,7 +323,15 @@ server-only knob should not be.
 misconfiguration; the new dependency joins it.
 
 **Contract**: one more `ConfigStatus` entry, `configured: Boolean(ANTHROPIC_API_KEY)`,
-with a message saying prefill is off and the form still works by hand.
+with a message saying prefill is off and the form still works by hand — **plus an
+`adminOnly: true` flag on it, and a filter in `src/layouts/Layout.astro:26` that
+hides admin-only statuses from signed-out visitors.**
+
+Without that flag the banner lands on the patient's page: `p/[token].astro:17`
+uses the same layout, and that file's header states the no-disclosure invariant
+(FR-060) — "missing-env … we never distinguish causes and never surface
+internals". Supabase keeps its current always-visible behaviour, because a
+patient page cannot render without it anyway.
 
 #### 4. Fix the sign-out that fails silently
 
@@ -346,8 +360,9 @@ no e2e locator moves.
 
 - `POST /api/admin/quotes/parse` without a session cookie returns 401
 - A 5000-character body returns 400 and never reaches the model
-- A real note returns 200 with a populated `content` and a `warnings` array
-- With the key removed locally, the app boots, shows the config banner, and the endpoint answers 503
+- A real note returns 200 with a populated `content` and a `warnings` array — **from `npm run dev`, i.e. the workerd runtime**, not a Node harness. The provider has only ever run here under `tsx`; a bundle that builds is not a bundle that runs.
+- With the key removed locally, the app boots, shows the config banner **in the admin panel only**, and the endpoint answers 503
+- With the key removed, an anonymous `/p/<token>` page carries no configuration banner
 
 ---
 
@@ -457,11 +472,23 @@ Don't Test") gains **one sentence** saying why there is no e2e for the prefill:
 the assertion would depend on model output, so it would be a flaky test of
 someone else's service rather than of this app's mapping.
 
-#### 3. Roadmap and README
+#### 3. Answer the question `contract-surfaces.md` already asked
+
+**File**: `docs/reference/contract-surfaces.md`
+
+**Intent**: the invariant section (`:76-88`) ends with "Downstream slices (S-01
+form payloads, **S-02 LLM prefill**) must honor it when shaping `content`". This
+slice is that S-02, so "must honor" becomes "honors it, and here is how".
+
+**Contract**: under the invariant, record the two mechanisms — the model is
+never given a writable `note`, and pricelist ids are resolved server-side from
+the seed rather than taken from the model's output.
+
+#### 4. Roadmap and README
 
 **Files**: `context/foundation/roadmap.md`, `README.md`
 
-**Contract**: S-02 → `done`. README gains prefill in _What the MVP does_,
+**Contract**: S-02 → `done` in the At-a-glance table, the slice section and the Backlog Handoff row. README gains prefill in _What the MVP does_,
 `ANTHROPIC_API_KEY` in _Running it locally_, and S-02 in _Roadmap status_.
 
 ### Success Criteria
@@ -477,6 +504,7 @@ someone else's service rather than of this app's mapping.
 
 - A reader who has not seen this session can tell from the PRD why `note` is not model-writable
 - Test plan §7 explains the missing e2e in one sentence
+- `contract-surfaces.md` records how S-02 honours the `content` invariant
 
 ---
 
@@ -554,8 +582,9 @@ slice.
 
 - [ ] 2.6 `POST /api/admin/quotes/parse` without a session cookie returns 401
 - [ ] 2.7 A 5000-character body returns 400 and never reaches the model
-- [ ] 2.8 A real note returns 200 with populated `content` and `warnings`
+- [ ] 2.8 A real note returns 200 with populated `content` and `warnings`, from the workerd dev server
 - [ ] 2.9 With the key removed, the app boots, banners, and the endpoint answers 503
+- [ ] 2.10 With the key removed, `/p/<token>` shows **no** configuration banner
 
 ### Phase 3: The button, the warnings, and the merge
 
@@ -587,3 +616,4 @@ slice.
 
 - [ ] 4.5 The PRD explains why `note` is not model-writable
 - [ ] 4.6 Test plan §7 explains the missing e2e in one sentence
+- [ ] 4.7 `contract-surfaces.md` records how S-02 honours the `content` invariant

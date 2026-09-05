@@ -48,7 +48,7 @@ fails she sees one sentence and the form still works.
 **In scope:** `src/lib/llm/` (schema, prompt, mapper, client) with fixtures and
 risk #7 tests; `POST /api/admin/quotes/parse`; the env/secret declaration and
 config banner; the editor button, merge and warnings list; PRD Open Question 8,
-test-plan risk #7, roadmap S-02 → `done`, README. Plus one fix the M3L5 audit
+test-plan risk #7, roadmap S-02 → `done`, README, `contract-surfaces.md`. Plus one fix the M3L5 audit
 turned up: `auth/signout.ts` never checks whether sign-out failed.
 
 **Out of scope:** streaming, parse history, persisting `rawText`, a model picker,
