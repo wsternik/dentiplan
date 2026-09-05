@@ -1,10 +1,10 @@
 ---
 change_id: ui-redesign
 title: A visual identity for DentiPlan — tokens, type, and layout across every page
-status: impl_reviewed
+status: archived
 created: 2026-09-05
 updated: 2026-09-05
-archived_at: null
+archived_at: 2026-09-05T20:10:25Z
 ---
 
 ## Notes
