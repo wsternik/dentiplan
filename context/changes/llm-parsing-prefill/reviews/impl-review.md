@@ -6,7 +6,7 @@
 - **Scope**: all four phases
 - **Date**: 2026-09-05
 - **Verdict**: NEEDS ATTENTION → APPROVED (after fixes)
-- **Findings**: 0 critical, 3 warnings, 3 observations
+- **Findings**: 0 critical, 3 warnings, 3 observations (plus 4 from the pipeline's review agent on the PR — see the tail of this file)
 
 ## Verdicts
 
@@ -175,3 +175,65 @@ Recorded because "no findings" in these areas is a result, not an omission:
 - **Scope held.** No committed e2e for the prefill, no persisted `rawText`, no
   existing DOM role, label or button text changed, and every file in the diff
   maps to a plan phase.
+
+## Follow-up: the pipeline's review agent on PR #6
+
+`.github/workflows/review.yml` ran its own pass and returned **NEEDS ATTENTION**
+with four findings. It scored the parsing boundary well (9/10 on fit, 8/10 on
+the patient page) and put both its major findings on the same criterion — _tests
+proportional to risk_. It was right on both, and both are now fixed.
+
+### R1 — The banner gate shipped without a regression test
+
+> "The fix that keeps the new Anthropic config banner off `/p/<token>` (exactly
+> the class of leak finding F2 already caught once) has no test, so a future edit
+> that drops `adminOnly` or the `Astro.locals.user` branch would regress
+> silently."
+
+Fair, and the reason it had no test was itself worth fixing: `config-status.ts`
+imports `astro:env/server`, which Astro generates at build time and Vitest cannot
+resolve — the same wall the plan review hit in F2. `vitest.config.ts` now aliases
+that module to `test/astro-env-stub.ts`, which unblocks testing anything that
+reads configuration, and `src/lib/config-status.test.ts` asserts the list an
+anonymous visitor gets can never carry an admin-only status.
+
+**Decision**: FIXED.
+
+### R2 — The client-side merge was only covered through the pure mapper
+
+> "The client-side merge logic — deduping prefilled teeth/general items against
+> the live tree and remapping visit numbers by an offset — is new and non-trivial
+> but is only exercised through the pure `mapParsedDiagnosis` tests, which never
+> touch a pre-populated tree or the offset arithmetic."
+
+Also right, and pointed at exactly the code that produced this review's own F1
+and F2. Extracted to `src/lib/llm/merge.ts` as `mergePrefill(tree, prefill, seed)`
+— a pure function of the tree and the answer — with five tests covering the cases
+the defects came from: a tooth she already filled in is kept untouched, prefilled
+visit numbers are remapped onto the visits they actually became, general items
+dedupe by pricelist id, and the server's warnings are carried through alongside
+the merge's own. `applyPrefill` is now six lines that hand it the current tree.
+
+**Decision**: FIXED. This is the better shape regardless of the finding: the
+merge had already produced two defects that only a human looking at a screenshot
+caught.
+
+### R3 — No rate limit on a paid endpoint
+
+Same as F5 above. **Decision**: SKIPPED, same reasoning — one operator, S-05
+owns rate limiting, and a spend cap on the account is the control that actually
+bounds this.
+
+### R4 — The endpoint's own branches are untested
+
+> "401 unauthenticated, 503 unconfigured key, 400 malformed body, 502 provider
+> failure are untested; only the pure mapping function underneath is covered."
+
+**Decision**: SKIPPED. All four were verified by hand against the workerd dev
+server and recorded in Progress (2.6–2.9), and the endpoint is a thin composition
+of pieces that are each tested. Automating them means an HTTP-level harness this
+project does not have — `test-plan.md` §3 already carries "Approval boundary" and
+"Access boundary" as pending integration phases, and that harness belongs to
+whichever of those goes first, not to this slice as a side effect.
+
+**Suite after these fixes: 59 tests, up from 40 before this change.**

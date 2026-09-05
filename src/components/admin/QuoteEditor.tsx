@@ -24,6 +24,7 @@ import { ToothRow } from "./ToothRow";
 import { TotalsPreview } from "./TotalsPreview";
 import { VisitList } from "./VisitList";
 import type { PickerOption } from "@/lib/pricing";
+import { mergePrefill } from "@/lib/llm/merge";
 import type { PrefillResult } from "@/lib/llm/schema";
 import type { QuoteEditorProps } from "./types";
 
@@ -264,65 +265,21 @@ export default function QuoteEditor({
 
   // --- Note prefill (S-02) ---
   //
-  // Additive on purpose. The dentystka may already have typed teeth in before
-  // clicking, and a prefill that replaced the tree would throw her work away on
-  // a button whose whole promise is that it saves time. Anything the prefill
-  // duplicates is skipped and reported instead.
+  // The merge itself is a pure function in `@/lib/llm/merge` with its own tests:
+  // it has produced two defects already (a tooth proposed twice sharing a React
+  // key, a merge computed against a stale snapshot) and a component is the wrong
+  // place to argue about that. All this does is hand it the CURRENT tree — the
+  // round trip is long enough for her to have added a tooth while she waited —
+  // and put the answer back.
   //
-  // `rawText` is the only thing sent, and it still never enters `treePayload()`
-  // — the patient-safe invariant at the top of this file is unchanged.
+  // `rawText` is the only thing sent, and it still never enters `treePayload()`.
   function applyPrefill(result: PrefillResult): string[] {
-    const notices: string[] = [...result.warnings];
-
-    const { teeth: currentTeeth, visits: currentVisits, generalItems: currentGeneral } = treeRef.current;
-
-    const existing = new Set(currentTeeth.map((t) => t.number));
-    const additions = result.content.teeth.filter((t) => {
-      if (existing.has(t.number)) {
-        notices.push(`Ząb ${t.number} był już w formularzu — pominięto propozycję z notatki.`);
-        return false;
-      }
-      return true;
-    });
-
-    // Prefilled visits are appended after the existing ones, so a tooth's
-    // `visitNumber` has to be remapped onto where its visit actually landed.
-    const offset = currentVisits.length;
-    const remapped = additions.map((t) => ({
-      ...t,
-      visitNumber: t.visitNumber === null ? null : t.visitNumber + offset,
-    }));
-
-    if (result.content.visits.length > 0) {
-      setVisits((prev) => [
-        ...prev,
-        ...result.content.visits.map((v, i) => ({ number: prev.length + i + 1, label: v.label })),
-      ]);
-    }
-    if (remapped.length > 0) {
-      setTeeth((prev) => [...prev, ...remapped].sort((a, b) => a.number - b.number));
-    }
-    // General items dedupe the same way teeth do. Two runs over the same note
-    // otherwise leave two Higienizacje on the quote and quietly double that line
-    // in both cost variants — the tooth guard alone is not the whole rule.
-    const presentItems = new Set(currentGeneral.map((g) => g.item.id));
-    const added: GeneralItem[] = [];
-    for (const item of result.content.generalItems) {
-      if (presentItems.has(item.id)) {
-        notices.push(`„${item.name}” była już w pozycjach ogólnych — pominięto propozycję z notatki.`);
-        continue;
-      }
-      presentItems.add(item.id);
-      // Ids come from the editor's own counter, which is seeded past whatever a
-      // reopened draft restored — minting them server-side could collide.
-      generalCounter.current += 1;
-      added.push({ id: `g-${generalCounter.current}`, item, visitNumber: null });
-    }
-    if (added.length > 0) {
-      setGeneralItems((prev) => [...prev, ...added]);
-    }
-
-    return notices;
+    const merged = mergePrefill(treeRef.current, result, generalCounter.current);
+    generalCounter.current = merged.generalIdSeed;
+    setTeeth(merged.teeth);
+    setVisits(merged.visits);
+    setGeneralItems(merged.generalItems);
+    return merged.warnings;
   }
 
   async function handlePrefill() {
