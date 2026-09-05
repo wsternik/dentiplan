@@ -45,7 +45,9 @@
   --urgency-moderate-ink: oklch(0.495 0.105 62);
   --urgency-mild: oklch(0.655 0.085 142); /* sage — "can wait", not "well done" */
   --urgency-mild-ink: oklch(0.455 0.07 142);
-  --urgency-unknown: oklch(0.8 0.01 205); /* deliberately colourless */
+  /* "Not recorded" — `urgency: null` in the domain. Colourless on purpose;
+     the tooth chart still has to draw a tooth whose urgency was left blank. */
+  --urgency-unknown: oklch(0.8 0.01 205);
   --urgency-unknown-ink: oklch(0.505 0.028 205);
 
   /* A delete button and an urgent tooth speak the same red. The ink value, not

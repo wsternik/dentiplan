@@ -5,18 +5,18 @@
 // gates it — no middleware change needed.
 
 import Layout from "@/layouts/Layout.astro";
+import Topbar from "@/components/Topbar.astro";
 import QuoteEditor from "@/components/admin/QuoteEditor";
 import { buildPickerOptions } from "@/lib/pricing";
 
 export const prerender = false;
 
-const { user } = Astro.locals;
 const { toothOptions, generalOptions } = buildPickerOptions();
 ---
 
 <Layout title="Nowy kosztorys">
-  <main class="bg-background text-foreground min-h-screen">
-    {user?.email && <p class="text-muted-foreground px-6 pt-4 text-right text-sm">Zalogowano: {user.email}</p>}
+  <Topbar />
+  <main>
     <QuoteEditor toothOptions={toothOptions} generalOptions={generalOptions} client:load />
   </main>
 </Layout>

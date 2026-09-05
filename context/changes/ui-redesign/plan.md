@@ -639,31 +639,31 @@ Rollback is `git revert -m 1 <merge-sha>` through a PR.
 
 #### Automated
 
-- [x] 2.1 `npm run lint` exits 0, `astro check` 0 errors
-- [x] 2.2 `npm run test:e2e` passes 4/4
-- [x] 2.3 `npm run build` completes
+- [x] 2.1 `npm run lint` exits 0, `astro check` 0 errors — e60e3ea
+- [x] 2.2 `npm run test:e2e` passes 4/4 — e60e3ea
+- [x] 2.3 `npm run build` completes — e60e3ea
 
 #### Manual
 
-- [x] 2.4 `/` fits one screen at 1280×800 and reads at 375px
-- [x] 2.5 `/auth/signin` has no glass or gradient and shows visible focus
-- [x] 2.6 Sign-up and confirm-email match sign-in
+- [x] 2.4 `/` fits one screen at 1280×800 and reads at 375px — e60e3ea
+- [x] 2.5 `/auth/signin` has no glass or gradient and shows visible focus — e60e3ea
+- [x] 2.6 Sign-up and confirm-email match sign-in — e60e3ea
 
 ### Phase 3: Panel and editor
 
 #### Automated
 
-- [ ] 3.1 `npm run lint` exits 0, `astro check` 0 errors
-- [ ] 3.2 `npm test` passes
-- [ ] 3.3 `npm run test:e2e` passes 4/4
-- [ ] 3.4 `npm run depcruise` 0 violations
+- [x] 3.1 `npm run lint` exits 0, `astro check` 0 errors
+- [x] 3.2 `npm test` passes
+- [x] 3.3 `npm run test:e2e` passes 4/4
+- [x] 3.4 `npm run depcruise` 0 violations
 
 #### Manual
 
-- [ ] 3.5 Draft creates, saves, reopens, deletes
-- [ ] 3.6 Action bar reachable with 20 teeth and covers nothing
-- [ ] 3.7 Note prefill still fills the form and shows warnings
-- [ ] 3.8 Approved quote opens read-only with its link
+- [x] 3.5 Draft creates, saves, reopens, deletes
+- [x] 3.6 Action bar reachable with 20 teeth and covers nothing
+- [x] 3.7 Note prefill still fills the form and shows warnings
+- [x] 3.8 Approved quote opens read-only with its link
 
 ### Phase 4: The patient page
 

@@ -36,7 +36,7 @@ export function CopyLink({ path }: Props) {
       <input
         readOnly
         value={url}
-        className="border-input h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 font-mono text-sm shadow-xs outline-none"
+        className="border-input focus-visible:border-ring focus-visible:ring-ring/50 bg-card h-9 w-full min-w-0 rounded-md border px-3 py-1 font-mono text-sm outline-none focus-visible:ring-[3px]"
         onFocus={(e) => {
           e.currentTarget.select();
         }}

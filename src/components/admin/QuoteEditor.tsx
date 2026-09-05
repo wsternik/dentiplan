@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import { computeQuoteTotals } from "@/lib/quote/cost";
 import { isValidToothNumber } from "@/lib/quote/tooth-name";
 import type { GeneralItem, PatientType, PricelistItemRef, ToothEntry, Visit } from "@/types";
@@ -388,13 +389,16 @@ export default function QuoteEditor({
   }
 
   return (
-    <div className="mx-auto max-w-4xl space-y-4 p-4">
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold">
+    // The bottom padding is not decoration: it reserves the height of the
+    // anchored action bar below, so the bar never covers the last tooth row or
+    // the "Zapisano <time>" confirmation.
+    <div className={cn("mx-auto max-w-4xl space-y-4 px-4 py-8", !readOnly && "pb-28")}>
+      <div className="border-border flex flex-wrap items-baseline justify-between gap-4 border-b pb-4">
+        <h1 className="font-serif text-2xl font-medium tracking-tight">
           {readOnly ? "Kosztorys zatwierdzony" : savedId ? "Kosztorys (szkic)" : "Nowy kosztorys"}
         </h1>
-        <a href="/admin" className="text-muted-foreground text-sm underline-offset-4 hover:underline">
-          ← Lista kosztorysów
+        <a href="/admin" className="text-muted-foreground text-sm underline underline-offset-4">
+          Lista kosztorysów
         </a>
       </div>
 
@@ -479,8 +483,10 @@ export default function QuoteEditor({
       <Section title="Zęby">
         {!readOnly && (
           <div className="flex gap-2">
-            <input
-              className="border-input focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
+            {/* The placeholder IS this field's accessible name — `seed.spec.ts`
+                and `patient-link-content.spec.ts` both locate it that way. It
+                does not move. */}
+            <Input
               placeholder="Numery FDI, np. 17,16,34"
               value={toothInput}
               onChange={(e) => {
@@ -499,7 +505,7 @@ export default function QuoteEditor({
           </div>
         )}
         {toothWarnings.length > 0 && (
-          <ul className="text-destructive mt-2 space-y-0.5 text-xs">
+          <ul className="text-urgency-moderate-ink border-urgency-moderate/50 mt-2 space-y-0.5 border-l-2 pl-3 text-xs">
             {toothWarnings.map((w) => (
               <li key={w}>{w}</li>
             ))}
@@ -573,8 +579,13 @@ export default function QuoteEditor({
           )}
         </Section>
       ) : (
-        <div className="flex flex-col items-start gap-2">
-          <div className="flex flex-wrap items-center gap-2">
+        // The two actions that end the task, anchored so they stay reachable
+        // from anywhere in a form that gets long. Same buttons, same names, same
+        // order, same gating — only the position changed. Everything that
+        // reports on them lives INSIDE the bar rather than under it, so the bar
+        // cannot cover its own confirmation.
+        <div className="border-border bg-background/95 fixed inset-x-0 bottom-0 z-10 border-t backdrop-blur-sm">
+          <div className="mx-auto flex max-w-4xl flex-wrap items-center gap-x-3 gap-y-1.5 px-4 py-3">
             <Button type="button" size="lg" disabled={approveDisabled || submitting} onClick={handleApprove}>
               {submitting ? "Zatwierdzanie…" : "Zatwierdź"}
             </Button>
@@ -582,10 +593,10 @@ export default function QuoteEditor({
               {saving ? "Zapisywanie…" : "Zapisz szkic"}
             </Button>
             {savedAt && !saveError && <span className="text-muted-foreground text-sm">Zapisano {savedAt}</span>}
+            {approveReason && <p className="text-muted-foreground basis-full text-sm">{approveReason}</p>}
+            {submitError && <p className="text-destructive basis-full text-sm">{submitError}</p>}
+            {saveError && <p className="text-destructive basis-full text-sm">{saveError}</p>}
           </div>
-          {approveReason && <p className="text-muted-foreground text-sm">{approveReason}</p>}
-          {submitError && <p className="text-destructive text-sm">{submitError}</p>}
-          {saveError && <p className="text-destructive text-sm">{saveError}</p>}
         </div>
       )}
     </div>
