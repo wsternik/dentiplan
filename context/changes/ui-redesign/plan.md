@@ -687,14 +687,14 @@ Rollback is `git revert -m 1 <merge-sha>` through a PR.
 
 #### Automated
 
-- [x] 5.1 `grep` finds no `dashboard`/`Welcome`/`LibBadge`/`bg-cosmic` in `src/` or `e2e/`
-- [x] 5.2 `npm run lint` exits 0, `astro check` 0 errors, `npm test` passes
-- [x] 5.3 `npm run build` completes
-- [x] 5.4 `npm run test:e2e` passes 4/4
-- [x] 5.5 `git diff main...HEAD -- e2e/*.spec.ts playwright.config.ts` is empty
+- [x] 5.1 `grep` finds no `dashboard`/`Welcome`/`LibBadge`/`bg-cosmic` in `src/` or `e2e/` — 52b6048
+- [x] 5.2 `npm run lint` exits 0, `astro check` 0 errors, `npm test` passes — 52b6048
+- [x] 5.3 `npm run build` completes — 52b6048
+- [x] 5.4 `npm run test:e2e` passes 4/4 — 52b6048
+- [x] 5.5 `git diff main...HEAD -- e2e/*.spec.ts playwright.config.ts` is empty — 52b6048
 
 #### Manual
 
-- [x] 5.6 `/dashboard` 404s rather than redirecting
-- [x] 5.7 README reads as a product document
-- [x] 5.8 All seven surfaces captured at 1280px and 375px
+- [x] 5.6 `/dashboard` 404s rather than redirecting — 52b6048
+- [x] 5.7 README reads as a product document — 52b6048
+- [x] 5.8 All seven surfaces captured at 1280px and 375px — 52b6048
