@@ -116,6 +116,12 @@ phase is wrong, and it is the phase with the fewest lines to undo.
 
 ## Critical Implementation Details
 
+**Nothing per-request may enter `Layout.astro`.** `patient-link-probe.spec.ts`
+asserts the two error responses are **byte-identical**. Astro's scoped-style
+hashes are deterministic, so restyling is safe — but a nonce, a generated id, or
+a rendered timestamp added to the layout would break that assertion, and it would
+read as a security-test failure rather than the styling mistake it is.
+
 **The E2E suite is flaky on a cold `astro dev` and phase 1 makes that worse.**
 `e2e/auth.setup.ts` is the only spec that does not call `waitForIslands()`, so on
 an unwarmed server it fills the e-mail field before the island hydrates, React
@@ -163,9 +169,15 @@ clinical tokens as `--urgency-{urgent,moderate,mild,unknown}` plus a matching
 `--urgency-*-ink` for each. `@theme inline` gains `--color-urgency-*` (so Tailwind
 emits `text-urgency-urgent-ink`, `bg-urgency-mild` etc.) and
 `--font-serif` / `--font-sans` bound to `"Literata Variable"` and
-`"Archivo Variable"` with real fallback stacks. `@utility bg-cosmic` is deleted.
-The `.dark` block keeps every token name defined — including the new ones — so
-the variant still compiles; its values are not designed.
+`"Archivo Variable"` with real fallback stacks. The `.dark` block keeps every
+token name defined — including the new ones — so the variant still compiles; its
+values are not designed.
+
+**`@utility bg-cosmic` stays until phase 5.** It still has six consumers (the
+four auth pages, `Welcome.astro`, `dashboard.astro`), and Tailwind emits nothing
+for an undefined utility rather than failing — deleting it here would silently
+strip those pages' background for three phases instead of breaking loudly. It
+goes with its last consumer.
 
 Two hard constraints on this file: **no `quotes:` property anywhere** (it is a
 real CSS property and would fail `patient-link-probe.spec.ts` on the served
@@ -204,8 +216,10 @@ ink value.
 
 **File**: `src/components/Topbar.astro`
 
-**Intent**: Rebuild as the panel's chrome and adopt it in the three admin pages,
-replacing the `Zalogowano:` line each of them repeats.
+**Intent**: Rebuild as the panel's chrome. **This phase builds it; phase 3
+adopts it** in the three admin pages, replacing the `Zalogowano:` line each of
+them repeats — nothing flags an unused Astro component, so the split is stated
+rather than left to whichever phase gets there first.
 
 **Contract**: Renders the product name linking to `/admin`, the signed-in
 address, and the sign-out form (`POST /api/auth/signout`, unchanged). **It must
@@ -358,7 +372,10 @@ scrolling away.
 **Contract**: `Zatwierdź` and `Zapisz szkic` move into a bottom-anchored action
 bar — **same buttons, same names, same order, same disabled logic**, only
 position changes; `Zapisano <time>`, `approveReason`, `submitError` and
-`saveError` travel with them. The hand-rolled `<input>` for tooth numbers becomes
+`saveError` travel _inside_ the bar, not underneath it. The scrolling content
+reserves bottom padding equal to the bar's height, so the bar never covers the
+last tooth row at 375px — and never covers `Zapisano <time>`, which `seed.spec.ts`
+waits for to confirm the save. The hand-rolled `<input>` for tooth numbers becomes
 `Input`, **keeping `placeholder="Numery FDI, np. 17,16,34"` exactly** — it is the
 field's accessible name. Every other label, button text, and section title is
 unchanged. No state, no handler, and no fetch is touched.
@@ -509,7 +526,8 @@ Delete what the redesign orphaned, and describe what the product now looks like.
 consumer once phase 2 rewrites `index.astro`.
 
 **Contract**: Verify zero references before deleting (`grep -rn` across `src/`,
-`e2e/`, `README.md`). `/dashboard` also comes out of `PROTECTED_ROUTES` in
+`e2e/`, `README.md`). The `@utility bg-cosmic` block in `global.css` goes here
+too — this phase removes its last two consumers (see phase 1, F1). `/dashboard` also comes out of `PROTECTED_ROUTES` in
 `src/middleware.ts:4` — it is the only other reference, and leaving a protected
 route pointing at a deleted page is a redirect loop waiting to be found.
 
@@ -538,6 +556,10 @@ badges, no screenshots-as-decoration.
 
 - `/dashboard` returns a 404 rather than redirecting anywhere
 - README reads as a product document
+- All seven surfaces captured at 1280px and 375px — landing, sign-in, admin list,
+  new-quote editor, an approved quote read-only, the patient page, the patient
+  error page. This is the step the Desired End State's verification line refers
+  to; without it that line promises evidence no phase produces.
 
 ---
 
@@ -672,3 +694,4 @@ Rollback is `git revert -m 1 <merge-sha>` through a PR.
 
 - [ ] 5.6 `/dashboard` 404s rather than redirecting
 - [ ] 5.7 README reads as a product document
+- [ ] 5.8 All seven surfaces captured at 1280px and 375px
