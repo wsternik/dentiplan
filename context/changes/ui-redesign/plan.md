@@ -267,7 +267,7 @@ assertion, locator, or expectation changes.
 #### Manual Verification
 
 - Every page renders in Literata/Archivo, with Polish diacritics correct (`ą ć ę ł ń ó ś ź ż`)
-- No purple, no cosmic gradient, and no `oklch(L 0 0)` neutral remains in `global.css`
+- `global.css` carries no grey neutral left from shadcn's default set (`0.145` / `0.205` / `0.556` / `0.922` / `0.97` at zero chroma). `oklch(1 0 0)` stays: that is porcelain, and it is a choice. `bg-cosmic` also stays — F1 moved its deletion to phase 5, with its last consumer
 - A configuration banner still appears for a signed-in dentist and still does not appear on `/p/<token>`
 
 ---
@@ -622,18 +622,18 @@ Rollback is `git revert -m 1 <merge-sha>` through a PR.
 
 #### Automated
 
-- [ ] 1.1 `npm run lint` exits 0
-- [ ] 1.2 `npx astro check` reports 0 errors
-- [ ] 1.3 `npm test` passes
-- [ ] 1.4 `npm run build` completes
-- [ ] 1.5 `npm run test:e2e` passes 4/4
-- [ ] 1.6 no `quotes:` property in `global.css`
+- [x] 1.1 `npm run lint` exits 0
+- [x] 1.2 `npx astro check` reports 0 errors
+- [x] 1.3 `npm test` passes
+- [x] 1.4 `npm run build` completes
+- [x] 1.5 `npm run test:e2e` passes 4/4
+- [x] 1.6 no `quotes:` property in `global.css`
 
 #### Manual
 
-- [ ] 1.7 Every page in Literata/Archivo with correct Polish diacritics
-- [ ] 1.8 No purple, no cosmic gradient, no neutral `oklch(L 0 0)` left
-- [ ] 1.9 Config banner shows for the dentist and not on `/p/<token>`
+- [x] 1.7 Every page in Literata/Archivo with correct Polish diacritics
+- [x] 1.8 No shadcn grey neutrals left in `global.css` (porcelain white and `bg-cosmic` deliberately stay)
+- [x] 1.9 Config banner shows for the dentist and not on `/p/<token>`
 
 ### Phase 2: Landing and auth
 

@@ -3,80 +3,119 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* DentiPlan's palette. The reasoning lives in
+   `context/changes/ui-redesign/design-brief.md`; the short version is that the
+   ground is enamel rather than paper-cream, the ink is a blue-black rather than
+   a brown-black, and saturated colour is reserved for clinical meaning. Chrome —
+   navigation, buttons, borders, the "recommended" marker — is ink. If something
+   on screen is coloured, it is saying something about a tooth. */
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  /* A shade tab is a squared rectangle. This also takes the whole shadcn set off
+     the starter's pill-ish 0.625rem in one line. */
+  --radius: 0.25rem;
+
+  /* --- Base --- */
+  --background: oklch(0.985 0.004 95); /* enamel */
+  --foreground: oklch(0.28 0.042 205); /* ink */
+  --card: oklch(1 0 0); /* porcelain — surfaces that sit ON the paper */
+  --card-foreground: oklch(0.28 0.042 205);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --popover-foreground: oklch(0.28 0.042 205);
+  --primary: oklch(0.33 0.055 205); /* deep ink */
+  --primary-foreground: oklch(0.985 0.004 95);
+  --secondary: oklch(0.955 0.006 200);
+  --secondary-foreground: oklch(0.28 0.042 205);
+  --muted: oklch(0.955 0.006 200);
+  --muted-foreground: oklch(0.505 0.028 205); /* slate */
+  --accent: oklch(0.955 0.006 200);
+  --accent-foreground: oklch(0.28 0.042 205);
+  --border: oklch(0.885 0.008 205); /* hairline */
+  --input: oklch(0.885 0.008 205);
+  --ring: oklch(0.55 0.05 205);
+
+  /* --- Clinical --- */
+  /* Every clinical hue ships twice. The plain value is a MARK: fills, dots,
+     strokes, areas. The `-ink` value is for TEXT set in that colour, because
+     several of the marks do not carry enough contrast on enamel to be read.
+     Shipping one value per hue is how a chart ends up with unreadable labels.
+     The tooth chart (S-06) draws with exactly these. */
+  --urgency-urgent: oklch(0.545 0.168 27); /* oxide red — serious, not an alarm */
+  --urgency-urgent-ink: oklch(0.455 0.155 27);
+  --urgency-moderate: oklch(0.735 0.135 68); /* ochre */
+  --urgency-moderate-ink: oklch(0.495 0.105 62);
+  --urgency-mild: oklch(0.655 0.085 142); /* sage — "can wait", not "well done" */
+  --urgency-mild-ink: oklch(0.455 0.07 142);
+  --urgency-unknown: oklch(0.8 0.01 205); /* deliberately colourless */
+  --urgency-unknown-ink: oklch(0.505 0.028 205);
+
+  /* A delete button and an urgent tooth speak the same red. The ink value, not
+     the mark: this one carries white text. */
+  --destructive: oklch(0.455 0.155 27);
+
+  /* Charts are unused today; kept defined so the shadcn tokens stay complete,
+     and pulled onto the clinical ramp so they cannot reintroduce a stray hue. */
+  --chart-1: oklch(0.545 0.168 27);
+  --chart-2: oklch(0.735 0.135 68);
+  --chart-3: oklch(0.655 0.085 142);
+  --chart-4: oklch(0.33 0.055 205);
+  --chart-5: oklch(0.8 0.01 205);
+
+  --sidebar: oklch(0.955 0.006 200);
+  --sidebar-foreground: oklch(0.28 0.042 205);
+  --sidebar-primary: oklch(0.33 0.055 205);
+  --sidebar-primary-foreground: oklch(0.985 0.004 95);
+  --sidebar-accent: oklch(0.985 0.004 95);
+  --sidebar-accent-foreground: oklch(0.28 0.042 205);
+  --sidebar-border: oklch(0.885 0.008 205);
+  --sidebar-ring: oklch(0.55 0.05 205);
 }
 
+/* Not designed, not reviewed, not screenshotted — a treatment estimate is read
+   in daylight and printed on white. Kept complete so the variant compiles and
+   so a future dark pass starts from named roles rather than from grey. The
+   clinical hues are NOT redefined here: they cascade from `:root`, and their
+   meaning does not change with the ambient light. */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: oklch(0.19 0.02 205);
+  --foreground: oklch(0.95 0.005 95);
+  --card: oklch(0.24 0.022 205);
+  --card-foreground: oklch(0.95 0.005 95);
+  --popover: oklch(0.24 0.022 205);
+  --popover-foreground: oklch(0.95 0.005 95);
+  --primary: oklch(0.9 0.012 200);
+  --primary-foreground: oklch(0.24 0.022 205);
+  --secondary: oklch(0.3 0.02 205);
+  --secondary-foreground: oklch(0.95 0.005 95);
+  --muted: oklch(0.3 0.02 205);
+  --muted-foreground: oklch(0.72 0.018 205);
+  --accent: oklch(0.3 0.02 205);
+  --accent-foreground: oklch(0.95 0.005 95);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 16%);
+  --ring: oklch(0.65 0.04 205);
+  --destructive: oklch(0.62 0.17 27);
+  --sidebar: oklch(0.24 0.022 205);
+  --sidebar-foreground: oklch(0.95 0.005 95);
+  --sidebar-primary: oklch(0.9 0.012 200);
+  --sidebar-primary-foreground: oklch(0.24 0.022 205);
+  --sidebar-accent: oklch(0.3 0.02 205);
+  --sidebar-accent-foreground: oklch(0.95 0.005 95);
+  --sidebar-border: oklch(1 0 0 / 12%);
+  --sidebar-ring: oklch(0.65 0.04 205);
 }
 
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 6px);
+
+  /* Literata reads (the patient document); Archivo works (the interface, and
+     every number — it was drawn with tabular figures, which is the difference
+     between a price list and a price table). */
+  --font-sans: "Archivo Variable", Archivo, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-serif: "Literata Variable", Literata, Georgia, "Times New Roman", serif;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -95,6 +134,16 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+
+  --color-urgency-urgent: var(--urgency-urgent);
+  --color-urgency-urgent-ink: var(--urgency-urgent-ink);
+  --color-urgency-moderate: var(--urgency-moderate);
+  --color-urgency-moderate-ink: var(--urgency-moderate-ink);
+  --color-urgency-mild: var(--urgency-mild);
+  --color-urgency-mild-ink: var(--urgency-mild-ink);
+  --color-urgency-unknown: var(--urgency-unknown);
+  --color-urgency-unknown-ink: var(--urgency-unknown-ink);
+
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -110,15 +159,33 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* The starter's gradient. Six pages still reference it (the four auth pages,
+   `Welcome.astro`, `dashboard.astro`) and Tailwind emits nothing for an
+   undefined utility rather than failing — so removing it here would strip those
+   backgrounds silently. It goes in phase 5, with its last consumer. */
 @utility bg-cosmic {
   background-image: linear-gradient(to bottom, #0a0e1a, #0f1529, #0a0e1a);
+}
+
+/* Money, and anything else read as a column of figures. Archivo's tabular
+   figures are the reason it is here. */
+@utility numeric {
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+    /* Literata carries an optical-size axis; letting the browser drive it is
+       what makes the display sizes hold together next to the body text. */
+    font-optical-sizing: auto;
+    text-rendering: optimizeLegibility;
   }
 }

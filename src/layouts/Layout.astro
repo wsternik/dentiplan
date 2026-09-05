@@ -1,20 +1,27 @@
 ---
+import "@fontsource-variable/literata/standard.css";
+import "@fontsource-variable/archivo/wght.css";
 import "../styles/global.css";
 import Banner from "@/components/Banner.astro";
 import { missingConfigs, publicMissingConfigs } from "@/lib/config-status";
 
 interface Props {
   title?: string;
-  /** Document language; defaults to English for the scaffold pages. */
+  /** Document language; Polish, which is what every page in the product is. */
   lang?: string;
 }
 
-const { title = "10x Astro Starter", lang = "en" } = Astro.props;
+const { title = "DentiPlan", lang = "pl" } = Astro.props;
 
 // This layout is shared with the anonymous patient page, so an admin-only
 // configuration banner would be shown to whoever opened the quote link — the
 // one thing `/p/<token>` promises never to do (FR-060, no-disclosure).
 const banners = Astro.locals.user ? missingConfigs : publicMissingConfigs;
+
+// NOTHING PER-REQUEST BELONGS IN THIS FILE. `e2e/patient-link-probe.spec.ts`
+// asserts that two different bad tokens produce byte-identical responses, and
+// this layout wraps that page. A nonce, a generated id, or a rendered timestamp
+// added here breaks a security test, which is a confusing way to find out.
 ---
 
 <!doctype html>
@@ -52,6 +59,6 @@ const banners = Astro.locals.user ? missingConfigs : publicMissingConfigs;
   body {
     margin: 0;
     width: 100%;
-    height: 100%;
+    min-height: 100%;
   }
 </style>
