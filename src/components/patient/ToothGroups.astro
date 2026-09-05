@@ -67,9 +67,16 @@ const grouped = GROUPS.map((group) => ({
                   {toothName(tooth.number)}
                   {(tooth.treatmentType ?? tooth.urgency) && (
                     <span class="text-muted-foreground block font-sans text-xs">
-                      {tooth.treatmentType && TREATMENT_LABELS[tooth.treatmentType]}
-                      {tooth.treatmentType && tooth.urgency && ", "}
-                      {tooth.urgency && URGENCY_LABELS[tooth.urgency]}
+                      {/* Joined in one expression on purpose: separate JSX
+                          expressions on separate lines each contribute their
+                          surrounding whitespace, which printed
+                          "leczenie kanałowe ,  pilne". */}
+                      {[
+                        tooth.treatmentType && TREATMENT_LABELS[tooth.treatmentType],
+                        tooth.urgency && URGENCY_LABELS[tooth.urgency],
+                      ]
+                        .filter(Boolean)
+                        .join(", ")}
                     </span>
                   )}
                 </span>

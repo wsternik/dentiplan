@@ -672,29 +672,29 @@ Rollback is `git revert -m 1 <merge-sha>` through a PR.
 
 #### Automated
 
-- [x] 4.1 `npm run test:e2e` passes 4/4
-- [x] 4.2 `npm run lint` exits 0, `astro check` 0 errors
-- [x] 4.3 `npm run build` completes
+- [x] 4.1 `npm run test:e2e` passes 4/4 — 542e3a4
+- [x] 4.2 `npm run lint` exits 0, `astro check` 0 errors — 542e3a4
+- [x] 4.3 `npm run build` completes — 542e3a4
 
 #### Manual
 
-- [x] 4.4 Reads well at 375px and 1280px, comparison first
-- [x] 4.5 Print preview keeps both variants side by side
-- [x] 4.6 Deferred and uncertain distinguishable in greyscale
-- [x] 4.7 Entrance absent under `prefers-reduced-motion`
+- [x] 4.4 Reads well at 375px and 1280px, comparison first — 542e3a4
+- [x] 4.5 Print preview keeps both variants side by side — 542e3a4
+- [x] 4.6 Deferred and uncertain distinguishable in greyscale — 542e3a4
+- [x] 4.7 Entrance absent under `prefers-reduced-motion` — 542e3a4
 
 ### Phase 5: Starter cleanup and README
 
 #### Automated
 
-- [ ] 5.1 `grep` finds no `dashboard`/`Welcome`/`LibBadge`/`bg-cosmic` in `src/` or `e2e/`
-- [ ] 5.2 `npm run lint` exits 0, `astro check` 0 errors, `npm test` passes
-- [ ] 5.3 `npm run build` completes
-- [ ] 5.4 `npm run test:e2e` passes 4/4
-- [ ] 5.5 `git diff main...HEAD -- e2e/*.spec.ts playwright.config.ts` is empty
+- [x] 5.1 `grep` finds no `dashboard`/`Welcome`/`LibBadge`/`bg-cosmic` in `src/` or `e2e/`
+- [x] 5.2 `npm run lint` exits 0, `astro check` 0 errors, `npm test` passes
+- [x] 5.3 `npm run build` completes
+- [x] 5.4 `npm run test:e2e` passes 4/4
+- [x] 5.5 `git diff main...HEAD -- e2e/*.spec.ts playwright.config.ts` is empty
 
 #### Manual
 
-- [ ] 5.6 `/dashboard` 404s rather than redirecting
-- [ ] 5.7 README reads as a product document
-- [ ] 5.8 All seven surfaces captured at 1280px and 375px
+- [x] 5.6 `/dashboard` 404s rather than redirecting
+- [x] 5.7 README reads as a product document
+- [x] 5.8 All seven surfaces captured at 1280px and 375px

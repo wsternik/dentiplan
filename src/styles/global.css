@@ -161,14 +161,6 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-/* The starter's gradient. Six pages still reference it (the four auth pages,
-   `Welcome.astro`, `dashboard.astro`) and Tailwind emits nothing for an
-   undefined utility rather than failing — so removing it here would strip those
-   backgrounds silently. It goes in phase 5, with its last consumer. */
-@utility bg-cosmic {
-  background-image: linear-gradient(to bottom, #0a0e1a, #0f1529, #0a0e1a);
-}
-
 /* Money, and anything else read as a column of figures. Archivo's tabular
    figures are the reason it is here. */
 @utility numeric {

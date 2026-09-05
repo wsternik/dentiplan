@@ -65,7 +65,8 @@ neither guessable nor enumerable.
 - [Astro](https://astro.build/) 6 — full SSR (`output: "server"`)
 - [React](https://react.dev/) 19 — islands, only where the page is interactive
 - [TypeScript](https://www.typescriptlang.org/) 5, [Zod](https://zod.dev/) 4 for validation
-- [Tailwind CSS](https://tailwindcss.com/) 4 + [shadcn/ui](https://ui.shadcn.com/) ("new-york")
+- [Tailwind CSS](https://tailwindcss.com/) 4 + [shadcn/ui](https://ui.shadcn.com/) ("new-york"), re-themed through tokens
+- [Literata](https://fonts.google.com/specimen/Literata) and [Archivo](https://fonts.google.com/specimen/Archivo) as variable fonts from npm, bundled — no font CDN
 - [Supabase](https://supabase.com/) — Postgres with RLS, cookie-based auth via `@supabase/ssr`
 - [Cloudflare Workers](https://workers.cloudflare.com/) — deployment target (`workerd` locally too)
 
@@ -148,6 +149,23 @@ Design and analysis documents live under `context/`:
 | [`context/domain/`](context/domain/)                         | domain distillation, invariants, anti-corruption layer   |
 | [`context/architect-report.md`](context/architect-report.md) | what that analysis found, and the one refactor it picked |
 | [`context/deployment/`](context/deployment/)                 | deploy plan and open infrastructure decisions            |
+
+## How it looks
+
+The patient page is the one that matters: someone reads it on a phone shortly
+after leaving the chair, deciding between several appointments and one session
+under anesthesia. So it is built as a document rather than an app — a reading
+serif, a single measured column, and the two options laid side by side as the
+first thing on the page.
+
+Colour in this interface means something clinical. Navigation, buttons and the
+"recommended" marker are ink; the only saturated hues in the system are the
+urgency marks on a tooth. Plan status is drawn rather than coloured — dashed for
+uncertain, dimmed and hatched for deferred — so it survives being printed in
+black and white and being read by someone who cannot separate red from green.
+
+The palette lives as tokens in `src/styles/global.css`; the reasoning behind it
+is in [`context/changes/ui-redesign/design-brief.md`](context/changes/ui-redesign/design-brief.md).
 
 ## Roadmap status
 
