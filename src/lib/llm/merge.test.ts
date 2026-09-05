@@ -93,6 +93,44 @@ describe("mergePrefill", () => {
     expect(merged.teeth.find((t) => t.number === 32)?.visitNumber).toBeNull();
   });
 
+  it("remaps by the visit's own number, not by its position — the model may not count from 1", () => {
+    // Found by the pipeline's review agent. Nothing in the schema or the prompt
+    // makes the model number its visits 1, 2, 3 in order; it might return 2 and
+    // 5. Positional arithmetic (`visitNumber + offset`) happens to be right for
+    // 1, 2, 3 and silently wrong for anything else — a tooth attached to a visit
+    // that does not exist, with no warning. Every other test here uses 1, 2, 3,
+    // which is exactly why this one does not.
+    const merged = mergePrefill(
+      emptyTree(),
+      prefill({
+        teeth: [tooth(16, { visitNumber: 2 }), tooth(36, { visitNumber: 5 })],
+        visits: [
+          { number: 2, label: "Pierwsza" },
+          { number: 5, label: "Druga" },
+        ],
+      }),
+      0,
+    );
+
+    expect(merged.visits).toEqual([
+      { number: 1, label: "Pierwsza" },
+      { number: 2, label: "Druga" },
+    ]);
+    expect(merged.teeth.find((t) => t.number === 16)?.visitNumber).toBe(1);
+    expect(merged.teeth.find((t) => t.number === 36)?.visitNumber).toBe(2);
+  });
+
+  it("drops a visit reference the prefill's own visit list does not contain", () => {
+    const merged = mergePrefill(
+      emptyTree(),
+      prefill({ teeth: [tooth(16, { visitNumber: 9 })], visits: [{ number: 1, label: "Jedyna" }] }),
+      0,
+    );
+
+    expect(merged.teeth[0].visitNumber).toBeNull();
+    expect(merged.warnings.some((w) => w.includes("16"))).toBe(true);
+  });
+
   it("does not add a general item she already has, and mints ids past the counter", () => {
     const existing: GeneralItem = { id: "g-4", item: resolvePricelistItem(HYGIENE), visitNumber: null };
 

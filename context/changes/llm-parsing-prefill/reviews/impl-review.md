@@ -237,3 +237,49 @@ project does not have — `test-plan.md` §3 already carries "Approval boundary"
 whichever of those goes first, not to this slice as a side effect.
 
 **Suite after these fixes: 59 tests, up from 40 before this change.**
+
+## Second pass by the pipeline's review agent (after the fixes above)
+
+Verdict still NEEDS ATTENTION, but on different ground — the two major findings
+from the first pass are gone (tests-proportional-to-risk 5/10 → 7/10, patient
+page 8/10 → 9/10, trust boundary 7/10 → 8/10), and it found a **real defect in
+the code the first pass caused me to write**.
+
+### R5 — `mergePrefill` renumbered visits by position, not by number
+
+> "The offset-based visit remap assumes the model's proposed `visits[]` are
+> numbered contiguously from 1 in array order (`t.visitNumber + offset`) …
+> nothing in the schema or the prompt enforces contiguity, so a model answer with
+> non-sequential visit numbers would silently attach a prefilled tooth to the
+> wrong visit with no warning, and no test exercises that case (every
+> fixture/test uses 1,2,3…)."
+
+Correct, and correct about why my tests missed it: all five used 1, 2, 3.
+`mapParsedDiagnosis` only guarantees a tooth's `visitNumber` matches one the
+model _declared_ — and the model can declare 2 and 5. Arithmetic on an offset is
+right for exactly the contiguous case and silently wrong for every other.
+
+Remapping now goes through an explicit `Map<originalNumber, newNumber>` built as
+the visits are appended, with two tests: gapped, out-of-order visit numbers, and
+a tooth pointing at a visit the prefill's own list does not contain (which now
+warns instead of dangling).
+
+**Decision**: FIXED. This is the pipeline paying for itself — a defect in code
+written minutes earlier, in the module extracted _because_ of the previous
+finding, caught by a reviewer with no stake in it.
+
+### R6 — `ParseWarnings` keyed list items by the message text
+
+Two warnings with identical wording — the model's own free-text warnings can
+repeat — would have collided as React keys. Keyed by position now; the list is
+read-only and never reordered.
+
+**Decision**: FIXED.
+
+### R2, R3 (repeat of F5 and the endpoint-branch gap)
+
+Unchanged decisions, and the agent itself offered the alternative taken here:
+"or note it explicitly as deferred to S-05 auth hardening." Both are recorded
+above with reasons.
+
+**Suite: 61 tests, up from 40 before this change.**

@@ -23,8 +23,11 @@ export function ParseWarnings({ warnings }: Props) {
     <div className="mt-2" role="group" aria-label="Ostrzeżenia z wypełniania notatki">
       <p className="text-muted-foreground text-xs font-medium">Z notatki nie udało się odczytać wszystkiego:</p>
       <ul className="text-destructive mt-1 space-y-0.5 text-xs">
-        {warnings.map((w) => (
-          <li key={w}>{w}</li>
+        {/* Keyed by position, not by the message: two items can legitimately
+            produce identical wording, and the model's own warnings are free text
+            it may well repeat. The list is read-only and never reordered. */}
+        {warnings.map((w, i) => (
+          <li key={i}>{w}</li>
         ))}
       </ul>
     </div>

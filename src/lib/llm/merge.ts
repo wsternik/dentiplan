@@ -46,16 +46,32 @@ export function mergePrefill(tree: WorkingTree, prefill: PrefillResult, generalI
     return true;
   });
 
-  // Prefilled visits land after the existing ones, so a prefilled tooth's
-  // visitNumber has to be remapped onto where its visit actually ended up.
-  const offset = tree.visits.length;
-  const visits: Visit[] = [
-    ...tree.visits,
-    ...prefill.content.visits.map((v, i) => ({ number: offset + i + 1, label: v.label })),
-  ];
+  // Prefilled visits land after the existing ones and are renumbered to continue
+  // the sequence, so a prefilled tooth's visitNumber has to follow its visit to
+  // wherever it ended up. Remapping is by the visit's OWN number through an
+  // explicit map, not by arithmetic on a positional offset: nothing in the schema
+  // or the prompt makes the model number its visits 1, 2, 3 in order, and an
+  // offset is right for exactly that case and silently wrong for every other —
+  // a tooth pointing at a visit that does not exist, with no warning.
+  const renumbered = new Map<number, number>();
+  const visits: Visit[] = [...tree.visits];
+  for (const visit of prefill.content.visits) {
+    const number = visits.length + 1;
+    renumbered.set(visit.number, number);
+    visits.push({ number, label: visit.label });
+  }
+
   const teeth = [
     ...tree.teeth,
-    ...additions.map((t) => ({ ...t, visitNumber: t.visitNumber === null ? null : t.visitNumber + offset })),
+    ...additions.map((t) => {
+      if (t.visitNumber === null) return { ...t, visitNumber: null };
+      const mapped = renumbered.get(t.visitNumber);
+      if (mapped === undefined) {
+        warnings.push(`Ząb ${t.number}: proponowana wizyta nie istnieje — ząb bez przypisanej wizyty.`);
+        return { ...t, visitNumber: null };
+      }
+      return { ...t, visitNumber: mapped };
+    }),
   ].sort((a, b) => a.number - b.number);
 
   const present = new Set(tree.generalItems.map((g) => g.item.id));
