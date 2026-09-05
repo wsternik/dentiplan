@@ -622,32 +622,32 @@ Rollback is `git revert -m 1 <merge-sha>` through a PR.
 
 #### Automated
 
-- [x] 1.1 `npm run lint` exits 0
-- [x] 1.2 `npx astro check` reports 0 errors
-- [x] 1.3 `npm test` passes
-- [x] 1.4 `npm run build` completes
-- [x] 1.5 `npm run test:e2e` passes 4/4
-- [x] 1.6 no `quotes:` property in `global.css`
+- [x] 1.1 `npm run lint` exits 0 — 1923185
+- [x] 1.2 `npx astro check` reports 0 errors — 1923185
+- [x] 1.3 `npm test` passes — 1923185
+- [x] 1.4 `npm run build` completes — 1923185
+- [x] 1.5 `npm run test:e2e` passes 4/4 — 1923185
+- [x] 1.6 no `quotes:` property in `global.css` — 1923185
 
 #### Manual
 
-- [x] 1.7 Every page in Literata/Archivo with correct Polish diacritics
-- [x] 1.8 No shadcn grey neutrals left in `global.css` (porcelain white and `bg-cosmic` deliberately stay)
-- [x] 1.9 Config banner shows for the dentist and not on `/p/<token>`
+- [x] 1.7 Every page in Literata/Archivo with correct Polish diacritics — 1923185
+- [x] 1.8 No shadcn grey neutrals left in `global.css` (porcelain white and `bg-cosmic` deliberately stay) — 1923185
+- [x] 1.9 Config banner shows for the dentist and not on `/p/<token>` — 1923185
 
 ### Phase 2: Landing and auth
 
 #### Automated
 
-- [ ] 2.1 `npm run lint` exits 0, `astro check` 0 errors
-- [ ] 2.2 `npm run test:e2e` passes 4/4
-- [ ] 2.3 `npm run build` completes
+- [x] 2.1 `npm run lint` exits 0, `astro check` 0 errors
+- [x] 2.2 `npm run test:e2e` passes 4/4
+- [x] 2.3 `npm run build` completes
 
 #### Manual
 
-- [ ] 2.4 `/` fits one screen at 1280×800 and reads at 375px
-- [ ] 2.5 `/auth/signin` has no glass or gradient and shows visible focus
-- [ ] 2.6 Sign-up and confirm-email match sign-in
+- [x] 2.4 `/` fits one screen at 1280×800 and reads at 375px
+- [x] 2.5 `/auth/signin` has no glass or gradient and shows visible focus
+- [x] 2.6 Sign-up and confirm-email match sign-in
 
 ### Phase 3: Panel and editor
 

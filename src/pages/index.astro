@@ -1,8 +1,94 @@
 ---
-import Welcome from "@/components/Welcome.astro";
+// The front door. Anonymous: nothing here is derived from a session, and the
+// sample quote below is invented — round numbers, no real patient, no real
+// pricelist lookup.
+//
+// The hero is the artifact rather than a headline over a gradient. What a
+// practice buys is the page its patients receive, so that is what the front page
+// shows.
+
 import Layout from "@/layouts/Layout.astro";
 ---
 
-<Layout>
-  <Welcome />
+<Layout title="DentiPlan — kosztorys leczenia dla pacjenta">
+  <main class="mx-auto grid min-h-screen max-w-5xl content-center gap-12 px-5 py-12 lg:grid-cols-2 lg:gap-16">
+    <div class="max-w-prose">
+      <p class="text-muted-foreground text-sm font-medium tracking-tight">DentiPlan</p>
+
+      <h1 class="mt-5 font-serif text-4xl leading-[1.15] font-medium tracking-tight sm:text-5xl">
+        Dwa kosztorysy obok siebie,<br class="hidden sm:inline" /> jeden link dla pacjenta.
+      </h1>
+
+      <p class="text-muted-foreground mt-6 text-base leading-relaxed">
+        Wklejasz notatkę z diagnozy, sprawdzasz wypełniony formularz i zatwierdzasz. Pacjent otwiera link i widzi to
+        samo leczenie policzone na dwa sposoby: rozłożone na wizyty albo w jednej sesji w znieczuleniu.
+      </p>
+
+      <p class="text-muted-foreground mt-4 text-sm leading-relaxed">
+        Link działa bez logowania i bez aplikacji. Kosztorys jest zamrożony w chwili zatwierdzenia, więc zmiana cennika
+        nie zmienia tego, co pacjent już zobaczył.
+      </p>
+
+      <div class="mt-9">
+        <a
+          href="/auth/signin"
+          class="bg-primary text-primary-foreground hover:bg-primary/88 focus-visible:ring-ring inline-flex h-10 items-center rounded-md px-6 text-sm font-medium tracking-tight transition-colors focus-visible:ring-2 focus-visible:outline-none"
+        >
+          Zaloguj się
+        </a>
+      </div>
+    </div>
+
+    <!-- The artifact. Squared tabs with a grip edge; the recommended one is
+         marked by the weight of that edge and by saying so, not by being
+         brighter. Same device the patient page uses. -->
+    <figure class="m-0 lg:self-center">
+      <div class="grid gap-4 sm:grid-cols-2">
+        <article class="border-border border-l-border/80 bg-card rounded-md border border-l-[3px] p-4">
+          <h2 class="font-serif text-sm leading-snug font-medium">Leczenie w kilku wizytach</h2>
+          <dl class="numeric mt-4 space-y-1.5 text-xs">
+            <div class="flex justify-between gap-3">
+              <dt class="text-muted-foreground">Wizyta 1</dt>
+              <dd class="m-0">1 200 zł</dd>
+            </div>
+            <div class="flex justify-between gap-3">
+              <dt class="text-muted-foreground">Wizyta 2</dt>
+              <dd class="m-0">800 zł</dd>
+            </div>
+            <div class="flex justify-between gap-3">
+              <dt class="text-muted-foreground">Wizyta 3</dt>
+              <dd class="m-0">400 zł</dd>
+            </div>
+          </dl>
+          <div class="border-border numeric mt-3 flex justify-between gap-3 border-t pt-3 text-xs font-semibold">
+            <span>Razem</span>
+            <span>2 400 zł</span>
+          </div>
+        </article>
+
+        <article class="border-border border-l-primary bg-card rounded-md border border-l-[6px] p-4">
+          <h2 class="font-serif text-sm leading-snug font-medium">Leczenie w znieczuleniu (jedna sesja)</h2>
+          <p class="text-muted-foreground mt-1 text-[0.6875rem]">rekomendowane przez gabinet</p>
+          <dl class="numeric mt-4 space-y-1.5 text-xs">
+            <div class="flex justify-between gap-3">
+              <dt class="text-muted-foreground">Leczenie</dt>
+              <dd class="m-0">2 400 zł</dd>
+            </div>
+            <div class="flex justify-between gap-3">
+              <dt class="text-muted-foreground">Znieczulenie</dt>
+              <dd class="m-0">900 zł</dd>
+            </div>
+          </dl>
+          <div class="border-border numeric mt-3 flex justify-between gap-3 border-t pt-3 text-xs font-semibold">
+            <span>Razem</span>
+            <span>3 300 zł</span>
+          </div>
+        </article>
+      </div>
+
+      <figcaption class="text-muted-foreground mt-4 text-xs leading-relaxed">
+        Przykładowy kosztorys z wymyślonymi kwotami. Tak wygląda strona, którą otwiera pacjent.
+      </figcaption>
+    </figure>
+  </main>
 </Layout>
