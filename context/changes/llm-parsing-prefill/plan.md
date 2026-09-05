@@ -607,13 +607,13 @@ slice.
 
 #### Automated
 
-- [x] 4.1 Linting passes: `npm run lint`
-- [x] 4.2 Type checking passes: `npx astro check`
-- [x] 4.3 Unit suite passes: `npm test`
-- [x] 4.4 No stale `blocked` on the S-02 roadmap row
+- [x] 4.1 Linting passes: `npm run lint` — 74957ee
+- [x] 4.2 Type checking passes: `npx astro check` — 74957ee
+- [x] 4.3 Unit suite passes: `npm test` — 74957ee
+- [x] 4.4 No stale `blocked` on the S-02 roadmap row — 74957ee
 
 #### Manual
 
-- [x] 4.5 The PRD explains why `note` is not model-writable
-- [x] 4.6 Test plan §7 explains the missing e2e in one sentence
-- [x] 4.7 `contract-surfaces.md` records how S-02 honours the `content` invariant
+- [x] 4.5 The PRD explains why `note` is not model-writable — 74957ee
+- [x] 4.6 Test plan §7 explains the missing e2e in one sentence — 74957ee
+- [x] 4.7 `contract-surfaces.md` records how S-02 honours the `content` invariant — 74957ee
