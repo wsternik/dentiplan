@@ -572,36 +572,36 @@ slice.
 
 #### Automated
 
-- [x] 2.1 Linting passes: `npm run lint`
-- [x] 2.2 Type checking passes: `npx astro check`
-- [x] 2.3 Unit suite passes: `npm test`
-- [x] 2.4 Build succeeds against the Workers runtime: `npm run build`
-- [x] 2.5 E2E regression gate green, specs untouched: `npm run test:e2e`
+- [x] 2.1 Linting passes: `npm run lint` — c7f2d85
+- [x] 2.2 Type checking passes: `npx astro check` — c7f2d85
+- [x] 2.3 Unit suite passes: `npm test` — c7f2d85
+- [x] 2.4 Build succeeds against the Workers runtime: `npm run build` — c7f2d85
+- [x] 2.5 E2E regression gate green, specs untouched: `npm run test:e2e` — c7f2d85
 
 #### Manual
 
-- [x] 2.6 `POST /api/admin/quotes/parse` without a session cookie returns 401
-- [x] 2.7 A 5000-character body returns 400 and never reaches the model
-- [x] 2.8 A real note returns 200 with populated `content` and `warnings`, from the workerd dev server
-- [x] 2.9 With the key removed, the app boots, banners, and the endpoint answers 503
-- [x] 2.10 With the key removed, `/p/<token>` shows **no** configuration banner
+- [x] 2.6 `POST /api/admin/quotes/parse` without a session cookie returns 401 — c7f2d85
+- [x] 2.7 A 5000-character body returns 400 and never reaches the model — c7f2d85
+- [x] 2.8 A real note returns 200 with populated `content` and `warnings`, from the workerd dev server — c7f2d85
+- [x] 2.9 With the key removed, the app boots, banners, and the endpoint answers 503 — c7f2d85
+- [x] 2.10 With the key removed, `/p/<token>` shows **no** configuration banner — c7f2d85
 
 ### Phase 3: The button, the warnings, and the merge
 
 #### Automated
 
-- [ ] 3.1 Linting passes: `npm run lint`
-- [ ] 3.2 Type checking passes: `npx astro check`
-- [ ] 3.3 Unit suite passes: `npm test`
-- [ ] 3.4 E2E regression gate green, specs untouched: `npm run test:e2e`
+- [x] 3.1 Linting passes: `npm run lint`
+- [x] 3.2 Type checking passes: `npx astro check`
+- [x] 3.3 Unit suite passes: `npm test`
+- [x] 3.4 E2E regression gate green, specs untouched: `npm run test:e2e`
 
 #### Manual
 
-- [ ] 3.5 The PRD example note fills 17, 16, 34, 37, 36 and 32, with 32 `uncertain`
-- [ ] 3.6 Clicking twice warns instead of duplicating
-- [ ] 3.7 Teeth added by hand survive a prefill unchanged
-- [ ] 3.8 With the endpoint failing, the FR-013 message appears and the form stays usable
-- [ ] 3.9 Screenshot of the editor after a prefill, warnings visible
+- [x] 3.5 The PRD example note fills 17, 16, 34, 37, 36 and 32, with 32 `uncertain`
+- [x] 3.6 Clicking twice warns instead of duplicating
+- [x] 3.7 Teeth added by hand survive a prefill unchanged
+- [x] 3.8 With the endpoint failing, the FR-013 message appears and the form stays usable
+- [x] 3.9 Screenshot of the editor after a prefill, warnings visible
 
 ### Phase 4: The documents that record the decision
 

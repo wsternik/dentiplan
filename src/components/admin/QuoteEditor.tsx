@@ -16,6 +16,7 @@ import { computeQuoteTotals } from "@/lib/quote/cost";
 import { isValidToothNumber } from "@/lib/quote/tooth-name";
 import type { GeneralItem, PatientType, PricelistItemRef, ToothEntry, Visit } from "@/types";
 import { ApprovalConfirmation } from "./ApprovalConfirmation";
+import { ParseWarnings } from "./ParseWarnings";
 import { Section } from "./controls";
 import { CopyLink } from "./CopyLink";
 import { GeneralItems } from "./GeneralItems";
@@ -23,6 +24,7 @@ import { ToothRow } from "./ToothRow";
 import { TotalsPreview } from "./TotalsPreview";
 import { VisitList } from "./VisitList";
 import type { PickerOption } from "@/lib/pricing";
+import type { PrefillResult } from "@/lib/llm/schema";
 import type { QuoteEditorProps } from "./types";
 
 /** Drop the picker-only `category` field down to the stored snapshot ref. */
@@ -70,6 +72,11 @@ export default function QuoteEditor({
   const [rawText, setRawText] = useState("");
   const [toothInput, setToothInput] = useState("");
   const [toothWarnings, setToothWarnings] = useState<string[]>([]);
+
+  // --- Note prefill (S-02, FR-011/FR-012) ---
+  const [parsing, setParsing] = useState(false);
+  const [parseError, setParseError] = useState<string | null>(null);
+  const [parseWarnings, setParseWarnings] = useState<string[]>([]);
   const generalCounter = useRef(highestGeneralIndex(initialContent?.generalItems ?? []));
   // Write lock for the two server-writing actions. A ref, because the `saving` /
   // `submitting` state flags are read through a closure: a second click in the
@@ -241,6 +248,94 @@ export default function QuoteEditor({
     }
   }
 
+  // --- Note prefill (S-02) ---
+  //
+  // Additive on purpose. The dentystka may already have typed teeth in before
+  // clicking, and a prefill that replaced the tree would throw her work away on
+  // a button whose whole promise is that it saves time. Anything the prefill
+  // duplicates is skipped and reported instead.
+  //
+  // `rawText` is the only thing sent, and it still never enters `treePayload()`
+  // — the patient-safe invariant at the top of this file is unchanged.
+  function applyPrefill(result: PrefillResult): string[] {
+    const notices: string[] = [...result.warnings];
+
+    const existing = new Set(teeth.map((t) => t.number));
+    const additions = result.content.teeth.filter((t) => {
+      if (existing.has(t.number)) {
+        notices.push(`Ząb ${t.number} był już w formularzu — pominięto propozycję z notatki.`);
+        return false;
+      }
+      return true;
+    });
+
+    // Prefilled visits are appended after the existing ones, so a tooth's
+    // `visitNumber` has to be remapped onto where its visit actually landed.
+    const offset = visits.length;
+    const remapped = additions.map((t) => ({
+      ...t,
+      visitNumber: t.visitNumber === null ? null : t.visitNumber + offset,
+    }));
+
+    if (result.content.visits.length > 0) {
+      setVisits((prev) => [
+        ...prev,
+        ...result.content.visits.map((v, i) => ({ number: prev.length + i + 1, label: v.label })),
+      ]);
+    }
+    if (remapped.length > 0) {
+      setTeeth((prev) => [...prev, ...remapped].sort((a, b) => a.number - b.number));
+    }
+    // General items dedupe the same way teeth do. Two runs over the same note
+    // otherwise leave two Higienizacje on the quote and quietly double that line
+    // in both cost variants — the tooth guard alone is not the whole rule.
+    const presentItems = new Set(generalItems.map((g) => g.item.id));
+    const added: GeneralItem[] = [];
+    for (const item of result.content.generalItems) {
+      if (presentItems.has(item.id)) {
+        notices.push(`„${item.name}” była już w pozycjach ogólnych — pominięto propozycję z notatki.`);
+        continue;
+      }
+      presentItems.add(item.id);
+      // Ids come from the editor's own counter, which is seeded past whatever a
+      // reopened draft restored — minting them server-side could collide.
+      generalCounter.current += 1;
+      added.push({ id: `g-${generalCounter.current}`, item, visitNumber: null });
+    }
+    if (added.length > 0) {
+      setGeneralItems((prev) => [...prev, ...added]);
+    }
+
+    return notices;
+  }
+
+  async function handlePrefill() {
+    if (inFlight.current) return;
+    inFlight.current = true;
+    setParsing(true);
+    setParseError(null);
+    try {
+      const res = await fetch("/api/admin/quotes/parse", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: rawText }),
+      });
+      if (!res.ok) {
+        // FR-013: the prefill is never a gate. Say so plainly and change nothing.
+        const data = (await res.json().catch(() => null)) as { error?: string } | null;
+        setParseError(data?.error ?? "Nie udało się przetworzyć notatki — wypełnij formularz ręcznie.");
+        return;
+      }
+      const result = (await res.json()) as PrefillResult;
+      setParseWarnings(applyPrefill(result));
+    } catch {
+      setParseError("Nie udało się przetworzyć notatki — wypełnij formularz ręcznie.");
+    } finally {
+      inFlight.current = false;
+      setParsing(false);
+    }
+  }
+
   // --- Approve gating (essential guards; server re-checks in Phase 3) ---
   const isEmpty = teeth.length === 0 && generalItems.length === 0;
   const hasUnpriced = teeth.some((t) => t.status === "in-plan" && t.pricelistItems.length === 0);
@@ -365,6 +460,21 @@ export default function QuoteEditor({
               setRawText(e.target.value);
             }}
           />
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={parsing || rawText.trim().length === 0}
+              onClick={() => void handlePrefill()}
+            >
+              {parsing ? "Wypełnianie…" : "Wypełnij z notatki"}
+            </Button>
+            <span className="text-muted-foreground text-xs">
+              Uzupełnia formularz — niczego nie nadpisuje i nie zatwierdza.
+            </span>
+          </div>
+          {parseError && <p className="text-destructive mt-2 text-sm">{parseError}</p>}
+          <ParseWarnings warnings={parseWarnings} />
         </Section>
       )}
 
