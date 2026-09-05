@@ -2,6 +2,10 @@
 // The dentist's own door. Copy stays in English: `Email`, `Password` and
 // `Sign in` are the accessible names `e2e/auth.setup.ts` locates by, and this
 // redesign does not move a test contract for tidiness.
+//
+// Hence `lang="en"`. The layout defaults to Polish, which is right for every
+// page a patient sees — but declaring Polish around English text tells a screen
+// reader to pronounce it with Polish rules.
 
 import Layout from "@/layouts/Layout.astro";
 import SignInForm from "@/components/auth/SignInForm";
@@ -9,7 +13,7 @@ import SignInForm from "@/components/auth/SignInForm";
 const error = Astro.url.searchParams.get("error");
 ---
 
-<Layout title="Sign in">
+<Layout title="Sign in" lang="en">
   <main class="flex min-h-screen flex-col items-center justify-center px-5 py-12">
     <a href="/" class="text-muted-foreground mb-8 text-sm font-medium tracking-tight">DentiPlan</a>
     <div class="border-border bg-card w-full max-w-sm rounded-md border p-7">

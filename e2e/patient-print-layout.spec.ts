@@ -50,6 +50,10 @@ test("risk #12: the printed estimate keeps the two treatment variants side by si
 
   const picker = page.getByRole("combobox", { name: "Dodaj pozycję z cennika…" });
   const treatment = await picker.getByRole("option", { name: /^Leczenie kanałowe trzonowca/ }).getAttribute("value");
+  // Fail here, not two assertions later: without this, a renamed pricelist entry
+  // selects the empty option and the test dies on a print-geometry assertion
+  // that has nothing to do with the actual problem.
+  expect(treatment, "the pricelist must still offer a molar root canal").toBeTruthy();
   await picker.selectOption(treatment ?? "");
   await expect(page.getByText(/^Leczenie kanałowe trzonowca · /)).toBeVisible();
 
