@@ -177,9 +177,6 @@
   }
   body {
     @apply bg-background text-foreground font-sans;
-    /* Literata carries an optical-size axis; letting the browser drive it is
-       what makes the display sizes hold together next to the body text. */
-    font-optical-sizing: auto;
     text-rendering: optimizeLegibility;
   }
 }

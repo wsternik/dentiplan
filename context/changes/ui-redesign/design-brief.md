@@ -119,8 +119,14 @@ non-negotiable and both families ship them.
   document: headings, prose, tooth names, the disclaimer. Literata was drawn for
   e-readers, so it holds together at 16px on a phone held at arm's length, which is
   literally the hero context. It is warm and slightly stubby rather than fashionably
-  high-contrast. Its `opsz` axis is used: display sizes take the larger optical
-  size, body text the smaller.
+  high-contrast.
+
+  **Weight axis only** (`wght.css`, not `standard.css`). Literata also ships an
+  optical-size axis, and it is tempting — but it more than doubles the file: 195 KB
+  against 93 KB for the two cuts a Polish reader actually fetches. The hero context
+  for this page is a phone in a corridor, and one display heading does not justify
+  102 KB on that connection. Measured after the fact, not assumed.
+
 - **`@fontsource-variable/archivo`** — the interface face. Every number, every
   label, every button, every table header, and the whole admin panel. Chosen for
   its tabular figures: this is a document about money in columns, and
