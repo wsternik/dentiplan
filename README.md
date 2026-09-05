@@ -30,6 +30,14 @@ Full problem statement, persona and requirements: [`context/foundation/prd.md`](
 
 **For the dentist** (`/admin`, behind sign-in):
 
+- paste the raw diagnosis note and press **"Wypełnij z notatki"** — the note (and
+  nothing else: no name, no e-mail, no identifier) goes to Anthropic, and the
+  teeth, procedures, uncertainty markers and practice-wide items it reads come
+  back into the form. It appends, never overwrites, and everything it could not
+  place — an unknown pricelist item, a tooth number outside FDI — is listed as a
+  warning instead of quietly dropped or quietly accepted. If the call fails the
+  form is filled in by hand exactly as before; the parser is an accelerator, not
+  a dependency
 - paste the raw diagnosis text and fill the form: patient type (child/adult),
   and per tooth the procedure, urgency, status (`in-plan` / `uncertain` /
   `out-of-current-plan`), pricelist items and a note; plus practice-wide items
@@ -71,6 +79,10 @@ npm install
 cp .env.example .env        # Node tooling (tests, scripts)
 cp .env.example .dev.vars   # Cloudflare local dev — same values
 ```
+
+`ANTHROPIC_API_KEY` powers the note prefill. Leave it unset and the app runs
+fine — the panel shows a banner saying the button is off, and the form is filled
+in by hand.
 
 Then either point `SUPABASE_URL` / `SUPABASE_KEY` at a cloud Supabase project, or
 start a local stack:
@@ -140,14 +152,13 @@ Design and analysis documents live under `context/`:
 ## Roadmap status
 
 Shipped: the domain schema (F-01), the pricelist seed (F-02), the end-to-end
-quote and patient link (S-01), and the admin quote list (S-03). What is not
-built, and why:
+quote and patient link (S-01), the admin quote list (S-03), and the note prefill
+(S-02). What is not built, and why:
 
-|                                                      | Status   | Why not yet                                                                                                                                                                                                                                                  |
-| ---------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **S-02** LLM pre-fills the form from the pasted note | blocked  | The provider choice is still open — Polish-language parsing quality, structured output and a retention policy we can live with all have to line up first. The form is fillable by hand either way; the parser was always an accelerator, never a dependency. |
-| **S-04** 12-month retention enforcement              | proposed | The default is written down (link stops resolving, patient e-mail scrubbed), but "delete the quote or anonymise it" is a decision for the dentist and a GDPR lawyer, not for the code. It is a hard gate before real patients, not before the demo.          |
-| **S-05** Auth hardening                              | ready    | Session timeout, rate limiting against credential stuffing, and no account lockout. Independent of everything else, planned but not started.                                                                                                                 |
+|                                         | Status   | Why not yet                                                                                                                                                                                                                                         |
+| --------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **S-04** 12-month retention enforcement | proposed | The default is written down (link stops resolving, patient e-mail scrubbed), but "delete the quote or anonymise it" is a decision for the dentist and a GDPR lawyer, not for the code. It is a hard gate before real patients, not before the demo. |
+| **S-05** Auth hardening                 | ready    | Session timeout, rate limiting against credential stuffing, and no account lockout. Independent of everything else, planned but not started.                                                                                                        |
 
 Deliberately out of scope for v1 — the SVG odontogram, drag-and-drop of teeth
 between visits, sending e-mails from the app, a pricelist admin UI — with the

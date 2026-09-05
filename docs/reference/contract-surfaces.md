@@ -85,3 +85,17 @@ Therefore:
 The RPC column whitelist protects only top-level columns; it does **not** inspect
 fields nested inside `content`. FR-066 depends on this invariant. Downstream slices
 (S-01 form payloads, S-02 LLM prefill) **must** honor it when shaping `content`.
+
+**How S-02 honors it** (`llm-parsing-prefill`, 2026-09-05), by two mechanisms rather
+than by review:
+
+- **The model cannot write `note`.** `ParsedDiagnosisSchema` in `src/lib/llm/schema.ts`
+  has no such field, so prefilled teeth always carry `note: ""`. `note` is the only
+  free-text field inside `content`, and the model has just read the dentystka's
+  confidential diagnosis — a writable field there would be the shortest path back to
+  the leak this invariant exists to prevent. Context that would have gone into a note
+  goes into the prefill warnings, which are admin-only.
+- **Pricelist ids are resolved server-side from the seed**, never taken from the
+  model's output — `mapParsedDiagnosis` re-resolves each id and drops (with a named
+  warning) anything absent from the catalog or offered in the wrong context. So the
+  names and prices that end up in `content` are the surgery's, not the model's.

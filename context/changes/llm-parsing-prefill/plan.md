@@ -590,30 +590,30 @@ slice.
 
 #### Automated
 
-- [x] 3.1 Linting passes: `npm run lint`
-- [x] 3.2 Type checking passes: `npx astro check`
-- [x] 3.3 Unit suite passes: `npm test`
-- [x] 3.4 E2E regression gate green, specs untouched: `npm run test:e2e`
+- [x] 3.1 Linting passes: `npm run lint` — 1e4ccb1
+- [x] 3.2 Type checking passes: `npx astro check` — 1e4ccb1
+- [x] 3.3 Unit suite passes: `npm test` — 1e4ccb1
+- [x] 3.4 E2E regression gate green, specs untouched: `npm run test:e2e` — 1e4ccb1
 
 #### Manual
 
-- [x] 3.5 The PRD example note fills 17, 16, 34, 37, 36 and 32, with 32 `uncertain`
-- [x] 3.6 Clicking twice warns instead of duplicating
-- [x] 3.7 Teeth added by hand survive a prefill unchanged
-- [x] 3.8 With the endpoint failing, the FR-013 message appears and the form stays usable
-- [x] 3.9 Screenshot of the editor after a prefill, warnings visible
+- [x] 3.5 The PRD example note fills 17, 16, 34, 37, 36 and 32, with 32 `uncertain` — 1e4ccb1
+- [x] 3.6 Clicking twice warns instead of duplicating — 1e4ccb1
+- [x] 3.7 Teeth added by hand survive a prefill unchanged — 1e4ccb1
+- [x] 3.8 With the endpoint failing, the FR-013 message appears and the form stays usable — 1e4ccb1
+- [x] 3.9 Screenshot of the editor after a prefill, warnings visible — 1e4ccb1
 
 ### Phase 4: The documents that record the decision
 
 #### Automated
 
-- [ ] 4.1 Linting passes: `npm run lint`
-- [ ] 4.2 Type checking passes: `npx astro check`
-- [ ] 4.3 Unit suite passes: `npm test`
-- [ ] 4.4 No stale `blocked` on the S-02 roadmap row
+- [x] 4.1 Linting passes: `npm run lint`
+- [x] 4.2 Type checking passes: `npx astro check`
+- [x] 4.3 Unit suite passes: `npm test`
+- [x] 4.4 No stale `blocked` on the S-02 roadmap row
 
 #### Manual
 
-- [ ] 4.5 The PRD explains why `note` is not model-writable
-- [ ] 4.6 Test plan §7 explains the missing e2e in one sentence
-- [ ] 4.7 `contract-surfaces.md` records how S-02 honours the `content` invariant
+- [x] 4.5 The PRD explains why `note` is not model-writable
+- [x] 4.6 Test plan §7 explains the missing e2e in one sentence
+- [x] 4.7 `contract-surfaces.md` records how S-02 honours the `content` invariant
