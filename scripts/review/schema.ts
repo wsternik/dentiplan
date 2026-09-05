@@ -13,6 +13,16 @@ import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
 
+export const CRITERION_KEYS = [
+  "serverSideValidation",
+  "dataAccess",
+  "patientPageLeaks",
+  "testRiskCoverage",
+  "codebaseFit",
+] as const;
+
+export type CriterionKey = (typeof CRITERION_KEYS)[number];
+
 // Scores are plain z.number(): Anthropic's structured output rejects
 // minimum/maximum on an integer, so the 1-10 range is carried by the field
 // description and by the system prompt instead of by the schema.
@@ -33,9 +43,7 @@ export const REVIEW_SCHEMA = z.object({
   findings: z
     .array(
       z.object({
-        criterion: z
-          .enum(["serverSideValidation", "dataAccess", "patientPageLeaks", "testRiskCoverage", "codebaseFit"])
-          .describe("Which criterion this finding is against"),
+        criterion: z.enum(CRITERION_KEYS).describe("Which criterion this finding is against"),
         severity: z
           .enum(["blocker", "major", "minor"])
           .describe("blocker forces REJECTED; major forces NEEDS_ATTENTION"),
