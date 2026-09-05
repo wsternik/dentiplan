@@ -1,174 +1,181 @@
-# 10x Astro Starter
+# DentiPlan
 
-![](./public/template.png)
+Turns a dentist's semi-structured diagnosis note into a patient-readable treatment
+plan with two comparable cost estimates, shared as a single unguessable link.
 
-A modern, opinionated starter template for building fast, accessible web applications.
+Live: **https://dentiplan-production.wsternik.workers.dev**
 
-## Tech Stack
+## The problem
 
-- [Astro](https://astro.build/) v6 - Modern web framework with server-first rendering
-- [React](https://react.dev/) v19 - UI library for interactive components
-- [TypeScript](https://www.typescriptlang.org/) v5 - Type-safe JavaScript
-- [Tailwind CSS](https://tailwindcss.com/) v4 - Utility-first CSS framework
-- [Supabase](https://supabase.com/) - Authentication and backend-as-a-service
-- [Cloudflare Workers](https://workers.cloudflare.com/) - Edge deployment runtime
+After the first consultation (panoramic X-ray plus clinical examination), the
+dentist running the Dentina practice in Kołobrzeg records the diagnosis in her
+existing medical-records system as semi-structured text — something like
+`Do leczenia: 17,16,15... Kanałowe: 34,37,36, (32?) Kamień do usunięcia`. To put
+a proposal in front of the patient she then has to rework that note by hand:
+identify every tooth, pick pricelist items, and total it up twice — once for the
+standard multi-visit plan and once for the single session under general
+anaesthesia the practice prefers — then describe the conditional scenarios and
+present the whole thing legibly. That is several to a dozen-odd minutes per
+patient, with no consistent side-by-side presentation and a real chance of
+arithmetic slips.
 
-## Prerequisites
+The practice-management systems available on the Polish market aim at medical
+documentation, not at presenting a plan to the patient; a two-variant comparison
+is the gap this fills. The app makes no medical decisions — it structures and
+presents what the dentist has already diagnosed.
 
-- Node.js v22.14.0 (as specified in `.nvmrc`)
-- npm (comes with Node.js)
+Full problem statement, persona and requirements: [`context/foundation/prd.md`](context/foundation/prd.md).
 
-## Getting Started
+## What the MVP does
 
-1. Clone the repository:
+**For the dentist** (`/admin`, behind sign-in):
 
-```bash
-git clone https://github.com/przeprogramowani/10x-astro-starter.git
-cd 10x-astro-starter
-```
+- paste the raw diagnosis text and fill the form: patient type (child/adult),
+  and per tooth the procedure, urgency, status (`in-plan` / `uncertain` /
+  `out-of-current-plan`), pricelist items and a note; plus practice-wide items
+  and an assignment of `in-plan` teeth to visits
+- see costs computed for both variants as you go, price ranges staying ranges
+- approve once — approval is final and freezes a snapshot of the pricelist into
+  the quote, so later price changes never alter a quote a patient already has
+- browse every quote, reopen drafts, and keep the recipient's e-mail next to the
+  quote for the dentist's own reference (never sent anywhere, never shown to the
+  patient)
 
-2. Install dependencies:
+**For the patient** (`/p/<token>`, no account, no login):
+
+- teeth grouped and named, a _Odroczone_ section for what is out of the current
+  plan, and a _Scenariusze, które mogą zmienić koszt_ section for uncertain teeth
+- the standard plan (visits and their totals) and the general-anaesthesia plan
+  (one session, fee by the practice's rule) side by side
+- a disclaimer about the estimate's nature that cannot be dismissed
+
+The token carries ≥ 128 bits of entropy and is not sequential, so links are
+neither guessable nor enumerable.
+
+## Stack
+
+- [Astro](https://astro.build/) 6 — full SSR (`output: "server"`)
+- [React](https://react.dev/) 19 — islands, only where the page is interactive
+- [TypeScript](https://www.typescriptlang.org/) 5, [Zod](https://zod.dev/) 4 for validation
+- [Tailwind CSS](https://tailwindcss.com/) 4 + [shadcn/ui](https://ui.shadcn.com/) ("new-york")
+- [Supabase](https://supabase.com/) — Postgres with RLS, cookie-based auth via `@supabase/ssr`
+- [Cloudflare Workers](https://workers.cloudflare.com/) — deployment target (`workerd` locally too)
+
+## Running it locally
+
+Requires Node.js v22.14.0 (see `.nvmrc`) and, for a local database,
+[Docker](https://www.docker.com/).
 
 ```bash
 npm install
+cp .env.example .env        # Node tooling (tests, scripts)
+cp .env.example .dev.vars   # Cloudflare local dev — same values
 ```
 
-3. Set up Supabase and configure environment variables — see [Supabase Configuration](#supabase-configuration) below.
-
-4. Create a `.dev.vars` file for local Cloudflare dev secrets:
+Then either point `SUPABASE_URL` / `SUPABASE_KEY` at a cloud Supabase project, or
+start a local stack:
 
 ```bash
-cp .env.example .dev.vars
+npx supabase start          # prints the URL and anon key to paste into .env
+npx supabase db reset       # applies supabase/migrations/
 ```
-
-5. Run the development server:
 
 ```bash
-npm run dev
+npm run dev                 # http://localhost:4321
 ```
 
-## Available Scripts
+Sign up at `/auth/signup`. Supabase requires e-mail confirmation by default; for
+local work turn it off under **Authentication → Email → Confirm email** in Studio
+(`http://localhost:54323`).
 
-- `npm run dev` - Start development server (Cloudflare workerd runtime)
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint with type-checked rules
-- `npm run lint:fix` - Auto-fix ESLint issues
-- `npm run format` - Run Prettier
+The pricelist lives in the repo, not in an admin UI — that was a deliberate v1
+cut. How to change a price: [`src/lib/pricing/README.md`](src/lib/pricing/README.md).
 
-## Project Structure
-
-```md
-.
-├── src/
-│ ├── layouts/ # Astro layouts
-│ ├── pages/ # Astro pages
-│ │ └── api/ # API endpoints
-│ ├── components/ # UI components (Astro & React)
-│ └── assets/ # Static assets
-├── public/ # Public assets
-├── wrangler.jsonc # Cloudflare Workers config
-```
-
-## Supabase Configuration
-
-This project uses [Supabase](https://supabase.com/) for authentication. Environment variables are declared via Astro's `astro:env` schema and are treated as **server-only secrets** — they are never exposed to the client.
-
-### First-time setup (local, no cloud project needed)
-
-Requires [Docker](https://www.docker.com/) and ~7 GB RAM.
-
-1. Create your `.env` file:
+## Tests
 
 ```bash
-cp .env.example .env
+npm test          # Vitest — cost arithmetic, payload validation, formatting
+npm run test:e2e  # Playwright — the flows a broken unit test would not catch
 ```
 
-2. Initialize the local Supabase project (creates a `supabase/` config folder):
+The E2E suite runs against `astro dev` on the real Supabase project and needs
+`E2E_EMAIL` / `E2E_PASSWORD` in `.env`. It stays local rather than in CI, because
+there is no local Supabase in this setup and the specs sign in as a real user —
+the reasoning is in [`context/foundation/test-plan.md`](context/foundation/test-plan.md) §5.
+Each spec name states the risk from that plan it covers.
 
-```bash
-npx supabase init
-```
+Other checks: `npm run lint`, `npx astro check`, `npm run depcruise`,
+`npm run validate:pricing`.
 
-3. Start the local stack (downloads Docker images on first run):
-
-```bash
-npx supabase start
-```
-
-4. Copy the credentials printed by the CLI into your `.env` and `.dev.vars`:
+## Layout
 
 ```
-SUPABASE_URL=http://127.0.0.1:54321
-SUPABASE_KEY=<anon key from CLI output>
+src/
+  pages/        admin/ (dentist), p/[token].astro (patient), api/, auth/
+  components/   admin/, patient/, auth/, ui/ (shadcn)
+  lib/
+    supabase.ts SSR Supabase client (cookie sessions)
+    quote/      cost arithmetic, token generation, labels, formatting
+    pricing/    pricelist seed (data/*.json), resolver, picker options
+    services/   quote payload validation
+  db/           generated database types
+  middleware.ts resolves the user, guards PROTECTED_ROUTES
+supabase/       migrations/, tests/
+e2e/            Playwright specs, named after the risks they cover
+scripts/        pricing validation, PR review agent
 ```
 
-5. To stop the stack when done:
+Design and analysis documents live under `context/`:
 
-```bash
-npx supabase stop
-```
+| Path                                                         | What is there                                            |
+| ------------------------------------------------------------ | -------------------------------------------------------- |
+| [`context/foundation/`](context/foundation/)                 | PRD, roadmap, tech stack, infrastructure, test plan      |
+| [`context/changes/`](context/changes/)                       | in-flight work: research, plan, reviews per change       |
+| [`context/archive/`](context/archive/)                       | the same, for changes already shipped                    |
+| [`context/map/`](context/map/)                               | repository map — territory, structure, contributors      |
+| [`context/domain/`](context/domain/)                         | domain distillation, invariants, anti-corruption layer   |
+| [`context/architect-report.md`](context/architect-report.md) | what that analysis found, and the one refactor it picked |
+| [`context/deployment/`](context/deployment/)                 | deploy plan and open infrastructure decisions            |
 
-The local Studio UI is available at `http://localhost:54323`.
+## Roadmap status
 
-No database tables or migrations are required — this project uses Supabase Auth's built-in `auth.users` table only.
+Shipped: the domain schema (F-01), the pricelist seed (F-02), the end-to-end
+quote and patient link (S-01), and the admin quote list (S-03). What is not
+built, and why:
 
-### Using a cloud Supabase project instead
+|                                                      | Status   | Why not yet                                                                                                                                                                                                                                                  |
+| ---------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **S-02** LLM pre-fills the form from the pasted note | blocked  | The provider choice is still open — Polish-language parsing quality, structured output and a retention policy we can live with all have to line up first. The form is fillable by hand either way; the parser was always an accelerator, never a dependency. |
+| **S-04** 12-month retention enforcement              | proposed | The default is written down (link stops resolving, patient e-mail scrubbed), but "delete the quote or anonymise it" is a decision for the dentist and a GDPR lawyer, not for the code. It is a hard gate before real patients, not before the demo.          |
+| **S-05** Auth hardening                              | ready    | Session timeout, rate limiting against credential stuffing, and no account lockout. Independent of everything else, planned but not started.                                                                                                                 |
 
-If you prefer to use a hosted Supabase project, add these variables to your `.env` and `.dev.vars` files:
-
-| Variable       | Description                                                |
-| -------------- | ---------------------------------------------------------- |
-| `SUPABASE_URL` | Project URL from Supabase dashboard → Settings → API       |
-| `SUPABASE_KEY` | `anon` public key from Supabase dashboard → Settings → API |
-
-```
-SUPABASE_URL=https://<project-ref>.supabase.co
-SUPABASE_KEY=<anon-key>
-```
-
-### Email confirmation in local development
-
-By default Supabase requires email confirmation before a user can sign in. To skip this during local development:
-
-1. Open the Supabase dashboard for your project
-2. Go to **Authentication → Email → Confirm email**
-3. Toggle it **off**
-
-Users can then sign in immediately after sign-up without clicking a confirmation link.
-
-### Auth routes
-
-| Route                 | Description                                                             |
-| --------------------- | ----------------------------------------------------------------------- |
-| `/auth/signin`        | Email/password sign-in form                                             |
-| `/auth/signup`        | Email/password sign-up form                                             |
-| `/auth/confirm-email` | Post-signup "check your inbox" page                                     |
-| `/dashboard`          | Example protected page (redirects to `/auth/signin` if unauthenticated) |
-
-Route protection is handled in `src/middleware.ts`. Add paths to the `PROTECTED_ROUTES` array there to require authentication.
+Deliberately out of scope for v1 — the SVG odontogram, drag-and-drop of teeth
+between visits, sending e-mails from the app, a pricelist admin UI — with the
+reasoning for each in the roadmap's _Parked_ section:
+[`context/foundation/roadmap.md`](context/foundation/roadmap.md).
 
 ## Deployment
 
-This project deploys to [Cloudflare Workers](https://workers.cloudflare.com/).
+Pushes to `main` run lint, unit tests and a build; if all three pass, the same
+workflow deploys to Cloudflare Workers
+([`.github/workflows/ci.yml`](.github/workflows/ci.yml)). Every pull request also
+gets a first-pass review from an LLM agent
+([`.github/workflows/review.yml`](.github/workflows/review.yml), criteria in
+[`scripts/review/criteria.md`](scripts/review/criteria.md)) — it comments, it does
+not block the merge.
 
-1. Build the project:
+Deploying by hand:
 
 ```bash
 npm run build
-```
-
-2. Deploy with Wrangler:
-
-```bash
 npx wrangler deploy
 ```
 
-Set `SUPABASE_URL` and `SUPABASE_KEY` as secrets in your Cloudflare dashboard or via `npx wrangler secret put`.
-
-## CI
-
-GitHub Actions runs lint + build on every push and PR to `master`. Configure `SUPABASE_URL` and `SUPABASE_KEY` as repository secrets in GitHub for the build step.
+`SUPABASE_URL` and `SUPABASE_KEY` are Worker secrets (`npx wrangler secret put`)
+and GitHub repository secrets for the build; deployment additionally needs
+`CLOUDFLARE_API_TOKEN`, and the review workflow `ANTHROPIC_API_KEY`. Database
+migrations are applied by hand — see
+[`context/deployment/deploy-plan.md`](context/deployment/deploy-plan.md).
 
 ## License
 
