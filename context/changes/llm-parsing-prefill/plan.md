@@ -557,16 +557,16 @@ slice.
 
 #### Automated
 
-- [ ] 1.1 Linting passes: `npm run lint`
-- [ ] 1.2 Type checking passes: `npx astro check`
-- [ ] 1.3 Unit suite passes, including the new files: `npm test`
-- [ ] 1.4 Dependency graph clean: `npm run depcruise`
-- [ ] 1.5 No test in `src/lib/llm/` performs a network call
+- [x] 1.1 Linting passes: `npm run lint`
+- [x] 1.2 Type checking passes: `npx astro check`
+- [x] 1.3 Unit suite passes, including the new files: `npm test`
+- [x] 1.4 Dependency graph clean: `npm run depcruise`
+- [x] 1.5 No test in `src/lib/llm/` performs a network call
 
 #### Manual
 
-- [ ] 1.6 `parseDiagnosis` cannot be called with anything but a string
-- [ ] 1.7 Warnings read as Polish sentences a dentist would understand
+- [x] 1.6 `parseDiagnosis` cannot be called with anything but a string
+- [x] 1.7 Warnings read as Polish sentences a dentist would understand
 
 ### Phase 2: The endpoint, the secret, and the one swallowed error
 

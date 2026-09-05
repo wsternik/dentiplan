@@ -1,0 +1,23 @@
+{
+  "teeth": [
+    {
+      "number": 32,
+      "treatmentType": "unknown",
+      "urgency": "unknown",
+      "status": "uncertain",
+      "pricelistItemIds": [],
+      "visitNumber": 2
+    },
+    {
+      "number": 36,
+      "treatmentType": "root-canal",
+      "urgency": "moderate",
+      "status": "in-plan",
+      "pricelistItemIds": ["leczenie-kanalowe:leczenie-kanalowe-trzonowca"],
+      "visitNumber": 3
+    }
+  ],
+  "generalItemIds": [],
+  "visits": [{ "number": 1, "label": "Pierwsza wizyta" }],
+  "warnings": []
+}

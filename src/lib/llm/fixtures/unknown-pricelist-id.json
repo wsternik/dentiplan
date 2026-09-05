@@ -1,0 +1,26 @@
+{
+  "teeth": [
+    {
+      "number": 16,
+      "treatmentType": "root-canal",
+      "urgency": "urgent",
+      "status": "in-plan",
+      "pricelistItemIds": [
+        "leczenie-kanalowe:leczenie-kanalowe-trzonowca",
+        "leczenie-kanalowe:mikroskop-endodontyczny"
+      ],
+      "visitNumber": 0
+    },
+    {
+      "number": 26,
+      "treatmentType": "filling",
+      "urgency": "mild",
+      "status": "in-plan",
+      "pricelistItemIds": ["profilaktyka:higienizacja"],
+      "visitNumber": 0
+    }
+  ],
+  "generalItemIds": ["profilaktyka:skaling-naddziaslowy"],
+  "visits": [],
+  "warnings": ["Nie rozpoznano frazy „pod mikroskopem”."]
+}

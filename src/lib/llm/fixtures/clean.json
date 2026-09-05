@@ -1,0 +1,50 @@
+{
+  "teeth": [
+    {
+      "number": 17,
+      "treatmentType": "caries-removal",
+      "urgency": "moderate",
+      "status": "in-plan",
+      "pricelistItemIds": ["leczenie-zachowawcze:wypelnienie-male-duze"],
+      "visitNumber": 1
+    },
+    {
+      "number": 16,
+      "treatmentType": "caries-removal",
+      "urgency": "moderate",
+      "status": "in-plan",
+      "pricelistItemIds": ["leczenie-zachowawcze:wypelnienie-male-duze"],
+      "visitNumber": 1
+    },
+    {
+      "number": 34,
+      "treatmentType": "root-canal",
+      "urgency": "urgent",
+      "status": "in-plan",
+      "pricelistItemIds": ["leczenie-kanalowe:leczenie-kanalowe-przedtrzonowca"],
+      "visitNumber": 2
+    },
+    {
+      "number": 37,
+      "treatmentType": "root-canal",
+      "urgency": "urgent",
+      "status": "in-plan",
+      "pricelistItemIds": ["leczenie-kanalowe:leczenie-kanalowe-trzonowca"],
+      "visitNumber": 2
+    },
+    {
+      "number": 36,
+      "treatmentType": "root-canal",
+      "urgency": "urgent",
+      "status": "in-plan",
+      "pricelistItemIds": ["leczenie-kanalowe:leczenie-kanalowe-trzonowca"],
+      "visitNumber": 2
+    }
+  ],
+  "generalItemIds": ["profilaktyka:higienizacja"],
+  "visits": [
+    { "number": 1, "label": "Wypełnienia" },
+    { "number": 2, "label": "Leczenie kanałowe" }
+  ],
+  "warnings": []
+}
