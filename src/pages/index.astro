@@ -8,6 +8,18 @@
 // shows.
 
 import Layout from "@/layouts/Layout.astro";
+import { formatAmount } from "@/lib/quote/format";
+
+// Invented figures, formatted by the same helper the real quote uses — so the
+// sample can never disagree with the product about how money is written. (It
+// already did once: hand-typed "2 400 zł", while Polish does not group
+// four-digit numbers and the app renders "2400 zł".)
+const sample = {
+  visits: [1200, 800, 400],
+  standardTotal: 2400,
+  anesthesiaFee: 900,
+  anesthesiaTotal: 3300,
+};
 ---
 
 <Layout title="DentiPlan — kosztorys leczenia dla pacjenta">
@@ -49,20 +61,20 @@ import Layout from "@/layouts/Layout.astro";
           <dl class="numeric mt-4 space-y-1.5 text-xs">
             <div class="flex justify-between gap-3">
               <dt class="text-muted-foreground">Wizyta 1</dt>
-              <dd class="m-0">1200 zł</dd>
+              <dd class="m-0">{formatAmount(sample.visits[0])}</dd>
             </div>
             <div class="flex justify-between gap-3">
               <dt class="text-muted-foreground">Wizyta 2</dt>
-              <dd class="m-0">800 zł</dd>
+              <dd class="m-0">{formatAmount(sample.visits[1])}</dd>
             </div>
             <div class="flex justify-between gap-3">
               <dt class="text-muted-foreground">Wizyta 3</dt>
-              <dd class="m-0">400 zł</dd>
+              <dd class="m-0">{formatAmount(sample.visits[2])}</dd>
             </div>
           </dl>
           <div class="border-border numeric mt-3 flex justify-between gap-3 border-t pt-3 text-xs font-semibold">
             <span>Razem</span>
-            <span>2400 zł</span>
+            <span>{formatAmount(sample.standardTotal)}</span>
           </div>
         </article>
 
@@ -72,16 +84,16 @@ import Layout from "@/layouts/Layout.astro";
           <dl class="numeric mt-4 space-y-1.5 text-xs">
             <div class="flex justify-between gap-3">
               <dt class="text-muted-foreground">Leczenie</dt>
-              <dd class="m-0">2400 zł</dd>
+              <dd class="m-0">{formatAmount(sample.standardTotal)}</dd>
             </div>
             <div class="flex justify-between gap-3">
               <dt class="text-muted-foreground">Znieczulenie</dt>
-              <dd class="m-0">900 zł</dd>
+              <dd class="m-0">{formatAmount(sample.anesthesiaFee)}</dd>
             </div>
           </dl>
           <div class="border-border numeric mt-3 flex justify-between gap-3 border-t pt-3 text-xs font-semibold">
             <span>Razem</span>
-            <span>3300 zł</span>
+            <span>{formatAmount(sample.anesthesiaTotal)}</span>
           </div>
         </article>
       </div>
