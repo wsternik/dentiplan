@@ -557,34 +557,34 @@ slice.
 
 #### Automated
 
-- [x] 1.1 Linting passes: `npm run lint`
-- [x] 1.2 Type checking passes: `npx astro check`
-- [x] 1.3 Unit suite passes, including the new files: `npm test`
-- [x] 1.4 Dependency graph clean: `npm run depcruise`
-- [x] 1.5 No test in `src/lib/llm/` performs a network call
+- [x] 1.1 Linting passes: `npm run lint` — c0605b1
+- [x] 1.2 Type checking passes: `npx astro check` — c0605b1
+- [x] 1.3 Unit suite passes, including the new files: `npm test` — c0605b1
+- [x] 1.4 Dependency graph clean: `npm run depcruise` — c0605b1
+- [x] 1.5 No test in `src/lib/llm/` performs a network call — c0605b1
 
 #### Manual
 
-- [x] 1.6 `parseDiagnosis` cannot be called with anything but a string
-- [x] 1.7 Warnings read as Polish sentences a dentist would understand
+- [x] 1.6 `parseDiagnosis` cannot be called with anything but a string — c0605b1
+- [x] 1.7 Warnings read as Polish sentences a dentist would understand — c0605b1
 
 ### Phase 2: The endpoint, the secret, and the one swallowed error
 
 #### Automated
 
-- [ ] 2.1 Linting passes: `npm run lint`
-- [ ] 2.2 Type checking passes: `npx astro check`
-- [ ] 2.3 Unit suite passes: `npm test`
-- [ ] 2.4 Build succeeds against the Workers runtime: `npm run build`
-- [ ] 2.5 E2E regression gate green, specs untouched: `npm run test:e2e`
+- [x] 2.1 Linting passes: `npm run lint`
+- [x] 2.2 Type checking passes: `npx astro check`
+- [x] 2.3 Unit suite passes: `npm test`
+- [x] 2.4 Build succeeds against the Workers runtime: `npm run build`
+- [x] 2.5 E2E regression gate green, specs untouched: `npm run test:e2e`
 
 #### Manual
 
-- [ ] 2.6 `POST /api/admin/quotes/parse` without a session cookie returns 401
-- [ ] 2.7 A 5000-character body returns 400 and never reaches the model
-- [ ] 2.8 A real note returns 200 with populated `content` and `warnings`, from the workerd dev server
-- [ ] 2.9 With the key removed, the app boots, banners, and the endpoint answers 503
-- [ ] 2.10 With the key removed, `/p/<token>` shows **no** configuration banner
+- [x] 2.6 `POST /api/admin/quotes/parse` without a session cookie returns 401
+- [x] 2.7 A 5000-character body returns 400 and never reaches the model
+- [x] 2.8 A real note returns 200 with populated `content` and `warnings`, from the workerd dev server
+- [x] 2.9 With the key removed, the app boots, banners, and the endpoint answers 503
+- [x] 2.10 With the key removed, `/p/<token>` shows **no** configuration banner
 
 ### Phase 3: The button, the warnings, and the merge
 

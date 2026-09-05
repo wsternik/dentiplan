@@ -1,7 +1,7 @@
 ---
 import "../styles/global.css";
 import Banner from "@/components/Banner.astro";
-import { missingConfigs } from "@/lib/config-status";
+import { missingConfigs, publicMissingConfigs } from "@/lib/config-status";
 
 interface Props {
   title?: string;
@@ -10,6 +10,11 @@ interface Props {
 }
 
 const { title = "10x Astro Starter", lang = "en" } = Astro.props;
+
+// This layout is shared with the anonymous patient page, so an admin-only
+// configuration banner would be shown to whoever opened the quote link — the
+// one thing `/p/<token>` promises never to do (FR-060, no-disclosure).
+const banners = Astro.locals.user ? missingConfigs : publicMissingConfigs;
 ---
 
 <!doctype html>
@@ -23,7 +28,7 @@ const { title = "10x Astro Starter", lang = "en" } = Astro.props;
   </head>
   <body>
     {
-      missingConfigs.map((cfg) => (
+      banners.map((cfg) => (
         <Banner variant="error">
           <strong>Uwaga:</strong> {cfg.message}
           {cfg.docsUrl && (
