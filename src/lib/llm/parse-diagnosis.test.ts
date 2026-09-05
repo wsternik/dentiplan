@@ -101,6 +101,44 @@ describe("mapParsedDiagnosis", () => {
     expect(warnings.some((w) => w.includes("36"))).toBe(true);
   });
 
+  it("risk #7: the same tooth proposed twice in one answer is kept once and named", () => {
+    // Found in impl review. The editor keys tooth rows by number, so a model
+    // that lists 16 under two headings in the note would have produced two rows
+    // with the same React key and two copies of that tooth in the quote.
+    const parsed = ParsedDiagnosisSchema.parse({
+      teeth: [
+        {
+          number: 16,
+          treatmentType: "root-canal",
+          urgency: "urgent",
+          status: "in-plan",
+          pricelistItemIds: ["leczenie-kanalowe:leczenie-kanalowe-trzonowca"],
+          visitNumber: 0,
+        },
+        {
+          number: 16,
+          treatmentType: "filling",
+          urgency: "mild",
+          status: "in-plan",
+          pricelistItemIds: ["leczenie-zachowawcze:wypelnienie-male-duze"],
+          visitNumber: 0,
+        },
+      ],
+      generalItemIds: ["profilaktyka:higienizacja", "profilaktyka:higienizacja"],
+      visits: [],
+      warnings: [],
+    });
+
+    const { content, warnings } = mapParsedDiagnosis(parsed);
+
+    expect(content.teeth.map((t) => t.number)).toEqual([16]);
+    // The first reading wins; the second is reported rather than merged, because
+    // merging two contradictory readings would invent a third one.
+    expect(content.teeth[0].treatmentType).toBe("root-canal");
+    expect(content.generalItems.map((i) => i.id)).toEqual(["profilaktyka:higienizacja"]);
+    expect(warnings.filter((w) => w.includes("dwukrotnie"))).toHaveLength(2);
+  });
+
   it("never lets the model write a patient-visible note", () => {
     for (const fixture of [clean, unknownPricelistId, outOfRangeTooth, uncertainMarker]) {
       const { content } = mapParsedDiagnosis(readFixture(fixture));

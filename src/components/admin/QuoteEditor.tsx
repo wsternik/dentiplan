@@ -7,7 +7,7 @@
 // state only. It is never part of the approval payload and never persisted —
 // `content` returned to anon callers must never carry the raw diagnosis.
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -85,6 +85,20 @@ export default function QuoteEditor({
   // and an approved row can be neither edited nor deleted (FR-053), so the
   // duplicate would be permanent.
   const inFlight = useRef(false);
+
+  // Latest-value mirrors of the working tree, for `applyPrefill`.
+  //
+  // The prefill's round trip can take up to 30s, and nothing stops the dentystka
+  // from adding a tooth or a visit by hand while she waits. `applyPrefill` runs
+  // after the `await`, so reading `teeth`/`visits`/`generalItems` from its
+  // closure would see the tree as it was when she pressed the button: a tooth
+  // she typed in the meantime would not be recognised as a duplicate (two rows,
+  // one React key), and a visit she added would shift the numbering the
+  // prefilled teeth are remapped onto.
+  const treeRef = useRef({ teeth, visits, generalItems });
+  useEffect(() => {
+    treeRef.current = { teeth, visits, generalItems };
+  }, [teeth, visits, generalItems]);
 
   // --- Approval (Phase 3) ---
   const [submitting, setSubmitting] = useState(false);
@@ -260,7 +274,9 @@ export default function QuoteEditor({
   function applyPrefill(result: PrefillResult): string[] {
     const notices: string[] = [...result.warnings];
 
-    const existing = new Set(teeth.map((t) => t.number));
+    const { teeth: currentTeeth, visits: currentVisits, generalItems: currentGeneral } = treeRef.current;
+
+    const existing = new Set(currentTeeth.map((t) => t.number));
     const additions = result.content.teeth.filter((t) => {
       if (existing.has(t.number)) {
         notices.push(`Ząb ${t.number} był już w formularzu — pominięto propozycję z notatki.`);
@@ -271,7 +287,7 @@ export default function QuoteEditor({
 
     // Prefilled visits are appended after the existing ones, so a tooth's
     // `visitNumber` has to be remapped onto where its visit actually landed.
-    const offset = visits.length;
+    const offset = currentVisits.length;
     const remapped = additions.map((t) => ({
       ...t,
       visitNumber: t.visitNumber === null ? null : t.visitNumber + offset,
@@ -289,7 +305,7 @@ export default function QuoteEditor({
     // General items dedupe the same way teeth do. Two runs over the same note
     // otherwise leave two Higienizacje on the quote and quietly double that line
     // in both cost variants — the tooth guard alone is not the whole rule.
-    const presentItems = new Set(generalItems.map((g) => g.item.id));
+    const presentItems = new Set(currentGeneral.map((g) => g.item.id));
     const added: GeneralItem[] = [];
     for (const item of result.content.generalItems) {
       if (presentItems.has(item.id)) {

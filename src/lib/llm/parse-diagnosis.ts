@@ -62,11 +62,21 @@ export function mapParsedDiagnosis(parsed: ParsedDiagnosis): PrefillResult {
   const declaredVisits = new Set(visits.map((v) => v.number));
 
   const teeth: ToothEntry[] = [];
+  // A note can mention the same tooth under two headings, and the model dutifully
+  // returns it twice. The editor keys tooth rows by number, so a duplicate is two
+  // rows sharing a React key and one tooth billed twice. First reading wins:
+  // merging two contradictory readings would invent a third one neither says.
+  const seenTeeth = new Set<number>();
   for (const tooth of parsed.teeth) {
     if (!isValidToothNumber(tooth.number)) {
       warnings.push(`Pominięto ząb ${tooth.number} — numer spoza zakresu FDI.`);
       continue;
     }
+    if (seenTeeth.has(tooth.number)) {
+      warnings.push(`Ząb ${tooth.number} pojawił się w notatce dwukrotnie — wzięto pierwsze odczytanie.`);
+      continue;
+    }
+    seenTeeth.add(tooth.number);
 
     const pricelistItems: PricelistItemRef[] = [];
     for (const id of tooth.pricelistItemIds) {
@@ -98,10 +108,19 @@ export function mapParsedDiagnosis(parsed: ParsedDiagnosis): PrefillResult {
   }
 
   const generalItems: PricelistItemRef[] = [];
+  const seenGeneral = new Set<string>();
   for (const id of parsed.generalItemIds) {
+    if (seenGeneral.has(id)) {
+      warnings.push(`Pozycja ogólna „${id}” pojawiła się dwukrotnie — dodano raz.`);
+      continue;
+    }
     const resolved = resolveIn(id, "general", "Pozycje ogólne");
-    if ("ref" in resolved) generalItems.push(resolved.ref);
-    else warnings.push(resolved.warning);
+    if ("ref" in resolved) {
+      seenGeneral.add(id);
+      generalItems.push(resolved.ref);
+    } else {
+      warnings.push(resolved.warning);
+    }
   }
 
   return { content: { teeth, visits, generalItems }, warnings };
