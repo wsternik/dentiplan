@@ -1,7 +1,7 @@
 ---
 change_id: llm-parsing-prefill
 title: LLM pre-fills the quote form from the dentystka's pasted note
-status: new
+status: preparing
 created: 2026-09-05
 updated: 2026-09-05
 archived_at: null
