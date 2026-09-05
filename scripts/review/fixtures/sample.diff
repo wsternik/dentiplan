@@ -1,3 +1,11 @@
+This is not real code and it is not a pattern to copy. It is a fabricated diff
+used to exercise the review agent, with defects planted on purpose: a PostgREST
+filter built by string interpolation, no authorization check on an /api/admin/
+route, an unbounded limit, patient e-mail rendered client-side, and no tests.
+A run that misses those is a run to go and fix the prompt over.
+
+Everything below is the fixture.
+
 diff --git a/src/pages/api/admin/quotes/search.ts b/src/pages/api/admin/quotes/search.ts
 new file mode 100644
 index 0000000..8a1f4c2
