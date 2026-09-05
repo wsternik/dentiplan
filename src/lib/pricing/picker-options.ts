@@ -13,9 +13,21 @@
 // The resolved `price` is for LIVE PREVIEW only. Every write path still POSTs by
 // `id` and the server re-resolves independently (FR-050).
 
-import type { PickerOption } from "@/components/admin/types";
+import type { PricelistItemRef } from "@/types";
 
 import { listByCategory, resolvePricelistItem } from "./resolver";
+
+/**
+ * A picker option as serialized from the server (admin page) into the island.
+ * It is a resolved `PricelistItemRef` (so it can feed `computeQuoteTotals`
+ * directly for live preview) plus the `category` label used to disambiguate the
+ * picker — pricelist item names are NOT globally unique (FR-025). The approval
+ * payload still POSTs by `id`; the resolved `price` here is preview-only and is
+ * never trusted for the server-side freeze (Phase 3).
+ */
+export interface PickerOption extends PricelistItemRef {
+  category: string;
+}
 
 export interface PickerOptions {
   /** Items pickable per tooth (FR-025). */

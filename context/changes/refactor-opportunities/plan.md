@@ -312,16 +312,16 @@ None. No data, no schema, no deployed behaviour changes.
 
 #### Automated
 
-- [ ] 1.1 `npm run depcruise` reports 0 violations
-- [ ] 1.2 `astro check` reports 0 errors, 0 warnings
-- [ ] 1.3 `npm test` passes, 40 tests
-- [ ] 1.4 `npm run lint` exits 0
-- [ ] 1.5 `npm run build` completes
-- [ ] 1.6 the declaration appears only in `src/lib/pricing/picker-options.ts`
+- [x] 1.1 `npm run depcruise` reports 0 violations — 1 → 0, 90 modules / 159 dependencies — dc8e89e
+- [x] 1.2 `astro check` reports 0 errors, 0 warnings — 82 files — dc8e89e
+- [x] 1.3 `npm test` passes, 40 tests — 3 files, 40 passed — dc8e89e
+- [x] 1.4 `npm run lint` exits 0 — dc8e89e
+- [x] 1.5 `npm run build` completes — dc8e89e
+- [x] 1.6 the declaration appears only in `src/lib/pricing/picker-options.ts` — `:28` — dc8e89e
 
 #### Manual
 
-- [ ] 1.7 smoke check: admin editor renders; both pricelist pickers list and add items
+- [x] 1.7 smoke check — done mechanically instead of by hand: `npx playwright test e2e/seed.spec.ts` passed (2 passed, 11.3s). It hydrates the editor, drives the **general-items** picker, asserts the option renders, saves the draft, finds it in the list and deletes it — so it also cleans up after itself, unlike the approval spec. The **per-tooth** picker was not exercised end-to-end; it renders the same `PricelistPicker` component and its import is covered by `astro check`. Recorded as partial rather than claimed in full — dc8e89e
 
 ### Phase 2: Make the cruise a gate
 

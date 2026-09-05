@@ -14,7 +14,7 @@ import { toothName } from "@/lib/quote/tooth-name";
 import { NativeSelect } from "./controls";
 import { formatPriceValue } from "./format";
 import { PricelistPicker } from "./PricelistPicker";
-import type { PickerOption } from "./types";
+import type { PickerOption } from "@/lib/pricing";
 
 interface Props {
   tooth: ToothEntry;

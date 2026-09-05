@@ -14,4 +14,4 @@ export {
 export { buildPickerOptions } from "./picker-options";
 
 export type { PriceType, SourcePricelistItem, PricelistCategory, Pricelist, AnesthesiaFeeSchedule } from "./schema";
-export type { PickerOptions } from "./picker-options";
+export type { PickerOption, PickerOptions } from "./picker-options";
