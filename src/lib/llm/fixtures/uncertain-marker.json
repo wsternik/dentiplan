@@ -4,6 +4,7 @@
       "number": 32,
       "treatmentType": "unknown",
       "urgency": "unknown",
+      "urgencyFromNote": false,
       "status": "uncertain",
       "pricelistItemIds": [],
       "visitNumber": 2
@@ -12,12 +13,13 @@
       "number": 36,
       "treatmentType": "root-canal",
       "urgency": "moderate",
+      "urgencyFromNote": true,
       "status": "in-plan",
       "pricelistItemIds": ["leczenie-kanalowe:leczenie-kanalowe-trzonowca"],
       "visitNumber": 3
     }
   ],
   "generalItemIds": [],
-  "visits": [{ "number": 1, "label": "Pierwsza wizyta" }],
+  "visits": [{ "number": 1, "rationale": "" }],
   "warnings": []
 }

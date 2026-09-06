@@ -90,11 +90,23 @@ fields nested inside `content`. FR-066 depends on this invariant. Downstream sli
 than by review:
 
 - **The model cannot write `note`.** `ParsedDiagnosisSchema` in `src/lib/llm/schema.ts`
-  has no such field, so prefilled teeth always carry `note: ""`. `note` is the only
-  free-text field inside `content`, and the model has just read the dentystka's
-  confidential diagnosis — a writable field there would be the shortest path back to
-  the leak this invariant exists to prevent. Context that would have gone into a note
-  goes into the prefill warnings, which are admin-only.
+  has no such field, so prefilled teeth always carry `note: ""`. The model has just
+  read the dentystka's confidential diagnosis — a writable free-text field inside
+  `content` would be the shortest path back to the leak this invariant exists to
+  prevent. Context that would have gone into a note goes into the prefill warnings,
+  which are admin-only.
+- **The model cannot write `visits[].label` either** (`visit-planning-prefill`,
+  2026-09-06). It could, until this slice: the model named each visit and
+  `VariantComparison.astro:34` rendered that name to anyone holding the patient link
+  — the same hole as `note`, one field over and a whole slice later. The wire schema
+  has no `label` now; visits are named by `visitLabel()` from the closed dictionary
+  `VISIT_LABELS` (`src/lib/llm/visits.ts`), and the reasoning the model would have
+  compressed into a name goes into `rationale`, which becomes a warning. `Visit.label`
+  in `content` is unchanged and still hers to edit (FR-031).
+  **Before adding any field to the wire schema, check whether it lands in `content`.**
+  Because Zod strips unknown keys, removing such a field breaks no test on its own —
+  only a positive assertion that every value came from our own vocabulary does
+  (`parse-diagnosis.test.ts`, "never lets the model write anything a patient can read").
 - **Pricelist ids are resolved server-side from the seed**, never taken from the
   model's output — `mapParsedDiagnosis` re-resolves each id and drops (with a named
   warning) anything absent from the catalog or offered in the wrong context. So the

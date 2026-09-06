@@ -19,11 +19,27 @@ import { describe, expect, it } from "vitest";
 
 import { ParsedDiagnosisSchema } from "./schema";
 import { mapParsedDiagnosis } from "./parse-diagnosis";
+import { MAX_PROPOSED_VISITS, VISIT_LABELS } from "./visits";
 
 import clean from "./fixtures/clean.json";
 import unknownPricelistId from "./fixtures/unknown-pricelist-id.json";
 import outOfRangeTooth from "./fixtures/out-of-range-tooth.json";
 import uncertainMarker from "./fixtures/uncertain-marker.json";
+import visitSplitByUrgency from "./fixtures/visit-split-by-urgency.json";
+import visitsDeclaredInNote from "./fixtures/visits-declared-in-note.json";
+import overVisitCeiling from "./fixtures/over-visit-ceiling.json";
+import inferredUrgency from "./fixtures/inferred-urgency.json";
+
+const FIXTURES = [
+  clean,
+  unknownPricelistId,
+  outOfRangeTooth,
+  uncertainMarker,
+  visitSplitByUrgency,
+  visitsDeclaredInNote,
+  overVisitCeiling,
+  inferredUrgency,
+];
 
 /** Parse a recorded answer the way the adapter does, so fixtures stay honest. */
 function readFixture(raw: unknown) {
@@ -35,7 +51,13 @@ describe("mapParsedDiagnosis", () => {
     const { content, warnings } = mapParsedDiagnosis(readFixture(clean));
 
     expect(content.teeth.map((t) => t.number)).toEqual([17, 16, 34, 37, 36]);
-    expect(warnings).toEqual([]);
+    // Nothing was dropped. What is left in the list is the model's own reasoning
+    // for the split, attributed to the visit each one ENDED UP as — the painful
+    // root canals are visit 1 now, whatever number the model gave them.
+    expect(warnings).toEqual([
+      "Wizyta 1 — propozycja modelu: Trzy zęby z bólem opisanym w notatce — leczenie kanałowe w pierwszej kolejności.",
+      "Wizyta 2 — propozycja modelu: Dwa zęby górne po tej samej stronie, próchnica bez objawów — jedna wizyta zachowawcza.",
+    ]);
 
     // The price comes from the seed, never from the model — 1200 zł is what the
     // pricelist says a molar root canal costs.
@@ -46,9 +68,12 @@ describe("mapParsedDiagnosis", () => {
       price: { kind: "fixed", amount: 1200 },
     });
 
+    // The labels are ours, from the closed dictionary; the model's `label` field
+    // no longer exists. "Leczenie pilne" beats "Leczenie kanałowe" for visit 1
+    // because urgency is what decides when she schedules it.
     expect(content.visits).toEqual([
-      { number: 1, label: "Wypełnienia" },
-      { number: 2, label: "Leczenie kanałowe" },
+      { number: 1, label: "Leczenie pilne" },
+      { number: 2, label: "Leczenie zachowawcze" },
     ]);
     expect(content.generalItems.map((i) => i.id)).toEqual(["profilaktyka:higienizacja"]);
   });
@@ -111,6 +136,7 @@ describe("mapParsedDiagnosis", () => {
           number: 16,
           treatmentType: "root-canal",
           urgency: "urgent",
+          urgencyFromNote: true,
           status: "in-plan",
           pricelistItemIds: ["leczenie-kanalowe:leczenie-kanalowe-trzonowca"],
           visitNumber: 0,
@@ -119,6 +145,7 @@ describe("mapParsedDiagnosis", () => {
           number: 16,
           treatmentType: "filling",
           urgency: "mild",
+          urgencyFromNote: true,
           status: "in-plan",
           pricelistItemIds: ["leczenie-zachowawcze:wypelnienie-male-duze"],
           visitNumber: 0,
@@ -139,10 +166,108 @@ describe("mapParsedDiagnosis", () => {
     expect(warnings.filter((w) => w.includes("dwukrotnie"))).toHaveLength(2);
   });
 
-  it("never lets the model write a patient-visible note", () => {
-    for (const fixture of [clean, unknownPricelistId, outOfRangeTooth, uncertainMarker]) {
-      const { content } = mapParsedDiagnosis(readFixture(fixture));
+  it("risk #11: the urgent visit becomes visit 1 and its teeth come with it", () => {
+    const { content } = mapParsedDiagnosis(readFixture(visitSplitByUrgency));
+
+    expect(content.visits).toEqual([
+      { number: 1, label: "Leczenie pilne" },
+      { number: 2, label: "Ekstrakcje" },
+      { number: 3, label: "Leczenie zachowawcze" },
+    ]);
+    // The model listed the painful tooth last. Order is ours, not its.
+    expect(content.teeth.find((t) => t.number === 36)?.visitNumber).toBe(1);
+    expect(content.teeth.find((t) => t.number === 38)?.visitNumber).toBe(2);
+    expect(content.teeth.filter((t) => t.visitNumber === 3).map((t) => t.number)).toEqual([24, 25]);
+  });
+
+  it("risk #11: reordering renumbers the visits and never regroups the teeth", () => {
+    const parsed = readFixture(visitsDeclaredInNote);
+    const { content } = mapParsedDiagnosis(parsed);
+
+    // Whatever the note declared, the model's grouping is the medical judgement
+    // we are not second-guessing — only its numbering is ours to change.
+    const groupedBefore = parsed.teeth.map((t) => `${t.number}@${t.visitNumber}`);
+    expect(groupedBefore).toEqual(["14@1", "15@1", "46@2", "47@2"]);
+    expect(content.teeth.filter((t) => t.visitNumber === 1).map((t) => t.number)).toEqual([46, 47]);
+    expect(content.teeth.filter((t) => t.visitNumber === 2).map((t) => t.number)).toEqual([14, 15]);
+  });
+
+  it("risk #11: more visits than the ceiling is named, and every visit is kept", () => {
+    const { content, warnings } = mapParsedDiagnosis(readFixture(overVisitCeiling));
+
+    // Dropping the excess would orphan its teeth through the declared-visit check
+    // and cost her exactly the work the button was meant to save. We notice; we
+    // do not amputate.
+    expect(content.visits).toHaveLength(7);
+    expect(content.teeth.every((t) => t.visitNumber !== null)).toBe(true);
+    const ceiling = warnings.find((w) => w.includes("7"));
+    expect(ceiling).toContain(String(MAX_PROPOSED_VISITS));
+  });
+
+  it("risk #11: an urgency the model inferred is named, and one the note stated is not", () => {
+    const { warnings } = mapParsedDiagnosis(readFixture(inferredUrgency));
+
+    // The model supplies the boolean; the sentence is composed here, from tooth
+    // numbers we have already validated.
+    expect(warnings).toEqual(["Pilność dla zębów 36, 24 zaproponował model — nie ma jej wprost w notatce."]);
+    // 16 carries the same urgency, read from the note — it is not an inference.
+    // 45 has `urgencyFromNote: false` and no urgency at all: nothing was inferred.
+  });
+
+  it("never lets the model write anything a patient can read", () => {
+    for (const fixture of FIXTURES) {
+      const parsed = readFixture(fixture);
+      const { content } = mapParsedDiagnosis(parsed);
+      const serialized = JSON.stringify(content);
+
+      // Asserted over the model's FREE TEXT only. `pricelistItemIds` are
+      // model-authored strings and the resolved refs' ids equal them by
+      // construction — that equality is the point, since each id was checked
+      // against the seed first.
+      const freeText = [...parsed.warnings, ...parsed.visits.map((v) => v.rationale)].filter((s) => s.trim() !== "");
+      for (const text of freeText) {
+        expect(serialized).not.toContain(text);
+      }
+
       expect(content.teeth.every((t) => t.note === "")).toBe(true);
+      // The negative check is not enough on its own: Zod strips unknown keys, so
+      // a resurrected `label` would vanish rather than fail. This is the positive
+      // half — every name she sees came out of our dictionary.
+      // `""` counts as ours: it is the "no teeth, nothing to name it after" branch
+      // that `VisitList` renders its own placeholder for, not a model string.
+      for (const visit of content.visits) {
+        expect([...VISIT_LABELS, ""]).toContain(visit.label);
+      }
     }
+  });
+
+  it("keeps the first of two visits sharing a number, and says so", () => {
+    // Two visits with one number are two `VisitList` rows with one React key —
+    // and asking the model for a whole schedule makes the collision likelier.
+    const parsed = ParsedDiagnosisSchema.parse({
+      teeth: [
+        {
+          number: 16,
+          treatmentType: "filling",
+          urgency: "mild",
+          urgencyFromNote: true,
+          status: "in-plan",
+          pricelistItemIds: ["leczenie-zachowawcze:wypelnienie-male-duze"],
+          visitNumber: 1,
+        },
+      ],
+      generalItemIds: [],
+      visits: [
+        { number: 1, rationale: "Pierwsza deklaracja." },
+        { number: 1, rationale: "Druga deklaracja tego samego numeru." },
+      ],
+      warnings: [],
+    });
+
+    const { content, warnings } = mapParsedDiagnosis(parsed);
+
+    expect(content.visits).toEqual([{ number: 1, label: "Leczenie zachowawcze" }]);
+    expect(warnings.some((w) => w.includes("dwukrotnie"))).toBe(true);
+    expect(warnings.some((w) => w.includes("Druga deklaracja"))).toBe(false);
   });
 });

@@ -650,16 +650,16 @@ Drafts saved before this change reopen and prefill exactly as before.
 
 #### Automated
 
-- [ ] 1.1 Unit tests pass: `npm test`
-- [ ] 1.2 Type checking passes: `npx astro check`
-- [ ] 1.3 Linting passes: `npm run lint`
-- [ ] 1.4 Every fixture parses against the new schema
+- [x] 1.1 Unit tests pass: `npm test`
+- [x] 1.2 Type checking passes: `npx astro check`
+- [x] 1.3 Linting passes: `npm run lint`
+- [x] 1.4 Every fixture parses against the new schema
 
 #### Manual
 
-- [ ] 1.5 The invariant test is proved to bite: restore `label`, watch it go red, revert
-- [ ] 1.6 The warnings block reads as decisions waiting for her, not as failures
-- [ ] 1.7 No E2E run: the only component touched is `ParseWarnings.tsx`, text only
+- [x] 1.5 The invariant test is proved to bite: restore `label`, watch it go red, revert
+- [x] 1.6 The warnings block reads as decisions waiting for her, not as failures
+- [x] 1.7 No E2E run: the only component touched is `ParseWarnings.tsx`, text only
 
 ### Phase 2: The prompt asks for a plan
 
