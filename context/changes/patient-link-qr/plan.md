@@ -248,14 +248,14 @@ No data migration, API change, or deployment ordering is required. Each phase is
 
 #### Automated
 
-- [x] 1.1 Renderer tests pass: `npx vitest run src/lib/quote/qr.test.ts`
-- [x] 1.2 The full unit suite passes: `npm test`
-- [x] 1.3 New TypeScript files pass ESLint: `npx eslint src/lib/quote/qr.ts src/lib/quote/qr.test.ts`
-- [x] 1.4 TypeScript and the ESM production bundle accept the adapter: `npm run build`
+- [x] 1.1 Renderer tests pass: `npx vitest run src/lib/quote/qr.test.ts` — 89ed090
+- [x] 1.2 The full unit suite passes: `npm test` — 89ed090
+- [x] 1.3 New TypeScript files pass ESLint: `npx eslint src/lib/quote/qr.ts src/lib/quote/qr.test.ts` — 89ed090
+- [x] 1.4 TypeScript and the ESM production bundle accept the adapter: `npm run build` — 89ed090
 
 #### Manual
 
-- [x] 1.5 Generated markup for a production-shaped patient URL contains a square SVG with a visible quiet zone and dark modules
+- [x] 1.5 Generated markup for a production-shaped patient URL contains a square SVG with a visible quiet zone and dark modules — 89ed090
 
 ### Phase 2: Admin QR disclosure
 
