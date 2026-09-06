@@ -1,18 +1,9 @@
-# Rules for AI
+# Claude Code compatibility
 
-This file provides guidance to AI Agent when working with code in this repository.
-
-## Commands
-
-- `npm run dev` — start dev server (Cloudflare workerd runtime)
-- `npm run build` — production build (SSR via `@astrojs/cloudflare`)
-- `npm run preview` — preview production build
-- `npm run lint` — ESLint with type-checked rules
-- `npm run lint:fix` — auto-fix lint issues
-- `npm run format` — Prettier (includes prettier-plugin-astro + prettier-plugin-tailwindcss)
-- `npm test` — Vitest (unit)
-
-Quality gates and where each one runs are described under [Quality gates](#quality-gates).
+Read and follow [AGENTS.md](AGENTS.md) for the canonical repository rules,
+commands, quality gates and change workflow. Keep shared guidance there so
+Codex and Claude Code do not drift. The local Claude hooks remain in
+`.claude/settings.json`; they are not run by Codex.
 
 ## Architecture
 
@@ -30,46 +21,6 @@ Full server-side rendering (`output: "server"` in astro.config.mjs). All pages a
 - Auth pages: `src/pages/auth/signin.astro`
 - **No self-service sign-up.** One account, created by hand in Supabase (prd.md, "Panel dentystki"). There is no sign-up page, no `POST /api/auth/signup`, and `enable_signup = false` in `supabase/config.toml`; the hosted project mirrors it. Do not reintroduce one.
 - Protected page example: `src/pages/admin/index.astro`
-
-### Key conventions
-
-- **Path alias**: `@/*` maps to `./src/*` (tsconfig paths).
-- **Astro components** for static content/layout; **React components** only when interactivity is needed.
-- **Tailwind class merging**: use the `cn()` helper from `@/lib/utils` (clsx + tailwind-merge) for conditional/merged class names. Do not concatenate class strings manually.
-- **shadcn/ui**: components live in `src/components/ui/`, "new-york" style variant. Install new ones with `npx shadcn@latest add [name]`.
-- **API routes**: use uppercase `GET`, `POST` exports; validate input with zod.
-- **Supabase migrations**: `supabase/migrations/` using naming format `YYYYMMDDHHmmss_short_description.sql`. Always enable RLS on new tables with granular per-operation, per-role policies.
-- **React**: no Next.js directives ("use client" etc.). Extract hooks to `src/components/hooks/`.
-- **Services/helpers** go in `src/lib/` (or `src/lib/services/` for extracted business logic).
-- **Shared types** (entities, DTOs) go in `src/types.ts`.
-
-### Environment
-
-- Node.js v22.14.0 (see `.nvmrc`)
-- Env vars: `SUPABASE_URL`, `SUPABASE_KEY` (copy `.env.example` to `.env` for Node, or `.dev.vars` for Cloudflare local dev)
-- Local Supabase: `npx supabase start` (requires Docker)
-- Cloudflare local dev: secrets go in `.dev.vars` (gitignored)
-- Deploy: `npx wrangler deploy` (requires Cloudflare account + `wrangler` auth)
-
-## Quality gates
-
-Three layers, each holding whatever is cheap enough at that point. The
-strategy behind them — which risks they exist for — is in
-`context/foundation/test-plan.md`.
-
-| When                                   | What runs                                                                                                                                                  | Where it is configured                                       |
-| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| After the agent writes or edits a file | `eslint --fix` on that one file. Exits 2 on a remaining error, so the rule violation lands back in the agent's context and it can fix it in the next turn. | `.claude/settings.json`, `PostToolUse` matcher `Write\|Edit` |
-| On commit                              | `eslint --fix` on staged `*.{ts,tsx,astro}`, `prettier --write` on staged `*.{json,css,md}`, then `astro check` over the project                           | `.husky/pre-commit` + `lint-staged` in `package.json`        |
-| On push and PR to `main`               | lint, `npm test`, build; then the production deploy, which only runs if all three passed                                                                   | `.github/workflows/ci.yml`                                   |
-
-Typecheck sits at the commit layer, not per-edit: `astro check` takes about
-six seconds on this project against roughly three for linting one file, and
-six seconds on every single edit is a tax on the whole session. Linting one
-file is cheap enough to pay each time.
-
-CI needs `SUPABASE_URL` and `SUPABASE_KEY` as repository secrets for the
-build step, and `CLOUDFLARE_API_TOKEN` for the deploy job.
 
 <!-- BEGIN @przeprogramowani/10x-cli -->
 
