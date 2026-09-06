@@ -604,9 +604,9 @@ has been in the record since S-01.
 
 #### Automated
 
-- [x] 4.1 `npm run test:e2e` green, no edits to existing specs
-- [x] 4.2 The spec fails when chart input and list input disagree
+- [x] 4.1 `npm run test:e2e` green, no edits to existing specs — e37edc4
+- [x] 4.2 The spec fails when chart input and list input disagree — e37edc4
 
 #### Manual
 
-- [x] 4.3 The failure message names the disagreeing tooth
+- [x] 4.3 The failure message names the disagreeing tooth — e37edc4
