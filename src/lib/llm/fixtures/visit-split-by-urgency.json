@@ -1,0 +1,47 @@
+{
+  "teeth": [
+    {
+      "number": 24,
+      "treatmentType": "filling",
+      "urgency": "mild",
+      "urgencyFromNote": true,
+      "status": "in-plan",
+      "pricelistItemIds": ["leczenie-zachowawcze:wypelnienie-male-duze"],
+      "visitNumber": 1
+    },
+    {
+      "number": 25,
+      "treatmentType": "filling",
+      "urgency": "mild",
+      "urgencyFromNote": true,
+      "status": "in-plan",
+      "pricelistItemIds": ["leczenie-zachowawcze:wypelnienie-male-duze"],
+      "visitNumber": 1
+    },
+    {
+      "number": 38,
+      "treatmentType": "extraction",
+      "urgency": "moderate",
+      "urgencyFromNote": true,
+      "status": "in-plan",
+      "pricelistItemIds": ["chirurgia-stomatologiczna:ekstrakcja-zeba"],
+      "visitNumber": 2
+    },
+    {
+      "number": 36,
+      "treatmentType": "root-canal",
+      "urgency": "urgent",
+      "urgencyFromNote": true,
+      "status": "in-plan",
+      "pricelistItemIds": ["leczenie-kanalowe:leczenie-kanalowe-trzonowca"],
+      "visitNumber": 3
+    }
+  ],
+  "generalItems": [],
+  "visits": [
+    { "number": 1, "rationale": "Próchnica bez objawów po lewej stronie u góry — jedna wizyta zachowawcza." },
+    { "number": 2, "rationale": "Ekstrakcja ósemki osobno, bo wizyta chirurgiczna trwa dłużej." },
+    { "number": 3, "rationale": "Ząb 36 boli od tygodnia — leczenie kanałowe najpilniejsze." }
+  ],
+  "warnings": []
+}

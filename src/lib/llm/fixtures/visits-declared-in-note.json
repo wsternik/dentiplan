@@ -1,0 +1,46 @@
+{
+  "teeth": [
+    {
+      "number": 14,
+      "treatmentType": "filling",
+      "urgency": "mild",
+      "urgencyFromNote": true,
+      "status": "in-plan",
+      "pricelistItemIds": ["leczenie-zachowawcze:wypelnienie-male-duze"],
+      "visitNumber": 1
+    },
+    {
+      "number": 15,
+      "treatmentType": "filling",
+      "urgency": "mild",
+      "urgencyFromNote": true,
+      "status": "in-plan",
+      "pricelistItemIds": ["leczenie-zachowawcze:wypelnienie-male-duze"],
+      "visitNumber": 1
+    },
+    {
+      "number": 46,
+      "treatmentType": "root-canal",
+      "urgency": "urgent",
+      "urgencyFromNote": true,
+      "status": "in-plan",
+      "pricelistItemIds": ["leczenie-kanalowe:leczenie-kanalowe-trzonowca"],
+      "visitNumber": 2
+    },
+    {
+      "number": 47,
+      "treatmentType": "caries-removal",
+      "urgency": "urgent",
+      "urgencyFromNote": true,
+      "status": "in-plan",
+      "pricelistItemIds": ["leczenie-zachowawcze:wypelnienie-male-duze"],
+      "visitNumber": 2
+    }
+  ],
+  "generalItems": [],
+  "visits": [
+    { "number": 1, "rationale": "Notatka mówi: druga wizyta to strona prawa górna." },
+    { "number": 2, "rationale": "Notatka mówi: pierwsza wizyta to ból po prawej na dole." }
+  ],
+  "warnings": []
+}

@@ -1,0 +1,78 @@
+{
+  "teeth": [
+    {
+      "number": 11,
+      "treatmentType": "filling",
+      "urgency": "mild",
+      "urgencyFromNote": true,
+      "status": "in-plan",
+      "pricelistItemIds": ["leczenie-zachowawcze:wypelnienie-male-duze"],
+      "visitNumber": 1
+    },
+    {
+      "number": 12,
+      "treatmentType": "filling",
+      "urgency": "mild",
+      "urgencyFromNote": true,
+      "status": "in-plan",
+      "pricelistItemIds": ["leczenie-zachowawcze:wypelnienie-male-duze"],
+      "visitNumber": 2
+    },
+    {
+      "number": 13,
+      "treatmentType": "filling",
+      "urgency": "mild",
+      "urgencyFromNote": true,
+      "status": "in-plan",
+      "pricelistItemIds": ["leczenie-zachowawcze:wypelnienie-male-duze"],
+      "visitNumber": 3
+    },
+    {
+      "number": 14,
+      "treatmentType": "filling",
+      "urgency": "mild",
+      "urgencyFromNote": true,
+      "status": "in-plan",
+      "pricelistItemIds": ["leczenie-zachowawcze:wypelnienie-male-duze"],
+      "visitNumber": 4
+    },
+    {
+      "number": 15,
+      "treatmentType": "filling",
+      "urgency": "mild",
+      "urgencyFromNote": true,
+      "status": "in-plan",
+      "pricelistItemIds": ["leczenie-zachowawcze:wypelnienie-male-duze"],
+      "visitNumber": 5
+    },
+    {
+      "number": 16,
+      "treatmentType": "filling",
+      "urgency": "mild",
+      "urgencyFromNote": true,
+      "status": "in-plan",
+      "pricelistItemIds": ["leczenie-zachowawcze:wypelnienie-male-duze"],
+      "visitNumber": 6
+    },
+    {
+      "number": 17,
+      "treatmentType": "extraction",
+      "urgency": "urgent",
+      "urgencyFromNote": true,
+      "status": "in-plan",
+      "pricelistItemIds": ["chirurgia-stomatologiczna:ekstrakcja-zeba"],
+      "visitNumber": 7
+    }
+  ],
+  "generalItems": [],
+  "visits": [
+    { "number": 1, "rationale": "" },
+    { "number": 2, "rationale": "" },
+    { "number": 3, "rationale": "" },
+    { "number": 4, "rationale": "" },
+    { "number": 5, "rationale": "" },
+    { "number": 6, "rationale": "" },
+    { "number": 7, "rationale": "" }
+  ],
+  "warnings": []
+}

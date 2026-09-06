@@ -67,3 +67,27 @@
   instead.
 - **Applies to:** the editor's status treatments, and any future read-only or
   de-emphasised state.
+
+## A field the model writes is patient-visible until something stops it
+
+- **Context:** `llm-parsing-prefill` closed `note` — the model was no longer
+  allowed to write a tooth's note, because `content` is returned byte-for-byte to
+  anyone holding the patient link. `visit-planning-prefill`, a whole slice later,
+  found `Visit.label` sitting one line away in the same mapper: the model wrote
+  it, the mapper copied it verbatim into `content`, and it rendered on the
+  patient page.
+- **Problem:** The first excision was made as a fix to one field, not as a sweep
+  of the boundary, so the second free-text field stayed open and nothing was
+  watching it. Zod v4 objects **strip** unknown keys, so removing the field from
+  the wire schema breaks no fixture on its own — the hole is invisible in both
+  directions until someone reads the four hops end to end.
+- **Rule:** When a model-authored field turns out to reach a surface the model
+  must not write on, treat it as a **class**, not an instance: enumerate every
+  free-text field crossing that boundary in the same pass, and leave behind an
+  assertion that fails when a new one appears — a positive check that the visible
+  string is a member of a closed dictionary, not a negative check that one known
+  field is gone. Facts from the model, sentences from the code; anything the
+  model needs to say in prose goes to the warnings, which only the dentystka
+  reads.
+- **Applies to:** every field of `QuoteContent` a prefill or a future model call
+  can fill, and the invariant test in `parse-diagnosis.test.ts` that guards them.

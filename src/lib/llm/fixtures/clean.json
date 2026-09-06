@@ -4,6 +4,7 @@
       "number": 17,
       "treatmentType": "caries-removal",
       "urgency": "moderate",
+      "urgencyFromNote": true,
       "status": "in-plan",
       "pricelistItemIds": ["leczenie-zachowawcze:wypelnienie-male-duze"],
       "visitNumber": 1
@@ -12,6 +13,7 @@
       "number": 16,
       "treatmentType": "caries-removal",
       "urgency": "moderate",
+      "urgencyFromNote": true,
       "status": "in-plan",
       "pricelistItemIds": ["leczenie-zachowawcze:wypelnienie-male-duze"],
       "visitNumber": 1
@@ -20,6 +22,7 @@
       "number": 34,
       "treatmentType": "root-canal",
       "urgency": "urgent",
+      "urgencyFromNote": true,
       "status": "in-plan",
       "pricelistItemIds": ["leczenie-kanalowe:leczenie-kanalowe-przedtrzonowca"],
       "visitNumber": 2
@@ -28,6 +31,7 @@
       "number": 37,
       "treatmentType": "root-canal",
       "urgency": "urgent",
+      "urgencyFromNote": true,
       "status": "in-plan",
       "pricelistItemIds": ["leczenie-kanalowe:leczenie-kanalowe-trzonowca"],
       "visitNumber": 2
@@ -36,15 +40,19 @@
       "number": 36,
       "treatmentType": "root-canal",
       "urgency": "urgent",
+      "urgencyFromNote": true,
       "status": "in-plan",
       "pricelistItemIds": ["leczenie-kanalowe:leczenie-kanalowe-trzonowca"],
       "visitNumber": 2
     }
   ],
-  "generalItemIds": ["profilaktyka:higienizacja"],
+  "generalItems": [{ "id": "profilaktyka:higienizacja", "visitNumber": 1 }],
   "visits": [
-    { "number": 1, "label": "Wypełnienia" },
-    { "number": 2, "label": "Leczenie kanałowe" }
+    {
+      "number": 1,
+      "rationale": "Dwa zęby górne po tej samej stronie, próchnica bez objawów — jedna wizyta zachowawcza."
+    },
+    { "number": 2, "rationale": "Trzy zęby z bólem opisanym w notatce — leczenie kanałowe w pierwszej kolejności." }
   ],
   "warnings": []
 }

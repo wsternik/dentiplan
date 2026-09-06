@@ -4,6 +4,7 @@
       "number": 16,
       "treatmentType": "root-canal",
       "urgency": "urgent",
+      "urgencyFromNote": true,
       "status": "in-plan",
       "pricelistItemIds": [
         "leczenie-kanalowe:leczenie-kanalowe-trzonowca",
@@ -15,12 +16,13 @@
       "number": 26,
       "treatmentType": "filling",
       "urgency": "mild",
+      "urgencyFromNote": true,
       "status": "in-plan",
       "pricelistItemIds": ["profilaktyka:higienizacja"],
       "visitNumber": 0
     }
   ],
-  "generalItemIds": ["profilaktyka:skaling-naddziaslowy"],
+  "generalItems": [{ "id": "profilaktyka:skaling-naddziaslowy", "visitNumber": 0 }],
   "visits": [],
   "warnings": ["Nie rozpoznano frazy „pod mikroskopem”."]
 }
