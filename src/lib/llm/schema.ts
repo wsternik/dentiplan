@@ -33,6 +33,11 @@ import type { PricelistItemRef, ToothEntry, Visit } from "@/types";
 /** Sentinel the model uses when the note does not say. Mapped to `null`. */
 export const UNKNOWN = "unknown";
 
+const ParsedGeneralItemSchema = z.object({
+  id: z.string().describe("Id from the general catalog only. Never invent an id."),
+  visitNumber: z.number().int().describe("Number of a visit declared in `visits`, or 0 when it belongs to no visit"),
+});
+
 const ParsedToothSchema = z.object({
   number: z.number().int().describe("FDI tooth number, 11-48 for permanent teeth or 51-85 for milk teeth"),
   treatmentType: z.enum([...TreatmentTypeSchema.options, UNKNOWN]).describe('Use "unknown" if the note does not say'),
@@ -47,7 +52,7 @@ const ParsedToothSchema = z.object({
 
 export const ParsedDiagnosisSchema = z.object({
   teeth: z.array(ParsedToothSchema),
-  generalItemIds: z.array(z.string()).describe("Ids from the general catalog only, for whole-visit items"),
+  generalItems: z.array(ParsedGeneralItemSchema).describe("Whole-visit items, each with the visit it belongs to"),
   visits: z.array(
     z.object({
       number: z.number().int(),
@@ -64,15 +69,19 @@ export const ParsedDiagnosisSchema = z.object({
 export type ParsedDiagnosis = z.infer<typeof ParsedDiagnosisSchema>;
 
 /**
- * What the endpoint returns. `generalItems` are resolved refs without ids —
- * the editor owns the `g-<n>` sequence and seeds it past whatever a reopened
- * draft already restored, so minting ids here would risk a collision.
+ * What the endpoint returns. A general item arrives as a resolved ref WITHOUT an
+ * id — the editor owns the `g-<n>` sequence and seeds it past whatever a reopened
+ * draft already restored, so minting ids here would risk a collision. That reason
+ * is about the `g-<n>` id only: the visit the item belongs to is not ours to
+ * withhold, and it travels alongside the ref (FR-032/FR-033) so a proposed
+ * visit's partial cost is the whole visit rather than just its teeth. `null` is
+ * "no visit", already translated from the wire sentinel.
  */
 export interface PrefillResult {
   content: {
     teeth: ToothEntry[];
     visits: Visit[];
-    generalItems: PricelistItemRef[];
+    generalItems: { item: PricelistItemRef; visitNumber: number | null }[];
   };
   warnings: string[];
 }

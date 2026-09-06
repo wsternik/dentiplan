@@ -46,7 +46,7 @@
       "visitNumber": 2
     }
   ],
-  "generalItemIds": ["profilaktyka:higienizacja"],
+  "generalItems": [{ "id": "profilaktyka:higienizacja", "visitNumber": 1 }],
   "visits": [
     {
       "number": 1,

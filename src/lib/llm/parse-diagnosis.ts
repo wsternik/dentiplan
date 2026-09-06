@@ -150,20 +150,34 @@ export function mapParsedDiagnosis(parsed: ParsedDiagnosis): PrefillResult {
     warnings.push(`Pilność dla zębów ${inferredUrgency.join(", ")} zaproponował model — nie ma jej wprost w notatce.`);
   }
 
-  const generalItems: PricelistItemRef[] = [];
+  // FR-032: a general item carries the visit it belongs to, so a visit's partial
+  // cost covers the whole visit. Deduplication stays keyed on the item id alone —
+  // the same item proposed for two visits collapses to the first. Hygiene at
+  // visit 1 and visit 4 is a real case, but it is one dropdown for her and a
+  // dedup-key redesign for us.
+  const generalItems: { item: PricelistItemRef; visitNumber: number | null }[] = [];
   const seenGeneral = new Set<string>();
-  for (const id of parsed.generalItemIds) {
-    if (seenGeneral.has(id)) {
-      warnings.push(`Pozycja ogólna „${id}” pojawiła się dwukrotnie — dodano raz.`);
+  for (const general of parsed.generalItems) {
+    if (seenGeneral.has(general.id)) {
+      warnings.push(`Pozycja ogólna „${general.id}” pojawiła się dwukrotnie — dodano raz.`);
       continue;
     }
-    const resolved = resolveIn(id, "general", "Pozycje ogólne");
-    if ("ref" in resolved) {
-      seenGeneral.add(id);
-      generalItems.push(resolved.ref);
-    } else {
+    const resolved = resolveIn(general.id, "general", "Pozycje ogólne");
+    if (!("ref" in resolved)) {
       warnings.push(resolved.warning);
+      continue;
     }
+    seenGeneral.add(general.id);
+
+    // The same check a tooth's visit gets, and for the same reason: a reference
+    // to a visit that was never declared would arrive schema-valid and point at
+    // nothing.
+    let visitNumber: number | null = general.visitNumber === 0 ? null : general.visitNumber;
+    if (visitNumber !== null && !declaredVisits.has(visitNumber)) {
+      warnings.push(`„${resolved.ref.name}”: wizyta ${visitNumber} nie została zaproponowana — pozycja bez wizyty.`);
+      visitNumber = null;
+    }
+    generalItems.push({ item: resolved.ref, visitNumber });
   }
 
   // Ordering runs last, and the rationale warnings are composed from its result.
@@ -179,7 +193,17 @@ export function mapParsedDiagnosis(parsed: ParsedDiagnosis): PrefillResult {
     warnings.push(`Wizyta ${number} — propozycja modelu: ${rationale}`);
   }
 
-  return { content: { teeth: ordered.teeth, visits: ordered.visits, generalItems }, warnings };
+  // General items follow the same renumbering the teeth just did — their visit
+  // was validated against the model's numbering, and the ordering above replaced
+  // it. The fallback is unreachable while every declared visit is in the map; it
+  // is here so a future change to that cannot silently point at a stale number.
+  const orderedGeneralItems = generalItems.map((general) =>
+    general.visitNumber === null
+      ? general
+      : { ...general, visitNumber: ordered.renumbered.get(general.visitNumber) ?? null },
+  );
+
+  return { content: { teeth: ordered.teeth, visits: ordered.visits, generalItems: orderedGeneralItems }, warnings };
 }
 
 /**

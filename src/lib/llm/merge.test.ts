@@ -9,6 +9,7 @@
 import { describe, expect, it } from "vitest";
 
 import { resolvePricelistItem } from "@/lib/pricing";
+import { computeQuoteTotals } from "@/lib/quote/cost";
 import type { GeneralItem, ToothEntry, Visit } from "@/types";
 
 import { mergePrefill, type WorkingTree } from "./merge";
@@ -28,6 +29,11 @@ function tooth(number: number, over: Partial<ToothEntry> = {}): ToothEntry {
     visitNumber: null,
     ...over,
   };
+}
+
+/** A general item as the server proposes it: a resolved ref plus its visit. */
+function general(id: string, visitNumber: number | null = null) {
+  return { item: resolvePricelistItem(id), visitNumber };
 }
 
 function emptyTree(over: Partial<WorkingTree> = {}): WorkingTree {
@@ -136,7 +142,7 @@ describe("mergePrefill", () => {
 
     const merged = mergePrefill(
       emptyTree({ generalItems: [existing] }),
-      prefill({ generalItems: [resolvePricelistItem(HYGIENE), resolvePricelistItem("profilaktyka:rtg-pantomogram")] }),
+      prefill({ generalItems: [general(HYGIENE), general("profilaktyka:rtg-pantomogram")] }),
       4,
     );
 
@@ -144,6 +150,58 @@ describe("mergePrefill", () => {
     expect(merged.generalItems.map((g) => g.item.id)).toEqual([HYGIENE, "profilaktyka:rtg-pantomogram"]);
     expect(merged.generalIdSeed).toBe(5);
     expect(merged.warnings.some((w) => w.includes("pozycjach ogólnych"))).toBe(true);
+  });
+
+  it("FR-032: a general item's visit follows the same renumbering its teeth do", () => {
+    // She already planned a visit, so the prefill's visit 1 is the merged tree's
+    // visit 2 — and the hygiene the model attached to it has to move with it.
+    // Left on the model's number it would price the visit she planned herself.
+    const merged = mergePrefill(
+      emptyTree({ visits: [{ number: 1, label: "Konsultacja" }] }),
+      prefill({
+        teeth: [tooth(16, { visitNumber: 1 })],
+        visits: [{ number: 1, label: "Leczenie zachowawcze" }],
+        generalItems: [general(HYGIENE, 1)],
+      }),
+      0,
+    );
+
+    expect(merged.teeth.find((t) => t.number === 16)?.visitNumber).toBe(2);
+    expect(merged.generalItems).toEqual([{ id: "g-1", item: resolvePricelistItem(HYGIENE), visitNumber: 2 }]);
+    expect(merged.warnings).toEqual([]);
+  });
+
+  it("FR-032: a general item pointing at a visit the prefill never declared is kept without one, and named", () => {
+    const merged = mergePrefill(
+      emptyTree(),
+      prefill({ visits: [{ number: 1, label: "Jedyna" }], generalItems: [general(HYGIENE, 9)] }),
+      0,
+    );
+
+    // Kept, not dropped: she is going to be billed for it either way, and the
+    // dropdown is one click. The same treatment tooth 16 gets two tests up.
+    expect(merged.generalItems.map((g) => g.item.id)).toEqual([HYGIENE]);
+    expect(merged.generalItems[0].visitNumber).toBeNull();
+    expect(merged.warnings.some((w) => w.includes("Higienizacja"))).toBe(true);
+  });
+
+  it("FR-032: a prefilled general item's price lands in its visit's partial cost", () => {
+    // The whole point of the phase, asserted through the engine that computes what
+    // she reads: a visit's partial total is the whole visit, not just its teeth.
+    const merged = mergePrefill(
+      emptyTree(),
+      prefill({
+        teeth: [tooth(16, { visitNumber: 1, pricelistItems: [resolvePricelistItem(MOLAR_ROOT_CANAL)] })],
+        visits: [{ number: 1, label: "Leczenie kanałowe" }],
+        generalItems: [general(HYGIENE, 1)],
+      }),
+      0,
+    );
+
+    // From the seed: a molar root canal is 1200 zł and higienizacja is 400–450 zł.
+    // Before this phase the prefilled hygiene had no visit, so visit 1 read
+    // 1200 — a partial cost that was wrong by a whole item and looked complete.
+    expect(computeQuoteTotals(merged).standard?.perVisit).toEqual([{ visitNumber: 1, cost: { min: 1600, max: 1650 } }]);
   });
 
   it("carries the server's warnings through alongside its own", () => {

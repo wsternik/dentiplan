@@ -680,15 +680,15 @@ Drafts saved before this change reopen and prefill exactly as before.
 
 #### Automated
 
-- [ ] 3.1 Unit tests pass: `npm test`
-- [ ] 3.2 Type checking passes: `npx astro check`
-- [ ] 3.3 Linting passes: `npm run lint`
-- [ ] 3.4 A prefilled general item's price appears in its visit's `perVisit` entry
+- [x] 3.1 Unit tests pass: `npm test`
+- [x] 3.2 Type checking passes: `npx astro check`
+- [x] 3.3 Linting passes: `npm run lint`
+- [x] 3.4 A prefilled general item's price appears in its visit's `perVisit` entry
 
 #### Manual
 
-- [ ] 3.5 A proposed general item shows its visit and is included in the visit's partial cost
-- [ ] 3.6 E2E run, or an explicit statement that no component file was touched
+- [x] 3.5 A proposed general item shows its visit and is included in the visit's partial cost
+- [x] 3.6 E2E run, or an explicit statement that no component file was touched
 
 ### Phase 4: Documents
 

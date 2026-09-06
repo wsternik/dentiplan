@@ -19,7 +19,7 @@
       "visitNumber": 3
     }
   ],
-  "generalItemIds": [],
+  "generalItems": [{ "id": "profilaktyka:rtg-pantomogram", "visitNumber": 3 }],
   "visits": [{ "number": 1, "rationale": "" }],
   "warnings": []
 }

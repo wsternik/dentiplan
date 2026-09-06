@@ -37,7 +37,7 @@
       "visitNumber": 3
     }
   ],
-  "generalItemIds": [],
+  "generalItems": [],
   "visits": [
     { "number": 1, "rationale": "Próchnica bez objawów po lewej stronie u góry — jedna wizyta zachowawcza." },
     { "number": 2, "rationale": "Ekstrakcja ósemki osobno, bo wizyta chirurgiczna trwa dłużej." },

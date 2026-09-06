@@ -64,7 +64,7 @@
       "visitNumber": 7
     }
   ],
-  "generalItemIds": [],
+  "generalItems": [],
   "visits": [
     { "number": 1, "rationale": "" },
     { "number": 2, "rationale": "" },

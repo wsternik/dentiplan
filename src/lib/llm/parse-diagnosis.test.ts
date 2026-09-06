@@ -75,7 +75,12 @@ describe("mapParsedDiagnosis", () => {
       { number: 1, label: "Leczenie pilne" },
       { number: 2, label: "Leczenie zachowawcze" },
     ]);
-    expect(content.generalItems.map((i) => i.id)).toEqual(["profilaktyka:higienizacja"]);
+    // FR-032: the hygiene the model put in its own visit 1 follows that visit to
+    // wherever the ordering moved it — here to visit 2, because the painful root
+    // canals took the first slot. An item left on the model's number would price
+    // the wrong visit, in a total that adds up perfectly.
+    expect(content.generalItems.map((g) => g.item.id)).toEqual(["profilaktyka:higienizacja"]);
+    expect(content.generalItems[0].visitNumber).toBe(2);
   });
 
   it("risk #7: a tooth number outside FDI is dropped and named, and the valid teeth survive", () => {
@@ -126,6 +131,20 @@ describe("mapParsedDiagnosis", () => {
     expect(warnings.some((w) => w.includes("36"))).toBe(true);
   });
 
+  it("FR-032: a general item pointing at a visit that was never declared keeps its price and loses its visit", () => {
+    const { content, warnings } = mapParsedDiagnosis(readFixture(uncertainMarker));
+
+    // Same fixture, same dangling visit 3 — a general item gets the check a tooth
+    // already got. Dropping the item instead would quietly delete a pantomogram
+    // she is going to be billed for; it lands unassigned and named, and the
+    // dropdown in `GeneralItems` is one click away.
+    expect(content.generalItems.map((g) => g.item.id)).toEqual(["profilaktyka:rtg-pantomogram"]);
+    expect(content.generalItems[0].visitNumber).toBeNull();
+    // Named by its catalog name, the way the merge's own skip warning names one —
+    // `profilaktyka:rtg-pantomogram` is not what she called it.
+    expect(warnings.some((w) => w.includes("Pantomogram") && w.includes("wizyta 3"))).toBe(true);
+  });
+
   it("risk #7: the same tooth proposed twice in one answer is kept once and named", () => {
     // Found in impl review. The editor keys tooth rows by number, so a model
     // that lists 16 under two headings in the note would have produced two rows
@@ -151,7 +170,13 @@ describe("mapParsedDiagnosis", () => {
           visitNumber: 0,
         },
       ],
-      generalItemIds: ["profilaktyka:higienizacja", "profilaktyka:higienizacja"],
+      // The same item for two visits is one row, the first: dedup is keyed on the
+      // item's id, not on (id, visit). Hygiene at visit 1 and visit 4 is a real
+      // case and she adds the second by hand.
+      generalItems: [
+        { id: "profilaktyka:higienizacja", visitNumber: 0 },
+        { id: "profilaktyka:higienizacja", visitNumber: 0 },
+      ],
       visits: [],
       warnings: [],
     });
@@ -162,7 +187,7 @@ describe("mapParsedDiagnosis", () => {
     // The first reading wins; the second is reported rather than merged, because
     // merging two contradictory readings would invent a third one.
     expect(content.teeth[0].treatmentType).toBe("root-canal");
-    expect(content.generalItems.map((i) => i.id)).toEqual(["profilaktyka:higienizacja"]);
+    expect(content.generalItems.map((g) => g.item.id)).toEqual(["profilaktyka:higienizacja"]);
     expect(warnings.filter((w) => w.includes("dwukrotnie"))).toHaveLength(2);
   });
 
@@ -256,7 +281,7 @@ describe("mapParsedDiagnosis", () => {
           visitNumber: 1,
         },
       ],
-      generalItemIds: [],
+      generalItems: [],
       visits: [
         { number: 1, rationale: "Pierwsza deklaracja." },
         { number: 1, rationale: "Druga deklaracja tego samego numeru." },

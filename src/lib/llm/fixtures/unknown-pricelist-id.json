@@ -22,7 +22,7 @@
       "visitNumber": 0
     }
   ],
-  "generalItemIds": ["profilaktyka:skaling-naddziaslowy"],
+  "generalItems": [{ "id": "profilaktyka:skaling-naddziaslowy", "visitNumber": 0 }],
   "visits": [],
   "warnings": ["Nie rozpoznano frazy „pod mikroskopem”."]
 }

@@ -61,30 +61,49 @@ export function mergePrefill(tree: WorkingTree, prefill: PrefillResult, generalI
     visits.push({ number, label: visit.label });
   }
 
+  // Teeth and general items both follow their visit, and both can point at one
+  // this prefill never declared — `absent` is what to say when they do. Nothing
+  // is ever dropped over it: the row lands without a visit and she is told.
+  const remapVisit = (visitNumber: number | null, absent: string): number | null => {
+    if (visitNumber === null) return null;
+    const mapped = renumbered.get(visitNumber);
+    if (mapped !== undefined) return mapped;
+    warnings.push(absent);
+    return null;
+  };
+
   const teeth = [
     ...tree.teeth,
-    ...additions.map((t) => {
-      if (t.visitNumber === null) return { ...t, visitNumber: null };
-      const mapped = renumbered.get(t.visitNumber);
-      if (mapped === undefined) {
-        warnings.push(`Ząb ${t.number}: proponowana wizyta nie istnieje — ząb bez przypisanej wizyty.`);
-        return { ...t, visitNumber: null };
-      }
-      return { ...t, visitNumber: mapped };
-    }),
+    ...additions.map((t) => ({
+      ...t,
+      visitNumber: remapVisit(
+        t.visitNumber,
+        `Ząb ${t.number}: proponowana wizyta nie istnieje — ząb bez przypisanej wizyty.`,
+      ),
+    })),
   ].sort((a, b) => a.number - b.number);
 
+  // Deduplication is keyed on the pricelist item's id, not on (id, visit): the
+  // same item proposed for two visits is one row, the first one. She can add the
+  // second by hand.
   const present = new Set(tree.generalItems.map((g) => g.item.id));
   const generalItems = [...tree.generalItems];
   let seed = generalIdSeed;
-  for (const item of prefill.content.generalItems) {
+  for (const { item, visitNumber } of prefill.content.generalItems) {
     if (present.has(item.id)) {
       warnings.push(`„${item.name}” była już w pozycjach ogólnych — pominięto propozycję z notatki.`);
       continue;
     }
     present.add(item.id);
     seed += 1;
-    generalItems.push({ id: `g-${seed}`, item, visitNumber: null });
+    // FR-032: the item's visit follows its visit through the same renumbering the
+    // teeth went through above — the prefill's visit 1 is not the merged tree's
+    // visit 1 whenever she had already planned one herself.
+    generalItems.push({
+      id: `g-${seed}`,
+      item,
+      visitNumber: remapVisit(visitNumber, `„${item.name}”: proponowana wizyta nie istnieje — pozycja bez wizyty.`),
+    });
   }
 
   return { teeth, visits, generalItems, warnings, generalIdSeed: seed };
