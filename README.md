@@ -97,9 +97,9 @@ npx supabase db reset       # applies supabase/migrations/
 npm run dev                 # http://localhost:4321
 ```
 
-Sign up at `/auth/signup`. Supabase requires e-mail confirmation by default; for
-local work turn it off under **Authentication → Email → Confirm email** in Studio
-(`http://localhost:54323`).
+There is no sign-up page — the practice runs on one account. Create it by hand in
+Studio (`http://localhost:54323`) under **Authentication → Users → Add user**
+(tick _Auto Confirm User_), then sign in at `/auth/signin`.
 
 The pricelist lives in the repo, not in an admin UI — that was a deliberate v1
 cut. How to change a price: [`src/lib/pricing/README.md`](src/lib/pricing/README.md).

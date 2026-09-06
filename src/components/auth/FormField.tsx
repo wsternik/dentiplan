@@ -7,28 +7,24 @@ const inputBase =
 
 interface FormFieldProps {
   id: string;
-  name?: string;
   label: string;
   type?: string;
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
   error?: string;
-  hint?: ReactNode;
   icon: ReactNode;
   endContent?: ReactNode;
 }
 
 export function FormField({
   id,
-  name,
   label,
   type = "text",
   value,
   onChange,
   placeholder,
   error,
-  hint,
   icon,
   endContent,
 }: FormFieldProps) {
@@ -41,7 +37,7 @@ export function FormField({
         <span className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2">{icon}</span>
         <input
           id={id}
-          name={name ?? id}
+          name={id}
           type={type}
           value={value}
           onChange={(e) => {
@@ -62,9 +58,7 @@ export function FormField({
           <CircleAlert className="size-3" />
           {error}
         </p>
-      ) : (
-        hint
-      )}
+      ) : null}
     </div>
   );
 }

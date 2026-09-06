@@ -6,6 +6,10 @@
 // Hence `lang="en"`. The layout defaults to Polish, which is right for every
 // page a patient sees — but declaring Polish around English text tells a screen
 // reader to pronounce it with Polish rules.
+//
+// No sign-up link, and no sign-up route behind it: the practice runs on one
+// account, created by hand in Supabase (prd.md, "Panel dentystki"). A door with
+// a "create your own key" sign next to it is the wrong door.
 
 import Layout from "@/layouts/Layout.astro";
 import SignInForm from "@/components/auth/SignInForm";
@@ -20,8 +24,5 @@ const error = Astro.url.searchParams.get("error");
       <h1 class="mb-6 font-serif text-xl font-medium tracking-tight">Sign in</h1>
       <SignInForm serverError={error} client:load />
     </div>
-    <p class="text-muted-foreground mt-6 text-sm">
-      Don't have an account? <a href="/auth/signup" class="text-foreground underline underline-offset-4">Sign up</a>
-    </p>
   </main>
 </Layout>
