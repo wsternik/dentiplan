@@ -1,10 +1,10 @@
 ---
 change_id: tooth-chart-visualization
 title: Tooth chart on the patient page and in the editor
-status: impl_reviewed
+status: archived
 created: 2026-09-06
 updated: 2026-09-06
-archived_at: null
+archived_at: 2026-09-06T15:45:00Z
 ---
 
 ## Notes

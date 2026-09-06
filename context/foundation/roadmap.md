@@ -184,7 +184,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Geometria pochodzi z `react-odontogram` 0.5.6 (MIT), **skopiowana jako dane**, nie zainstalowana — jej `readOnly` wyłącza `pointer-events` (a strona pacjenta potrzebuje tooltipa), zaznaczenie jest niekontrolowane, FDI 51–85 w niej nie istnieje, a status niesie w niej sam kolor. Skopiowane są wyłącznie ścieżki, cztery transformacje i viewBox; licencja podróżuje w `THIRD-PARTY-NOTICES.md`. Biblioteka rysuje ćwiartki FDI 3 i 4 zamienione miejscami — korekta jest tabelą w naszym `layout.ts` z testem, nie łatką na skopiowanych bajtach, więc ponowne skopiowanie geometrii nie może jej po cichu cofnąć. Ryzyko #8 w `test-plan.md` (rysunek i lista nie mogą się rozjechać) pokryte testem E2E.
-- **Status:** in progress — `feat/tooth-chart-visualization`.
+- **Status:** done — zmergowane 2026-09-06 (PR #10, `bab0a0b`).
 
 ## Backlog Handoff
 
@@ -236,6 +236,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 ## Done
 
+- **S-06: pacjent widzi nad listą pogrupowaną rysunek swojego łuku zębowego — każdy ząb z kosztorysu wypełniony kolorem pilności i obrysowany zgodnie ze statusem, tooltip po najechaniu/dotknięciu, a w edytorze ten sam rysunek jest wyborem zębów** — Archived 2026-09-06 → `context/archive/2026-09-06-tooth-chart-visualization/`. Lesson: —.
 - **S-09: dentystka wkleja tę samą notatkę co w S-02 i formularz wraca z planem, nie tylko z listą zębów: zęby rozłożone na wizyty, wizyta z najpilniejszymi zębami jako pierwsza, nazwy wizyt ze słownika systemu, a wszystko wywnioskowane — nazwane w ostrzeżeniach FR-012** — Archived 2026-09-06 → `context/archive/2026-09-06-visit-planning-prefill/`. Lesson: zielony zestaw testów jednostkowych nic nie mówi o czasie, jaki prompt wydaje — dłuższy prompt to zmiana kosztu wywołania, nie tylko jego treści.
 - **F-01: (foundation) schemat domeny (quote, tooth, visit, general-item, e-mail, snapshot, token) gotowy w Supabase z RLS** — Archived 2026-06-03 → `context/archive/2026-06-03-quotes-data-foundation/`. Lesson: —.
 - **F-02: (foundation) cennik gabinetu zdefiniowany jako seed w repo, z flagą `local-anesthesia` per pozycja** — Archived 2026-06-04 → `context/archive/2026-06-03-pricelist-seed-foundation/`. Lesson: —.
