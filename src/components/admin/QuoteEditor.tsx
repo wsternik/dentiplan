@@ -12,7 +12,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { ChartLegend } from "@/components/tooth-chart/ChartLegend";
+import { ToothChart } from "@/components/tooth-chart/ToothChart";
 import { computeQuoteTotals } from "@/lib/quote/cost";
+import { toChartTeeth } from "@/lib/tooth-chart/model";
 import { isValidToothNumber } from "@/lib/quote/tooth-name";
 import type { GeneralItem, PatientType, PricelistItemRef, ToothEntry, Visit } from "@/types";
 import { ApprovalConfirmation } from "./ApprovalConfirmation";
@@ -39,6 +42,45 @@ function toRef(option: PickerOption): PricelistItemRef {
  * here would drag the pricing seed into the browser bundle for nothing.
  */
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/**
+ * Which of `numbers` are new to `existing`, and what to say about the ones that
+ * are not. Pure, and applied twice on the add path: once against the rendered
+ * list to build the message, once inside the `setTeeth` updater against the
+ * live list to build the write.
+ *
+ * Twice rather than once because the two answers are needed at different
+ * moments. A state updater does not run synchronously — React queues it and
+ * calls it during the next render — so a warning cannot be carried out of one;
+ * the caller needs it now, and the rendered list is what the message is about
+ * anyway. The write is the opposite: it has to see `prev`, because two adds
+ * landing in the same tick would both read the pre-click list from the closure
+ * and insert the same tooth twice, giving two rows one React key.
+ */
+function planAdditions(existing: ToothEntry[], numbers: number[]): { additions: ToothEntry[]; warnings: string[] } {
+  const seen = new Set(existing.map((t) => t.number));
+  const warnings: string[] = [];
+  const additions: ToothEntry[] = [];
+
+  for (const n of numbers) {
+    if (seen.has(n)) {
+      warnings.push(`Ząb ${n} jest już dodany`);
+      continue;
+    }
+    seen.add(n);
+    additions.push({
+      number: n,
+      treatmentType: null,
+      urgency: null,
+      status: "in-plan",
+      note: "",
+      pricelistItems: [],
+      visitNumber: null,
+    });
+  }
+
+  return { additions, warnings };
+}
 
 /**
  * Seed the general-item counter past the highest stored `g-<n>` id, so items
@@ -115,39 +157,72 @@ export default function QuoteEditor({
   const [savedAt, setSavedAt] = useState<string | null>(null);
 
   const totals = useMemo(() => computeQuoteTotals({ teeth, visits, generalItems }), [teeth, visits, generalItems]);
+  // The drawing is derived from the same tree as the totals and the rows, by
+  // the same pure function the patient page uses. There is no second source of
+  // truth for it to drift from, which is why the text picker and the note
+  // prefill move it without either of them knowing it exists.
+  const chartTeeth = useMemo(() => toChartTeeth({ teeth, visits, generalItems }), [teeth, visits, generalItems]);
 
-  // --- Tooth entry (FR-021/FR-012) ---
+  // --- Tooth entry (FR-021/FR-012/FR-076) ---
+
+  /**
+   * Add teeth by number, and hand back what could not be added. This is the
+   * seam the chart shares with the text picker, so it deliberately does not
+   * tokenize (there is no text to tokenize behind a click), does not clear
+   * `toothInput` (a chart click must not empty a half-typed field), and does
+   * not call `setToothWarnings` — its caller merges these warnings with
+   * whatever it produced itself and flushes once, because a second
+   * `setToothWarnings` in the same handler would clobber the first and the
+   * invalid-token warnings would vanish without a trace.
+   */
+  function addToothNumbers(numbers: number[]): string[] {
+    const { warnings } = planAdditions(teeth, numbers);
+    setTeeth((prev) => {
+      const { additions } = planAdditions(prev, numbers);
+      // A batch of pure duplicates leaves the tree untouched — returning `prev`
+      // unchanged lets React bail out — while its warnings still travel back.
+      if (additions.length === 0) return prev;
+      return [...prev, ...additions].sort((a, b) => a.number - b.number);
+    });
+    return warnings;
+  }
+
   function addTeeth() {
     const tokens = toothInput.split(/[\s,]+/).filter(Boolean);
-    const warnings: string[] = [];
-    const seen = new Set(teeth.map((t) => t.number));
-    const additions: ToothEntry[] = [];
+    const invalid: string[] = [];
+    const numbers: number[] = [];
 
     for (const token of tokens) {
       const n = Number(token);
+      // The message quotes the raw token, which is the only side of this
+      // conversion where "1x" is still visible.
       if (!Number.isInteger(n) || !isValidToothNumber(n)) {
-        warnings.push(`Nieprawidłowy numer zęba: ${token}`);
+        invalid.push(`Nieprawidłowy numer zęba: ${token}`);
         continue;
       }
-      if (seen.has(n)) {
-        warnings.push(`Ząb ${n} jest już dodany`);
-        continue;
-      }
-      seen.add(n);
-      additions.push({
-        number: n,
-        treatmentType: null,
-        urgency: null,
-        status: "in-plan",
-        note: "",
-        pricelistItems: [],
-        visitNumber: null,
-      });
+      numbers.push(n);
     }
 
-    if (additions.length > 0) setTeeth((prev) => [...prev, ...additions].sort((a, b) => a.number - b.number));
-    setToothWarnings(warnings);
+    setToothWarnings([...invalid, ...addToothNumbers(numbers)]);
     setToothInput("");
+  }
+
+  /**
+   * A click on the drawing (FR-076). A tooth already in the plan is not added
+   * twice: every one of its fields lives in its row, so the click takes her
+   * there instead of doing nothing visible in a section she may have scrolled
+   * past.
+   */
+  function handleChartToothClick(number: number) {
+    if (teeth.some((t) => t.number === number)) {
+      const row = document.getElementById(`tooth-${number}`);
+      row?.scrollIntoView({ block: "center", behavior: "smooth" });
+      // `preventScroll`, because `scrollIntoView` above has already chosen the
+      // position and focus would otherwise re-scroll to its own.
+      row?.focus({ preventScroll: true });
+      return;
+    }
+    setToothWarnings(addToothNumbers([number]));
   }
 
   function patchTooth(number: number, patch: Partial<ToothEntry>) {
@@ -507,6 +582,18 @@ export default function QuoteEditor({
             ))}
           </ul>
         )}
+        {/* The same drawing the patient gets, above the rows it addresses.
+            `read-only` on an approved quote is inert but still hoverable —
+            FR-053 freezes the quote, not the tooltip. */}
+        <div className="mt-4 space-y-3">
+          <ToothChart
+            teeth={chartTeeth}
+            mode={readOnly ? "read-only" : "interactive"}
+            onToothClick={handleChartToothClick}
+          />
+          <ChartLegend />
+        </div>
+
         <div className="mt-3 space-y-3">
           {teeth.length === 0 && (
             <p className="text-muted-foreground text-sm">
