@@ -92,7 +92,7 @@ Nie jest personą-operatorem w sensie produktu. Otrzymuje link, otwiera stronę,
 
 ## Functional Requirements
 
-> 39 FR-ów w 8 grupach. Tag `Priority: must-have` dla wszystkich v1 (zawężony scope eliminuje nice-to-have). FR-y oznaczone `> Socrates:` mają wyzwanie kontr-argumentowe z fazy szlifowania (preserved verbatim).
+> 42 FR-y w 8 grupach. Tag `Priority: must-have` dla wszystkich v1 poza FR-033, która jest `should-have` — plan wizyt działa bez niej, ona tylko domyka koszt wizyty. FR-y oznaczone `> Socrates:` mają wyzwanie kontr-argumentowe z fazy szlifowania (preserved verbatim).
 
 ### Authentication & session
 
@@ -107,6 +107,9 @@ Nie jest personą-operatorem w sensie produktu. Otrzymuje link, otwiera stronę,
   > Socrates: Counter-argument considered: "regułka pokrywa 60–70% wpisów; LLM dodaje niedeterminizm i koszt API." Resolution: utrzymano. Regułka padłaby na `(32?)`, końcowych przecinkach typu `34,37,36,` i swobodnych notatkach typu "Kamień do usunięcia" — czyli na realnych wpisach dentystki. **Dodano warunek**: jeśli LLM padnie lub wynik nie przejdzie walidacji schemy (FR-012), formularz musi być wypełnialny ręcznie od zera — LLM nigdy nie jest blokerem zatwierdzenia.
 - FR-012: The system validates the parsing output against a known structure. Unrecognized tokens, ambiguous markers (e.g. `(32?)` → uncertain), and out-of-range tooth numbers are surfaced as warnings on the form rather than auto-dropped or auto-accepted. Priority: must-have
 - FR-013: A quote can never be approved without a manual click on "Zatwierdź" by the dentystka, regardless of parsing confidence. Priority: must-have
+- FR-014: The system proposes a complete visit split for the standard plan, also when the diagnosis text says nothing about visits: every `in-plan` tooth is placed in a visit, and the visits are ordered so that the most urgent teeth fall in the first one. Visit numbers and visit names are assigned by the system — never written by the external processing service — and the names come from a closed vocabulary. The proposal is a starting point: the dentystka renumbers, renames, reassigns and approves it herself (FR-030, FR-031, FR-013). Priority: must-have
+  > Socrates: Counter-argument considered: „skoro dentystka i tak poprawia podział, po co go proponować — pusty formularz jest uczciwszy". Resolution: utrzymano. Podział na wizyty to praca, którą wykonuje przy każdym kosztorysie, a notatka zwykle daje na niego podstawę (pilność, strona łuku, rodzaj zabiegu). **Dodano warunek**: żadne zdanie widziane przez pacjenta nie pochodzi z propozycji — nazwy wizyt bierze się ze słownika systemu, więc cena za pomyłkę modelu to źle ułożone zęby, a nie obcy tekst na stronie pacjenta.
+- FR-015: Every value the system supplied without direct support in the diagnosis text is named in the FR-012 warnings: which teeth got an urgency inferred rather than read, and the reasoning behind the proposed split. These warnings are visible to the dentystka only — no free-text prose produced by the external processing service reaches the patient's page. Priority: must-have
 
 ### Editable working form (per-quote)
 
@@ -130,6 +133,7 @@ Nie jest personą-operatorem w sensie produktu. Otrzymuje link, otwiera stronę,
 - FR-031: Dentystka can add and remove visits in the standard plan. Priority: must-have
   > Socrates: Counter-argument considered: "sztywne 1–3 wizyty wystarczą — dropdown w 3 opcjach, prostsze UI". Resolution: utrzymano elastyczność. Plany z 8+ zębami u dorosłego wymagają realnie 4–5 wizyt; ograniczenie wymusiłoby workaround typu "wciśnij dwa kanałowe w jedną wizytę", co fałszuje plan. Koszt: dwa przyciski w UI ("dodaj wizytę", "usuń wizytę") i renumeracja przy usuwaniu.
 - FR-032: Each visit displays its partial cost (sum of teeth assigned to it + general items if associated with that visit). Priority: must-have
+- FR-033: A general item proposed from the diagnosis text can carry a visit assignment, so a visit's partial cost (FR-032) covers everything that happens at that visit and not only its teeth. Priority: should-have
 
 ### Cost calculation rules
 
@@ -274,3 +278,5 @@ Dwa rozdzielne tryby dostępu w jednej aplikacji, jedna domena:
 8. ~~**Treść walidacji struktury parsowania (FR-012).**~~ — **rozstrzygnięte 2026-09-05 wraz z implementacją S-02.** Wynik modelu jest walidowany dwuwarstwowo: schemat Zod pilnuje kształtu, a kod pilnuje znaczenia. Kod sprawdza (a) przynależność numeru zęba do notacji FDI, (b) obecność każdego id w cenniku, (c) czy pozycja jest dopuszczalna w kontekście, w jakim ją zaproponowano (pozycja ogólna nie trafia na ząb), (d) czy `visitNumber` wskazuje wizytę, która faktycznie została zaproponowana. Każde naruszenie **pomija** wartość i **nazywa** ją w ostrzeżeniu na formularzu — nigdy nie akceptuje po cichu i nigdy nie porzuca po cichu. Znacznik `(32?)` odczytywany jest jako status `uncertain`. Podział jest wymuszony przez dostawcę, nie wybrany: strukturyzowane wyjście Anthropica odrzuca `minimum`/`maximum` na liczbie, więc ząb 99 przechodzi walidację schematu i tylko kod może go zatrzymać.
 
    Dodatkowo, **model nie zapisuje pola `note`**. `note` jest częścią `content`, a `content` trafia dosłownie do każdego, kto ma link pacjenta (patrz _Invariant_ w `docs/reference/contract-surfaces.md`); model, który właśnie przeczytał poufną notatkę dentystki, nie dostaje pióra na stronie pacjenta. Kontekst, który trafiłby do notatki, trafia do ostrzeżeń — widzi je wyłącznie dentystka.
+
+9. **Reguły grupowania wizyt i progi pilności, na których opiera się propozycja podziału (FR-014).** Domyślne reguły — ile zębów przypada na wizytę, że leczenie kanałowe liczy się jak dwa, że jedna wizyta to jedna strona łuku, że higienizacja i pantomogram idą na pierwszą wizytę, oraz które objawy z notatki oznaczają "urgent" — są punktem wyjścia napisanym przez implementację, nie decyzją kliniczną. Dentystka ma je przepisać po pierwszych realnych notatkach; do tego czasu propozycja pozostaje propozycją, którą i tak zatwierdza ręcznie (FR-013), a wszystko, czego notatka nie stwierdza wprost, jest nazwane w ostrzeżeniach (FR-015). — _Owner:_ dentystka. _Block:_ nie.

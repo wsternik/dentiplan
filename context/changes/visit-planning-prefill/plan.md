@@ -694,12 +694,12 @@ Drafts saved before this change reopen and prefill exactly as before.
 
 #### Automated
 
-- [ ] 4.1 Type checking passes: `npx astro check`
-- [ ] 4.2 Linting passes: `npm run lint`
-- [ ] 4.3 Unit tests pass: `npm test`
-- [ ] 4.4 FR-014, FR-015, FR-033 are unique in the PRD
+- [x] 4.1 Type checking passes: `npx astro check`
+- [x] 4.2 Linting passes: `npm run lint`
+- [x] 4.3 Unit tests pass: `npm test`
+- [x] 4.4 FR-014, FR-015, FR-033 are unique in the PRD
 
 #### Manual
 
-- [ ] 4.5 The new FRs read as product requirements, not as a description of the implementation
-- [ ] 4.6 The roadmap slice says what the dentystka gets
+- [x] 4.5 The new FRs read as product requirements, not as a description of the implementation
+- [x] 4.6 The roadmap slice says what the dentystka gets
