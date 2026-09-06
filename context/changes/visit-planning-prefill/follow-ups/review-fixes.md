@@ -26,3 +26,21 @@ Deduplication of general items is keyed on the item id, not on the pair
 (id, visit), so hygiene proposed for visit 1 and visit 4 collapses to the first
 with a warning. Deliberate: it is one dropdown for her and a dedup-key redesign
 for us.
+
+## Triage of the CI review agent's pass on PR #8
+
+Verdict **APPROVED**, three findings, all `minor` — nothing critical or high, so
+nothing was fixed before the merge.
+
+1. _Unreachable `"Higienizacja"`_ — the same defect as **F3** above, found
+   independently. Stays deferred there.
+2. _Unverified consumer of the changed `generalItems` shape_ — dismissed. What
+   changed is `PrefillResult` in `src/lib/llm/schema.ts`, whose only consumer is
+   `merge.ts`, and that is in the diff. The application-wide `GeneralItem` in
+   `src/types.ts` already carried `visitNumber` before this change; `types.ts` is
+   untouched by the diff, which is why no UI call site moved.
+3. _No test for a three-way urgency tie_ — accepted as a real gap, not worth a
+   pre-merge commit. `orderVisits` sorts with `Array.prototype.sort`, stable per
+   spec, so the two-visit test already exercises the mechanism; a third visit
+   would harden the guarantee, not change it. Fold it in with **F3**, which
+   touches the same signature.
