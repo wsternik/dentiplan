@@ -590,15 +590,15 @@ has been in the record since S-01.
 
 #### Automated
 
-- [x] 3.1 `npm test`, `astro check`, `npm run lint`, `npm run depcruise` pass
-- [x] 3.2 `npm run test:e2e` green with no edits to existing specs
+- [x] 3.1 `npm test`, `astro check`, `npm run lint`, `npm run depcruise` pass — c5abcfd
+- [x] 3.2 `npm run test:e2e` green with no edits to existing specs — c5abcfd
 
 #### Manual
 
-- [x] 3.3 Text-picker add/remove moves the drawing immediately
-- [x] 3.4 Prefill's teeth appear without a remount or lost focus
-- [x] 3.5 Click planned tooth → focus its row; click unplanned → adds it
-- [x] 3.6 Approved-quote chart is inert but still shows tooltips
+- [x] 3.3 Text-picker add/remove moves the drawing immediately — c5abcfd
+- [x] 3.4 Prefill's teeth appear without a remount or lost focus — c5abcfd
+- [x] 3.5 Click planned tooth → focus its row; click unplanned → adds it — c5abcfd
+- [x] 3.6 Approved-quote chart is inert but still shows tooltips — c5abcfd
 
 ### Phase 4: E2E — risk #8
 
