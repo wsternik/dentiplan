@@ -1,10 +1,10 @@
 ---
 change_id: quote-approval-flow-analysis
 title: Analysis of the quote approval flow, editor through patient link
-status: implemented
+status: archived
 created: 2026-09-04
 updated: 2026-09-06
-archived_at: null
+archived_at: 2026-09-06T17:25:40Z
 ---
 
 ## Notes

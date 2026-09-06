@@ -18,7 +18,7 @@ to fix, and the domain notes explain why the invariant behind it is fragile.
 | **Repository** | `dentiplan` — a dentist turns a semi-structured diagnosis note into two comparable treatment-cost plans (multi-visit standard vs. single session under general anaesthesia) and sends the patient an unguessable link |
 | **Stack**      | Astro 6 SSR, React 19 islands, Tailwind 4, Zod, Supabase (Postgres), deployed to Cloudflare Workers                                                                                                                   |
 | **Scale**      | 87 source files, 82 commits, ~4 months of history (2026-05-24 → 2026-09-04), one contributor                                                                                                                          |
-| **Artifacts**  | L2 `context/map/` · L3 `context/changes/quote-approval-flow-analysis/research.md` · L4 `context/changes/refactor-opportunities/{research,plan}.md` · L5 `context/domain/01–03`                                        |
+| **Artifacts**  | L2 `context/map/` · L3 `context/archive/2026-09-04-quote-approval-flow-analysis/research.md` · L4 `context/changes/refactor-opportunities/{research,plan}.md` · L5 `context/domain/01–03`                             |
 
 It is a small repository, and the map says so plainly rather than inflating it.
 What makes it worth analysing is not size but a property most codebases do not

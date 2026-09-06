@@ -96,7 +96,7 @@ and, I think, stronger:
    `src/lib/supabase.ts` transitively imports `astro:env/server`, a virtual
    module that cannot be resolved outside the Astro build. That is precisely why
    `approve.ts` has no unit tests
-   (`context/changes/quote-approval-flow-analysis/research.md` D2, R1). A narrow
+   (`context/archive/2026-09-04-quote-approval-flow-analysis/research.md` D2, R1). A narrow
    port is a seam a fake can be substituted at — the difference between "we did
    not write the test" and "the test cannot be written".
 3. **Access rules are currently invisible.** The `quotes` table's real access

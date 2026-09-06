@@ -16,7 +16,7 @@ last_updated_by: Wojciech Sternik
 > **Exploration only.** No refactor happened here and no decision is taken here.
 > The decision belongs to the planning session that reads this report.
 >
-> Input: `context/changes/quote-approval-flow-analysis/research.md` (technical
+> Input: `context/archive/2026-09-04-quote-approval-flow-analysis/research.md` (technical
 > debt D1–D8) and `context/map/repo-map.md` (risk zones, the one layer
 > violation). Their findings are treated as collected evidence and built on, not
 > re-derived.

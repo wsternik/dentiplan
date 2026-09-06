@@ -10,7 +10,7 @@ archived_at: null
 ## Notes
 
 We have an analysis of this repository documenting technical debt and
-structural risk: `context/changes/quote-approval-flow-analysis/research.md`.
+structural risk: `context/archive/2026-09-04-quote-approval-flow-analysis/research.md`.
 This change answers the question that analysis deliberately left open: WHICH of
 those problems are worth fixing, in what target shape, and in what order.
 

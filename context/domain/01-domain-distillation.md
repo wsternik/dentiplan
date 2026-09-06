@@ -132,7 +132,7 @@ Aggregate candidates ranked by **value** (how core the invariant is) against
 owns, and it is tested. I-1's enforcement lives in a trigger, an endpoint filter
 and a UI state, coordinated by nothing but the fact that one developer held all
 three in mind on one afternoon. The research in
-`context/changes/quote-approval-flow-analysis/research.md` shows the coordination
+`context/archive/2026-09-04-quote-approval-flow-analysis/research.md` shows the coordination
 is already fraying: the endpoint half of it — `.eq("status","draft")` together
 with the `.select("id")` that makes a zero-row match observable — **has no test
 at all**, and the identical hole was found once before by a plan review, fixed,

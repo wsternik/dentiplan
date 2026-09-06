@@ -35,7 +35,7 @@ and the fragility is of a specific kind: **it works today because four
 mechanisms agree, and nothing in the codebase makes them agree.** They were made
 to agree by one person on one afternoon.
 
-That fragility is already documented, not speculative. `context/changes/quote-approval-flow-analysis/research.md`
+That fragility is already documented, not speculative. `context/archive/2026-09-04-quote-approval-flow-analysis/research.md`
 establishes that the endpoint half of the enforcement — `.eq("status","draft")`
 together with the `.select("id")` that makes a zero-row match observable — has
 **no test at all** (D2), and that the identical hole was found once by a plan
