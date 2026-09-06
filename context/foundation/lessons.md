@@ -91,3 +91,27 @@
   reads.
 - **Applies to:** every field of `QuoteContent` a prefill or a future model call
   can fill, and the invariant test in `parse-diagnosis.test.ts` that guards them.
+
+## A green unit suite says nothing about the latency the prompt spends
+
+- **Context:** `visit-planning-prefill`. Phase 2 grew `buildInstructions()` to ~9000
+  characters — grouping rules, urgency evidence, the visit ceiling. Every test
+  in `src/lib/llm/` passed, because they all feed a fixture through a stubbed
+  `DiagnosisModel` and never make a call.
+- **Problem:** Sonnet 5 thinks adaptively by default. The longer prompt pushed it
+  to ~2600 reasoning tokens and **33.7 s** against the `TIMEOUT_MS = 30_000` in
+  `client.ts`, so `/api/admin/quotes/parse` answered 502 on the first realistic
+  note ever sent to production — deterministically, not intermittently. 83 unit
+  tests, `astro check`, lint, five E2E specs and three review passes were all
+  green on a feature that could not complete a single call. The seam that keeps
+  `parse-diagnosis.ts` pure is exactly what hides this: the one thing no test
+  crosses is the one thing the request budget is spent on.
+- **Rule:** A change that edits the prompt has changed the **cost** of the call,
+  not just its wording. Measure the call once against the real provider before
+  merging, and size the timeout against that measurement rather than a round
+  number. Reading a note and naming what is in it is extraction, not
+  deliberation — set `effort` explicitly (`medium` here: same split, ~17 s) so a
+  provider default cannot silently spend the budget on reasoning.
+- **Applies to:** every future edit to `src/lib/llm/prompt.ts`, the S12 eval
+  corpus (whose per-case cost is this same number), and any second model call
+  added to a request path.

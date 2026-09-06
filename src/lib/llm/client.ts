@@ -22,10 +22,20 @@ import { ParsedDiagnosisSchema, type ParsedDiagnosis } from "./schema";
 // deliberate about. LLM_MODEL overrides it per environment without a deploy.
 const DEFAULT_MODEL = "claude-sonnet-5";
 
-// This call sits on a request path, so both are set explicitly rather than left
-// to the SDK's defaults — a slow provider must not hold a Worker request open.
-const TIMEOUT_MS = 30_000;
+// This call sits on a request path, so all three are set explicitly rather than
+// left to the SDK's defaults — a slow provider must not hold a Worker request
+// open, and the note-reading task must not pay for reasoning it does not need.
+//
+// The budget is sized against a measurement, not a guess. Sonnet 5 thinks
+// adaptively by default, and the visit-planning prompt pushed it to ~2600
+// reasoning tokens and 33.7 s for a six-tooth note — past the 30 s this was,
+// so production answered 502 on every realistic note while all 83 unit tests
+// stayed green. `effort: "medium"` costs ~870 reasoning tokens and ~17 s for
+// the same note, with an equally good split; 45 s is ~2.6x that measured cost.
+// Reading a note and naming what is in it is extraction, not deliberation.
+const TIMEOUT_MS = 45_000;
 const MAX_RETRIES = 1;
+const EFFORT = "medium" as const;
 
 /** The seam. `parseDiagnosis` takes one of these; only the endpoint builds one. */
 export interface DiagnosisModel {
@@ -56,6 +66,7 @@ export function anthropicModel(): DiagnosisModel {
         prompt: `Notatka dentystki:\n\n${text}`,
         timeout: TIMEOUT_MS,
         maxRetries: MAX_RETRIES,
+        providerOptions: { anthropic: { effort: EFFORT } },
       });
       return output;
     },
