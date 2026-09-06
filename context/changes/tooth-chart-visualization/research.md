@@ -437,3 +437,28 @@ for `ToothRow` for the same reason.
    approximation in this document's successor and in the UI's own terms — a child's
    chart that silently pretends to anatomical fidelity is a worse lie than one that
    says it is schematic.
+
+---
+
+## Resolved during phase 1: what a milk tooth is actually drawn as
+
+Open question 5 above anticipated "molar shapes scaled down" for milk molars. That is
+not what phase 1 built, and the reason is in the copied data rather than in the design.
+
+The eight `outlinePath` strings carry **absolute** coordinates inside the quadrant —
+shape 1 starts at x≈174, shape 8 at x≈1 — so a shape is not just a silhouette, it is
+also its place on the arch. Drawing 55 with the first-molar path would therefore put it
+at the permanent molar's position, two teeth away from 15, which is the slot the
+mixed-dentition decision says it must share.
+
+So a milk tooth is drawn with **its permanent successor's shape at 0.85 scale**
+(51→shape 1 … 55→shape 5). A milk molar consequently reads as a small premolar rather
+than as a molar. That is a further approximation on top of the ones listed above, and it
+is named as such in `layout.ts`'s module comment and belongs in the chart's legend in
+phase 2. It marks the right tooth in the right place; it does not claim anatomical
+fidelity.
+
+Where both a milk tooth and its permanent successor are in the quote (exfoliation), the
+slot draws both: the milk tooth in the crown position and the successor displaced
+outward along the arch (`ChartPosition.arcOffset`). Neither is dropped — a tooth in the
+plan that the drawing omits is the one failure the chart cannot have.
