@@ -46,6 +46,33 @@ function readFixture(raw: unknown) {
   return ParsedDiagnosisSchema.parse(raw);
 }
 
+/**
+ * The paths in a model answer whose strings are ALLOWED to appear in `content`.
+ * Closed vocabularies the schema already constrains, plus the pricelist ids —
+ * the resolved refs' ids equal them by construction, and that equality is the
+ * point, since each id was checked against the seed first.
+ *
+ * This list is the whole guard: anything not on it is free text the model wrote
+ * and must not reach a patient. Adding a field here is a deliberate act.
+ */
+const MAY_REACH_CONTENT = new Set([
+  "teeth[].treatmentType",
+  "teeth[].urgency",
+  "teeth[].status",
+  "teeth[].pricelistItemIds[]",
+  "generalItems[].id",
+]);
+
+/** Every string in a model answer, with the path it sits at. */
+function modelStrings(value: unknown, path = ""): { path: string; value: string }[] {
+  if (typeof value === "string") return [{ path, value }];
+  if (Array.isArray(value)) return value.flatMap((entry) => modelStrings(entry, `${path}[]`));
+  if (value !== null && typeof value === "object") {
+    return Object.entries(value).flatMap(([key, entry]) => modelStrings(entry, path === "" ? key : `${path}.${key}`));
+  }
+  return [];
+}
+
 describe("mapParsedDiagnosis", () => {
   it("maps a clean answer onto the tree the editor holds, with prices from the seed", () => {
     const { content, warnings } = mapParsedDiagnosis(readFixture(clean));
@@ -245,13 +272,17 @@ describe("mapParsedDiagnosis", () => {
       const { content } = mapParsedDiagnosis(parsed);
       const serialized = JSON.stringify(content);
 
-      // Asserted over the model's FREE TEXT only. `pricelistItemIds` are
-      // model-authored strings and the resolved refs' ids equal them by
-      // construction — that equality is the point, since each id was checked
-      // against the seed first.
-      const freeText = [...parsed.warnings, ...parsed.visits.map((v) => v.rationale)].filter((s) => s.trim() !== "");
-      for (const text of freeText) {
-        expect(serialized).not.toContain(text);
+      // Every string the model wrote is checked, not a hand-picked two: naming
+      // the fields we know about is how `label` survived a whole slice after
+      // `note` was closed (`context/foundation/lessons.md`). The allowlist is
+      // the inverse — what may legitimately reach `content` — so a free-text
+      // field added tomorrow is covered by default and this test goes red
+      // rather than staying quiet.
+      const freeText = modelStrings(parsed).filter(
+        ({ path, value }) => !MAY_REACH_CONTENT.has(path) && value.trim() !== "",
+      );
+      for (const { path, value } of freeText) {
+        expect(serialized, `${path} reached content`).not.toContain(value);
       }
 
       expect(content.teeth.every((t) => t.note === "")).toBe(true);

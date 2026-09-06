@@ -72,6 +72,11 @@ export function visitLabel(teeth: ToothEntry[]): string {
  *
  * Returns the old→new map as well as the ordered tree: general items follow the
  * same renumbering (FR-032), and callers other than the tooth loop need it.
+ *
+ * The caller owns deduplication: `visits` must not contain two entries with the
+ * same `number`. The old→new map is keyed on that number, so a duplicate would
+ * resolve to the last entry and quietly send the first one's teeth to the wrong
+ * slot. `parseDiagnosis` drops duplicates — first wins — before calling here.
  */
 export function orderVisits(
   visits: Visit[],
