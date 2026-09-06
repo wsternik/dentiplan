@@ -1,7 +1,7 @@
 ---
 change_id: tooth-chart-visualization
 title: Tooth chart on the patient page and in the editor
-status: preparing
+status: planned
 created: 2026-09-06
 updated: 2026-09-06
 archived_at: null
