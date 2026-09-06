@@ -23,7 +23,7 @@ The public route is Astro SSR and currently passes content, patient type, and cr
 - Existing E2E flows expect exactly one textbox in the approval confirmation, so the QR's visible URL must not be another input (`e2e/patient-link-content.spec.ts:57-64`).
 - Print behaviour must be verified with both print media and an A4 printable viewport near 717 px; media emulation alone previously hid a layout defect (`e2e/patient-print-layout.spec.ts:30-35,60-93`, `context/foundation/lessons.md`).
 - The token is a capability secret. In-process generation preserves the route's `no-referrer` boundary and avoids disclosing it to a third-party image service (`src/pages/p/[token].astro:25-31`).
-- `qrcode-generator` 2.x publishes an ESM entry point and bundled TypeScript declarations, so no separate type package is expected.
+- `qrcode-generator` 2.0.4 publishes the runtime factory as a named ESM export, while its bundled declaration still uses the CommonJS-shaped `export = qrcode`. The plan must bridge that mismatch locally and prove both TypeScript and the production bundle before UI work begins.
 
 ## What We're NOT Doing
 
@@ -62,9 +62,17 @@ Install the zero-dependency QR encoder and add a deterministic, runtime-neutral 
 
 **Intent**: Add `qrcode-generator` as a production dependency because the renderer runs in both the browser bundle and Cloudflare SSR.
 
-**Contract**: Use the package's ESM export and bundled declarations. Do not add `@types/qrcode-generator` unless the installed package demonstrably lacks types.
+**Contract**: Use the package's named ESM `qrcode` runtime export. Do not add `@types/qrcode-generator`; its stub adds no value and the package declaration does not describe the ESM export correctly. Add the narrow local declaration below and make a production build part of this phase's gate.
 
-#### 2. SVG renderer
+#### 2. ESM type adapter
+
+**File**: `src/types/qrcode-generator.d.ts` (new)
+
+**Intent**: Describe only the named ESM factory and methods this application calls, keeping the package's runtime/type mismatch out of product code.
+
+**Contract**: Declare the `qrcode(typeNumber, errorCorrectionLevel)` named export plus the returned object's `addData`, `make`, `getModuleCount`, and `isDark` methods. Limit correction levels and data modes to the package's published string unions; do not reproduce unrelated package APIs.
+
+#### 3. SVG renderer
 
 **File**: `src/lib/quote/qr.ts` (new)
 
@@ -72,7 +80,7 @@ Install the zero-dependency QR encoder and add a deterministic, runtime-neutral 
 
 **Contract**: Export a pure `renderPatientQrSvg(patientUrl: string): string`. Create an automatically sized QR at correction level `M`, add the URL as byte data, and render dark modules into SVG geometry with a four-module quiet zone and a square `viewBox`. The returned markup must not interpolate the URL as executable markup or depend on CSS backgrounds.
 
-#### 3. Renderer tests
+#### 4. Renderer tests
 
 **File**: `src/lib/quote/qr.test.ts` (new)
 
@@ -87,6 +95,7 @@ Install the zero-dependency QR encoder and add a deterministic, runtime-neutral 
 - Renderer tests pass: `npx vitest run src/lib/quote/qr.test.ts`
 - The full unit suite passes: `npm test`
 - New TypeScript files pass ESLint: `npx eslint src/lib/quote/qr.ts src/lib/quote/qr.test.ts`
+- TypeScript and the ESM production bundle accept the adapter: `npm run build`
 
 #### Manual Verification
 
@@ -176,7 +185,7 @@ Render the online URL into the patient document during SSR, reveal it only for p
 
 **Intent**: Keep product records aligned with the shipped capability.
 
-**Contract**: Add FR-054 for the admin QR and FR-055 for the printed patient QR. Add S-07 `patient-link-qr` with prerequisite S-01 and refs FR-052/054/055, marked `done`; update the relevant roadmap summary/stream without changing unrelated priorities.
+**Contract**: Add FR-054 for the admin QR and FR-055 for the printed patient QR. In the roadmap, add S-07 `patient-link-qr` with prerequisite S-01 and refs FR-052/054/055 to `At a glance`, Stream A, and a full slice section; add the delivered outcome to `Done`. Do not add an already-completed slice to `Backlog Handoff` or change unrelated priorities.
 
 ### Success Criteria
 
@@ -242,10 +251,11 @@ No data migration, API change, or deployment ordering is required. Each phase is
 - [ ] 1.1 Renderer tests pass: `npx vitest run src/lib/quote/qr.test.ts`
 - [ ] 1.2 The full unit suite passes: `npm test`
 - [ ] 1.3 New TypeScript files pass ESLint: `npx eslint src/lib/quote/qr.ts src/lib/quote/qr.test.ts`
+- [ ] 1.4 TypeScript and the ESM production bundle accept the adapter: `npm run build`
 
 #### Manual
 
-- [ ] 1.4 Generated markup for a production-shaped patient URL contains a square SVG with a visible quiet zone and dark modules
+- [ ] 1.5 Generated markup for a production-shaped patient URL contains a square SVG with a visible quiet zone and dark modules
 
 ### Phase 2: Admin QR disclosure
 

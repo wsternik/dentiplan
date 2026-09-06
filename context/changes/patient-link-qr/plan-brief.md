@@ -18,7 +18,8 @@ The dentystka can show a scannable QR immediately after approval or from a reope
 
 | Decision         | Choice                                              | Why                                                                                         |
 | ---------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| Encoder          | `qrcode-generator`, correction M                    | Zero dependencies, ESM/types included, works in browser and Workers runtime                 |
+| Encoder          | `qrcode-generator`, correction M                    | Zero dependencies and a browser/Workers-compatible ESM runtime                              |
+| Type interop     | Narrow local declaration for the named ESM factory  | The package's bundled `export =` declaration does not match its named runtime export        |
 | Output           | Pure in-process SVG renderer                        | One implementation serves React and Astro without external disclosure or storage            |
 | Admin UX         | Collapsed `Pokaż QR`, at least 200 px               | Keeps the existing compact link control and expands only when needed                        |
 | Admin URL source | Same `path` prop as `CopyLink`                      | Prevents the copied link and QR payload from drifting                                       |
@@ -59,7 +60,7 @@ The existing relative patient path remains the source of truth. React turns it i
 
 ## Open Risks & Assumptions
 
-- The installed `qrcode-generator` package retains its published ESM entry and bundled declarations.
+- The installed `qrcode-generator` package retains its published named ESM factory; phase 1 proves the local type adapter against a production build.
 - Browser print scaling can still affect physical size, so a phone scan of the produced PDF/print is a required human check.
 - `Astro.url.origin` reflects the externally reachable origin in the deployed Worker, as it does for the current request URL.
 

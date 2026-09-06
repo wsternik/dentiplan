@@ -1,7 +1,7 @@
 ---
 change_id: patient-link-qr
 title: Patient link QR in admin and print
-status: planned
+status: plan_reviewed
 created: 2026-09-06
 updated: 2026-09-06
 archived_at: null
