@@ -3,7 +3,7 @@ project: DentiPlan
 version: 1
 status: draft
 created: 2026-05-25
-updated: 2026-09-05
+updated: 2026-09-06
 prd_version: 1
 main_goal: low-complexity
 top_blocker: decisions
@@ -223,6 +223,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 ## Done
 
+- **S-09: dentystka wkleja tę samą notatkę co w S-02 i formularz wraca z planem, nie tylko z listą zębów: zęby rozłożone na wizyty, wizyta z najpilniejszymi zębami jako pierwsza, nazwy wizyt ze słownika systemu, a wszystko wywnioskowane — nazwane w ostrzeżeniach FR-012** — Archived 2026-09-06 → `context/archive/2026-09-06-visit-planning-prefill/`. Lesson: zielony zestaw testów jednostkowych nic nie mówi o czasie, jaki prompt wydaje — dłuższy prompt to zmiana kosztu wywołania, nie tylko jego treści.
 - **F-01: (foundation) schemat domeny (quote, tooth, visit, general-item, e-mail, snapshot, token) gotowy w Supabase z RLS** — Archived 2026-06-03 → `context/archive/2026-06-03-quotes-data-foundation/`. Lesson: —.
 - **F-02: (foundation) cennik gabinetu zdefiniowany jako seed w repo, z flagą `local-anesthesia` per pozycja** — Archived 2026-06-04 → `context/archive/2026-06-03-pricelist-seed-foundation/`. Lesson: —.
 - **S-01: dentystka wkleja diagnozę, ręcznie wypełnia formularz, zatwierdza i otrzymuje link `/p/<token>`, który pokazuje pacjentowi dwa warianty side-by-side** — Archived 2026-09-04 → `context/archive/2026-06-04-first-thin-quote-and-patient-link/`. Lesson: —.
