@@ -1,9 +1,10 @@
 ---
 change_id: remove-self-service-signup
 title: Remove self-service sign-up from the app and from the Supabase project
-status: in-progress
+status: archived
 created: 2026-09-06
 updated: 2026-09-06
+archived_at: 2026-09-06T16:35:00Z
 ---
 
 ## Notes
