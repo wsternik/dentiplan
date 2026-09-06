@@ -124,29 +124,28 @@ async function markedOnChart(page: Page): Promise<string[]> {
 /**
  * What the lists say, in the same shape.
  *
- * The three tooth sections carry no accessible name — they are plain `<section>`
- * elements — so the `<h2>` above a list item is the only thing that says WHICH
- * list the tooth is in, and which list a tooth is in is precisely the half of the
- * risk the drawing has to agree with. Items that do not begin with an FDI number
- * (the range-upside sentence under "Scenariusze…", every list elsewhere on the
- * page) name no tooth and drop out.
+ * Each tooth section is a named landmark (`aria-labelledby` on its own `<h2>`),
+ * so "which list is this tooth in" — precisely the half of the risk the drawing
+ * has to agree with — is asked by role and name rather than by walking the DOM.
+ * A section the quote does not populate is not rendered at all; it is skipped
+ * here so its absence surfaces as a missing tooth in the set diff below, not as
+ * a locator timeout. Items that do not begin with an FDI number (the range-upside
+ * sentence under "Scenariusze…") name no tooth and drop out.
  */
 async function namedInLists(page: Page): Promise<string[]> {
-  const items = await page.getByRole("listitem").evaluateAll((elements) =>
-    elements.map((element) => ({
-      section: element.closest("section")?.querySelector("h2")?.textContent.trim() ?? "",
-      text: (element as HTMLElement).innerText,
-    })),
-  );
+  const named: string[] = [];
 
-  return items
-    .map(({ section, text }) => {
-      const status = SECTION_STATUS.get(section);
+  for (const [heading, status] of SECTION_STATUS) {
+    const section = page.getByRole("region", { name: heading });
+    if ((await section.count()) === 0) continue;
+
+    for (const text of await section.getByRole("listitem").allInnerTexts()) {
       const number = /^(\d{2}) /.exec(text)?.[1];
-      return status !== undefined && number !== undefined ? `${number} · ${status}` : null;
-    })
-    .filter((entry) => entry !== null)
-    .sort();
+      if (number !== undefined) named.push(`${number} · ${status}`);
+    }
+  }
+
+  return named.sort();
 }
 
 /**
@@ -162,13 +161,20 @@ async function namedInLists(page: Page): Promise<string[]> {
  * locator: the tooth's `<path>` and the list's dot are `aria-hidden` decoration
  * with no role and no name of their own — there is nothing accessible to point a
  * locator at. The element they hang off of is located by role, as everywhere else.
+ *
+ * The match must be unique. A query that quietly takes the first of several
+ * would keep passing on the day an icon is added ahead of the urgency dot, while
+ * comparing the colour of something else entirely — a test that measures the
+ * wrong element and still goes green is worth less than no test.
  */
 function paintedColour(target: Locator, selector: string, property: "fill" | "backgroundColor"): Promise<string> {
   return target.evaluate(
     (element, options) => {
-      const painted = element.querySelector(options.selector);
-      if (painted === null) throw new Error(`nothing matching "${options.selector}" to read a colour from`);
-      return globalThis.getComputedStyle(painted)[options.property];
+      const painted = element.querySelectorAll(options.selector);
+      if (painted.length !== 1) {
+        throw new Error(`expected exactly one "${options.selector}" to read a colour from, found ${painted.length}`);
+      }
+      return globalThis.getComputedStyle(painted[0])[options.property];
     },
     { selector, property },
   );
@@ -190,20 +196,23 @@ test("risk #8: an approved quote's chart and its written lists describe the same
   await page.getByRole("button", { name: "Dodaj", exact: true }).click();
   await expect(page.getByText(PLANNED[PLANNED.length - 1].name)).toBeVisible();
 
-  // A tooth row has no accessible container of its own, so its three selects are
-  // reached by position. `QuoteEditor` keeps `teeth` in ascending FDI order
-  // (`planAdditions`), and `PLANNED` is written in that order, so index i is
-  // tooth i — an assumption the chart assertion at the end of this block turns
-  // from a hope into a checked fact.
-  for (const [index, tooth] of PLANNED.entries()) {
-    await page.getByRole("combobox", { name: "Status" }).nth(index).selectOption({ label: tooth.status });
-    await page.getByRole("combobox", { name: "Rodzaj leczenia" }).nth(index).selectOption({ label: tooth.treatment });
-    await page.getByRole("combobox", { name: "Pilność" }).nth(index).selectOption({ label: tooth.urgency });
+  // Each tooth row is a named group, so every control is reached through the
+  // tooth it belongs to. The three selects carry page-global names ("Status",
+  // "Rodzaj leczenia", "Pilność") and would otherwise be separable only by
+  // position — which would silently bind this test to the order `QuoteEditor`
+  // happens to keep `teeth` in.
+  for (const tooth of PLANNED) {
+    const row = page.getByRole("group", { name: new RegExp(`^${tooth.number} `) });
+    await expect(row).toHaveCount(1);
+
+    await row.getByRole("combobox", { name: "Status" }).selectOption({ label: tooth.status });
+    await row.getByRole("combobox", { name: "Rodzaj leczenia" }).selectOption({ label: tooth.treatment });
+    await row.getByRole("combobox", { name: "Pilność" }).selectOption({ label: tooth.urgency });
 
     if (tooth.item === null) continue;
     // The option's visible label carries its price, which is pricelist data
     // rather than behaviour — match the option by name and select it by value.
-    const picker = page.getByRole("combobox", { name: "Dodaj pozycję z cennika…" }).nth(index);
+    const picker = row.getByRole("combobox", { name: "Dodaj pozycję z cennika…" });
     const itemValue = await picker.getByRole("option", { name: tooth.item }).getAttribute("value");
     await picker.selectOption(itemValue ?? "");
   }

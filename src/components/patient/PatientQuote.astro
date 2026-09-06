@@ -54,8 +54,8 @@ const chartTeeth = toChartTeeth(content);
   <div class="mt-10 space-y-12">
     <VariantComparison totals={content.totals} visits={content.visits} />
 
-    <section class="tooth-chart-block space-y-4">
-      <h2 class="text-xl font-medium tracking-tight">Twoje zęby na schemacie</h2>
+    <section class="tooth-chart-block space-y-4" aria-labelledby="schemat-heading">
+      <h2 id="schemat-heading" class="text-xl font-medium tracking-tight">Twoje zęby na schemacie</h2>
       <ToothChart client:load teeth={chartTeeth} mode="read-only" />
       {
         /* No client directive: the legend is static markup and has no behaviour,

@@ -5,6 +5,10 @@
 // may raise the cost and is surfaced here rather than printed everywhere. The
 // whole section is omitted when there is nothing uncertain and no range upside.
 //
+// The section carries `aria-labelledby` pointing at its own `<h2>`: a
+// `<section>` with no accessible name is not exposed as a landmark, and these
+// three lists are how a patient using a screen reader navigates this document.
+//
 // Uncertainty is drawn as a dashed rule — the same treatment the editor gives an
 // uncertain tooth row, and one that survives being printed in black and white.
 
@@ -27,9 +31,11 @@ const show = sorted.length > 0 || showRangeUpside;
 
 {
   show && (
-    <section class="space-y-3">
+    <section class="space-y-3" aria-labelledby="scenariusze-heading">
       <div>
-        <h2 class="text-xl font-medium tracking-tight">Scenariusze, które mogą zmienić koszt</h2>
+        <h2 id="scenariusze-heading" class="text-xl font-medium tracking-tight">
+          Scenariusze, które mogą zmienić koszt
+        </h2>
         <div class="border-border mt-2 border-t border-dashed" />
       </div>
       <ul class="max-w-[68ch] space-y-2.5 text-sm">

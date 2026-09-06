@@ -43,8 +43,17 @@ export function ToothRow({ tooth, visits, options, onPatch, onAddItem, onRemoveI
     // programmatic focus target only — it adds no tab stop of its own, and
     // `focus-visible` keeps the ring for the keyboard path (Enter on a tooth),
     // where the reader actually needs to be told where she landed.
+    //
+    // `role` + `aria-label` are what she is told. A focus target with no name
+    // announces nothing, and "which tooth" is the entire content of the jump.
+    // It also gives every control in the row a per-row accessible container:
+    // the three selects carry page-global names ("Status", "Rodzaj leczenia",
+    // "Pilność"), so without this the only way to reach one of them is by
+    // position.
     <div
       id={`tooth-${tooth.number}`}
+      role="group"
+      aria-label={toothName(tooth.number)}
       tabIndex={-1}
       className={cn(
         "rounded-md border p-3 focus-visible:outline-2 focus-visible:outline-offset-2",

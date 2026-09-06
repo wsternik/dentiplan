@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { STATUS_SHAPE, URGENCY_FILL } from "@/lib/quote/marks";
 import type { ToothStatus, Urgency } from "@/types";
 
-import { toothClasses } from "./style";
+import { HATCH_OVERLAY_CLASSES, needsHatch, toothClasses } from "./style";
 import type { ChartTooth } from "./model";
 
 const URGENCIES: (Urgency | "unknown")[] = ["urgent", "moderate", "mild", "unknown"];
@@ -62,5 +62,25 @@ describe("chart marks", () => {
   it("dims an out-of-current-plan tooth once, never compounding it with a second dim", () => {
     const classes = toothClasses(chartTooth({ status: "out-of-current-plan" }));
     expect(classes.match(/opacity-/g) ?? []).toHaveLength(1);
+  });
+
+  // The hatch is the half of `out-of-current-plan` that survives greyscale and
+  // paper. `lessons.md` records the slice where this section lost both of its
+  // distinctions in print at once, so which teeth get the hatch is asserted
+  // rather than left to the component.
+  it("hatches out-of-current-plan and nothing else", () => {
+    for (const status of STATUSES) {
+      expect(needsHatch(chartTooth({ status })), status).toBe(status === "out-of-current-plan");
+    }
+  });
+
+  it("does not hatch a tooth the quote does not hold", () => {
+    expect(needsHatch(chartTooth({ inQuote: false, urgency: null, status: null }))).toBe(false);
+  });
+
+  it("dims the hatch overlay to the same single 65% its tooth carries", () => {
+    expect(HATCH_OVERLAY_CLASSES).toContain("opacity-65");
+    expect(HATCH_OVERLAY_CLASSES.match(/opacity-/g) ?? []).toHaveLength(1);
+    expect(toothClasses(chartTooth({ status: "out-of-current-plan" }))).toContain("opacity-65");
   });
 });

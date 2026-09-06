@@ -93,6 +93,14 @@ export function ToothChart({ teeth, mode, onToothClick }: Props) {
   }
 
   function onKeyDown(event: KeyboardEvent<SVGGElement>, tooth: ChartTooth) {
+    // WCAG 1.4.13: content that appears on hover or focus must be dismissible
+    // without moving the pointer or the focus. The tooltip covers the teeth
+    // around the one it describes, so a reader who cannot see it needs a way to
+    // put it away while staying where she is.
+    if (event.key === "Escape") {
+      setActive(null);
+      return;
+    }
     if (event.key !== "Enter" && event.key !== " ") return;
     event.preventDefault();
     activate(tooth);
@@ -106,7 +114,15 @@ export function ToothChart({ teeth, mode, onToothClick }: Props) {
         role="group"
         aria-label="Schemat uzębienia z zaznaczonym zakresem leczenia"
         onMouseLeave={() => {
-          setActive(null);
+          // Only the pointer's tooltip is the pointer's to close. A tooth
+          // reached with the keyboard keeps its tooltip until it loses focus or
+          // the reader presses Escape — otherwise a mouse drifting off the
+          // drawing silently takes away what the keyboard reader is reading.
+          setActive((current) => {
+            if (current === null) return null;
+            const focused = containerRef.current?.contains(document.activeElement) ?? false;
+            return focused ? current : null;
+          });
         }}
       >
         <defs>
