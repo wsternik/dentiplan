@@ -1,12 +1,11 @@
-// The new-quote editor island (S-01, Phase 2). Owns the entire working
-// `QuoteContent` tree in client state, renders every section, and derives both
-// cost variants live via the pure Phase-1 engine. No persistence here — the
-// Approve action is wired to the server endpoint in Phase 3.
+// Owns the working quote tree, transient editor UI, and explicit save/approval
+// actions. Both cost variants come from the shared pure calculation engine.
 //
 // PATIENT-SAFE INVARIANT: `rawText` is a transient scratch field held in island
 // state only. It is never part of the approval payload and never persisted —
 // `content` returned to anon callers must never carry the raw diagnosis.
 
+import "./editor.css";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,6 +69,16 @@ export default function QuoteEditor({
   const [visits, setVisits] = useState<Visit[]>(initialContent?.visits ?? []);
   const [generalItems, setGeneralItems] = useState<GeneralItem[]>(initialContent?.generalItems ?? []);
   const [patientEmail, setPatientEmail] = useState(initialPatientEmail ?? "");
+  const [openTeeth, setOpenTeeth] = useState<Set<number>>(
+    () =>
+      new Set(
+        (initialContent?.teeth ?? [])
+          .filter((t) => t.status === "in-plan" && !t.pricelistItems.length)
+          .map((t) => t.number),
+      ),
+  );
+  const [noteOpen, setNoteOpen] = useState(!initialContent?.teeth.length && !initialContent?.generalItems.length);
+  const [parseResult, setParseResult] = useState("");
   const [rawText, setRawText] = useState("");
   const [toothInput, setToothInput] = useState("");
   const [toothWarnings, setToothWarnings] = useState<string[]>([]);
@@ -114,6 +123,23 @@ export default function QuoteEditor({
   const [saveError, setSaveError] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<string | null>(null);
 
+  const currentSnapshot = JSON.stringify({ ...treePayload(), patient_email: patientEmail.trim() || null });
+  const [savedSnapshot, setSavedSnapshot] = useState<string | null>(quoteId ? currentSnapshot : null);
+  const saveStatus = saving
+    ? "Zapisywanie…"
+    : saveError
+      ? "Błąd zapisu"
+      : savedSnapshot !== currentSnapshot
+        ? savedId
+          ? "Zmiany niezapisane"
+          : "Niezapisany szkic"
+        : savedAt
+          ? `Zapisano o ${savedAt}`
+          : "Szkic zapisany";
+  function focusField(id: string, tooth?: number) {
+    if (tooth !== undefined) setOpenTeeth((prev) => new Set([...prev, tooth]));
+    requestAnimationFrame(() => document.getElementById(id)?.focus());
+  }
   const totals = useMemo(() => computeQuoteTotals({ teeth, visits, generalItems }), [teeth, visits, generalItems]);
 
   // --- Tooth entry (FR-021/FR-012) ---
@@ -145,7 +171,10 @@ export default function QuoteEditor({
       });
     }
 
-    if (additions.length > 0) setTeeth((prev) => [...prev, ...additions].sort((a, b) => a.number - b.number));
+    if (additions.length > 0) {
+      setTeeth((prev) => [...prev, ...additions].sort((a, b) => a.number - b.number));
+      setOpenTeeth((prev) => new Set([...prev, additions[0].number]));
+    }
     setToothWarnings(warnings);
     setToothInput("");
   }
@@ -154,7 +183,11 @@ export default function QuoteEditor({
     setTeeth((prev) => prev.map((t) => (t.number === number ? { ...t, ...patch } : t)));
   }
   function removeTooth(number: number) {
+    const index = teeth.findIndex((t) => t.number === number);
+    const neighbor = teeth.at(index + 1) ?? (index > 0 ? teeth.at(index - 1) : undefined);
     setTeeth((prev) => prev.filter((t) => t.number !== number));
+    setOpenTeeth((prev) => new Set([...prev].filter((n) => n !== number)));
+    focusField(neighbor ? `tooth-toggle-${neighbor.number}` : "fdi");
   }
   function addToothItem(number: number, option: PickerOption) {
     setTeeth((prev) =>
@@ -254,6 +287,7 @@ export default function QuoteEditor({
         const data = (await res.json().catch(() => null)) as { id?: string } | null;
         if (data?.id) setSavedId(data.id);
       }
+      setSavedSnapshot(JSON.stringify(body));
       setSavedAt(new Date().toLocaleTimeString("pl-PL"));
     } catch {
       setSaveError("Błąd połączenia. Spróbuj ponownie.");
@@ -275,6 +309,9 @@ export default function QuoteEditor({
   // `rawText` is the only thing sent, and it still never enters `treePayload()`.
   function applyPrefill(result: PrefillResult): string[] {
     const merged = mergePrefill(treeRef.current, result, generalCounter.current);
+    setParseResult(
+      `Dodano zęby: ${merged.teeth.length - treeRef.current.teeth.length}, wizyty: ${merged.visits.length - treeRef.current.visits.length}, pozycje ogólne: ${merged.generalItems.length - treeRef.current.generalItems.length}.`,
+    );
     generalCounter.current = merged.generalIdSeed;
     setTeeth(merged.teeth);
     setVisits(merged.visits);
@@ -287,6 +324,7 @@ export default function QuoteEditor({
     inFlight.current = true;
     setParsing(true);
     setParseError(null);
+    setParseResult("");
     try {
       const res = await fetch("/api/admin/quotes/parse", {
         method: "POST",
@@ -317,13 +355,6 @@ export default function QuoteEditor({
   // approved row is immutable, so it could never be filled in afterwards).
   const emailMissing = !EMAIL_PATTERN.test(patientEmail.trim());
   const approveDisabled = isEmpty || hasUnpriced || emailMissing;
-  const approveReason = isEmpty
-    ? "Dodaj co najmniej jeden ząb lub pozycję ogólną."
-    : hasUnpriced
-      ? "Każdy ząb w planie musi mieć pozycję z cennika."
-      : emailMissing
-        ? "Podaj e-mail odbiorcy, żeby zatwierdzić kosztorys."
-        : null;
 
   // --- Approve: POST the tree by-id; server re-resolves prices and freezes ---
   async function handleApprove() {
@@ -380,6 +411,12 @@ export default function QuoteEditor({
     setSavedId(null);
     setSaveError(null);
     setSavedAt(null);
+    setSavedSnapshot(null);
+    setOpenTeeth(new Set());
+    setNoteOpen(true);
+    setParseWarnings([]);
+    setParseError(null);
+    setParseResult("");
     generalCounter.current = 0;
   }
 
@@ -388,219 +425,366 @@ export default function QuoteEditor({
   }
 
   return (
-    <div className="mx-auto max-w-4xl space-y-4 px-4 py-8">
-      <div className="border-border flex flex-wrap items-baseline justify-between gap-4 border-b pb-4">
-        <h1 className="font-serif text-2xl font-medium tracking-tight">
+    <div className="quote-editor mx-auto max-w-[1360px] px-4 py-3 sm:px-6">
+      <header className="mb-3 flex flex-wrap items-baseline justify-between gap-3 border-b pb-4">
+        <h1 className="font-serif text-3xl">
           {readOnly ? "Kosztorys zatwierdzony" : savedId ? "Kosztorys (szkic)" : "Nowy kosztorys"}
         </h1>
-        <a href="/admin" className="text-muted-foreground text-sm underline underline-offset-4">
+        <a href="/admin" className="text-sm underline underline-offset-4">
           Lista kosztorysów
         </a>
-      </div>
-
-      <Section title="E-mail odbiorcy">
-        {readOnly ? (
-          <p className="text-sm">{patientEmail || <span className="text-muted-foreground">— brak —</span>}</p>
-        ) : (
-          <>
-            <Label htmlFor="patientEmail" className="text-muted-foreground mb-1">
-              Tylko do Twojej referencji — nigdy nie trafia na stronę pacjenta. Wymagany do zatwierdzenia.
-            </Label>
-            <Input
-              id="patientEmail"
-              type="email"
-              placeholder="pacjent@example.com"
-              value={patientEmail}
-              onChange={(e) => {
-                setPatientEmail(e.target.value);
-              }}
-            />
-          </>
-        )}
-      </Section>
-
-      {!readOnly && (
-        <Section title="Notatka z diagnozy (roboczo)">
-          <Label htmlFor="rawText" className="text-muted-foreground mb-1">
-            Pole robocze — nie jest zapisywane ani widoczne dla pacjenta.
-          </Label>
-          <Textarea
-            id="rawText"
-            rows={4}
-            placeholder="Wklej opis diagnozy do pomocy przy wypełnianiu…"
-            value={rawText}
-            onChange={(e) => {
-              setRawText(e.target.value);
-            }}
-          />
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              disabled={parsing || rawText.trim().length === 0}
-              onClick={() => void handlePrefill()}
-            >
-              {parsing ? "Wypełnianie…" : "Wypełnij z notatki"}
-            </Button>
-            <span className="text-muted-foreground text-xs">
-              Uzupełnia formularz — niczego nie nadpisuje i nie zatwierdza.
-            </span>
-          </div>
-          {parseError && <p className="text-destructive mt-2 text-sm">{parseError}</p>}
-          <ParseWarnings warnings={parseWarnings} />
-        </Section>
-      )}
-
-      <Section title="Typ pacjenta">
-        <div className="flex gap-2">
-          <Button
-            type="button"
-            disabled={readOnly}
-            variant={patientType === "child" ? "default" : "outline"}
-            onClick={() => {
-              setPatientType("child");
-            }}
-          >
-            Dziecko
-          </Button>
-          <Button
-            type="button"
-            disabled={readOnly}
-            variant={patientType === "adult" ? "default" : "outline"}
-            onClick={() => {
-              setPatientType("adult");
-            }}
-          >
-            Dorosły
-          </Button>
+      </header>
+      <div className="editor-layout">
+        <div className="editor-patient">
+          <Section title="Dane pacjenta" compact>
+            <div className="grid gap-5 md:grid-cols-[1fr_auto]">
+              <div>
+                <Label htmlFor="patientEmail">E-mail odbiorcy</Label>
+                {readOnly ? (
+                  <p>{patientEmail || "Brak adresu"}</p>
+                ) : (
+                  <>
+                    <Input
+                      id="patientEmail"
+                      type="email"
+                      value={patientEmail}
+                      aria-describedby="email-help email-error"
+                      aria-invalid={Boolean(patientEmail.trim()) && emailMissing}
+                      onChange={(e) => {
+                        setPatientEmail(e.target.value);
+                      }}
+                      placeholder="pacjent@example.com"
+                    />
+                    <p id="email-help" className="text-muted-foreground mt-2 text-sm">
+                      Tylko do Twojej referencji — nigdy nie trafia na stronę pacjenta.
+                    </p>
+                    <p id="email-error" className="text-sm">
+                      {patientEmail.trim() && emailMissing
+                        ? "Podaj poprawny e-mail przed zatwierdzeniem. Szkic możesz zapisać bez adresu."
+                        : ""}
+                    </p>
+                  </>
+                )}
+              </div>
+              <fieldset>
+                <legend className="mb-2 text-sm font-medium">Typ pacjenta</legend>
+                {readOnly ? (
+                  <p>{patientType === "adult" ? "Dorosły" : "Dziecko"}</p>
+                ) : (
+                  <div className="flex gap-3">
+                    {(["adult", "child"] as const).map((type) => (
+                      <label key={type} className="flex min-h-11 items-center gap-2 rounded border px-3">
+                        <input
+                          type="radio"
+                          name="patientType"
+                          value={type}
+                          checked={patientType === type}
+                          onChange={() => {
+                            setPatientType(type);
+                          }}
+                        />
+                        {type === "adult" ? "Dorosły" : "Dziecko"}
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </fieldset>
+            </div>
+          </Section>
         </div>
-      </Section>
-
-      <Section title="Zęby">
-        {!readOnly && (
-          <div className="flex gap-2">
-            {/* The placeholder IS this field's accessible name — `seed.spec.ts`
-                and `patient-link-content.spec.ts` both locate it that way. It
-                does not move. */}
-            <Input
-              placeholder="Numery FDI, np. 17,16,34"
-              value={toothInput}
-              onChange={(e) => {
-                setToothInput(e.target.value);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  addTeeth();
-                }
-              }}
-            />
-            <Button type="button" onClick={addTeeth}>
-              Dodaj
-            </Button>
-          </div>
-        )}
-        {toothWarnings.length > 0 && (
-          <ul className="text-urgency-moderate-ink border-urgency-moderate/50 mt-2 space-y-0.5 border-l-2 pl-3 text-xs">
-            {toothWarnings.map((w) => (
-              <li key={w}>{w}</li>
-            ))}
-          </ul>
-        )}
-        <div className="mt-3 space-y-3">
-          {teeth.length === 0 && (
-            <p className="text-muted-foreground text-sm">
-              {readOnly ? "Brak zębów w kosztorysie." : "Brak zębów. Dodaj numery powyżej."}
-            </p>
+        <aside className="editor-summary space-y-4" aria-label="Podsumowanie kosztorysu">
+          <TotalsPreview totals={totals} />
+          {!readOnly && (
+            <section id="approval-issues" className="bg-card rounded border p-4" tabIndex={-1}>
+              <h2 className="font-semibold">
+                {approveDisabled || submitError ? "Do uzupełnienia" : "Gotowy do zatwierdzenia"}
+              </h2>
+              <ul className="mt-2 space-y-2 text-sm">
+                {isEmpty && (
+                  <li>
+                    <button
+                      className="text-left underline"
+                      onClick={() => {
+                        focusField("fdi");
+                      }}
+                    >
+                      Dodaj co najmniej jeden ząb lub pozycję ogólną.
+                    </button>
+                  </li>
+                )}
+                {teeth
+                  .filter((t) => t.status === "in-plan" && !t.pricelistItems.length)
+                  .map((t) => (
+                    <li key={t.number}>
+                      <button
+                        className="text-left underline"
+                        onClick={() => {
+                          focusField(`tooth-price-${t.number}`, t.number);
+                        }}
+                      >
+                        Ząb {t.number}: dodaj pozycję z cennika.
+                      </button>
+                    </li>
+                  ))}
+                {emailMissing && (
+                  <li>
+                    <button
+                      className="text-left underline"
+                      onClick={() => {
+                        focusField("patientEmail");
+                      }}
+                    >
+                      Podaj poprawny e-mail odbiorcy.
+                    </button>
+                  </li>
+                )}
+              </ul>
+              {submitError && (
+                <p role="alert" className="text-destructive mt-2 text-sm">
+                  {submitError}
+                </p>
+              )}
+              <p className="text-muted-foreground mt-3 text-sm">
+                Zatwierdzenie zamyka edycję i tworzy link dla pacjenta.
+              </p>
+            </section>
           )}
-          {teeth.map((tooth) => (
-            <ToothRow
-              key={tooth.number}
-              tooth={tooth}
+        </aside>
+        <div className="editor-plan space-y-2">
+          {!readOnly && (
+            <section className="bg-card rounded border px-4 py-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <Button
+                  variant="ghost"
+                  aria-expanded={noteOpen}
+                  aria-controls="working-note"
+                  onClick={() => {
+                    setNoteOpen(!noteOpen);
+                  }}
+                >
+                  {noteOpen ? "Zwiń notatkę roboczą" : "Notatka robocza"}
+                </Button>
+                <button
+                  className="min-h-11 text-sm underline"
+                  onClick={() => {
+                    focusField("fdi");
+                  }}
+                >
+                  Dodaj zęby ręcznie
+                </button>
+              </div>
+              <div id="working-note" hidden={!noteOpen}>
+                <Label htmlFor="rawText" className="my-2">
+                  Notatka z diagnozy
+                </Label>
+                <Textarea
+                  id="rawText"
+                  rows={4}
+                  className="min-h-24"
+                  value={rawText}
+                  onChange={(e) => {
+                    setRawText(e.target.value);
+                  }}
+                  aria-describedby={parseError ? "note-help parse-error" : "note-help"}
+                  placeholder="Wklej opis diagnozy do pomocy przy wypełnianiu…"
+                />
+                <p id="note-help" className="text-muted-foreground my-2 text-sm">
+                  Notatka robocza — nie zapisujemy jej w kosztorysie. Nie trafia do pacjenta.
+                </p>
+                <Button
+                  variant="outline"
+                  disabled={parsing || saving || submitting || !rawText.trim()}
+                  onClick={() => void handlePrefill()}
+                >
+                  {parsing ? "Uzupełnianie…" : "Wypełnij z notatki"}
+                </Button>
+                <p className="text-muted-foreground mt-2 text-sm">
+                  Uzupełnia formularz — niczego nie nadpisuje i nie zatwierdza.
+                </p>
+              </div>
+              <div aria-live="polite">
+                {parsing && <p className="mt-2 text-sm">Uzupełnianie… Możesz nadal edytować ręcznie.</p>}
+                {parseResult && <p className="mt-2 text-sm">{parseResult}</p>}
+                {parseError && (
+                  <p id="parse-error" className="text-destructive mt-2 text-sm">
+                    {parseError} Otwórz notatkę, aby ponowić, lub pracuj ręcznie.
+                  </p>
+                )}
+              </div>
+              <ParseWarnings key={parseResult} warnings={parseWarnings} />
+            </section>
+          )}
+          <Section
+            title={`Plan leczenia · ${teeth.length} ${teeth.length === 1 ? "ząb" : new Intl.PluralRules("pl").select(teeth.length) === "few" ? "zęby" : "zębów"}`}
+            actions={
+              teeth.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setOpenTeeth(new Set(teeth.map((t) => t.number)));
+                    }}
+                  >
+                    Rozwiń wszystkie
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setOpenTeeth(new Set());
+                    }}
+                  >
+                    Zwiń wszystkie
+                  </Button>
+                </div>
+              )
+            }
+          >
+            {!readOnly && (
+              <div className="fdi-entry mb-3">
+                <Label htmlFor="fdi">Dodaj zęby — numery FDI</Label>
+                <div className="flex min-w-0 gap-2">
+                  <Input
+                    id="fdi"
+                    aria-describedby="fdi-warnings"
+                    placeholder="Numery FDI, np. 17,16,34"
+                    value={toothInput}
+                    onChange={(e) => {
+                      setToothInput(e.target.value);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        addTeeth();
+                      }
+                    }}
+                  />
+                  <Button onClick={addTeeth}>Dodaj</Button>
+                </div>
+              </div>
+            )}
+            <ul id="fdi-warnings" aria-live="polite" className="text-urgency-moderate-ink mt-2 text-sm">
+              {toothWarnings.map((w) => (
+                <li key={w}>{w}</li>
+              ))}
+            </ul>
+            <div className="space-y-2">
+              {!teeth.length && <p className="text-muted-foreground py-4 text-sm">Brak zębów w kosztorysie.</p>}
+              {teeth.map((tooth) => (
+                <ToothRow
+                  key={tooth.number}
+                  tooth={tooth}
+                  visits={visits}
+                  options={toothOptions}
+                  expanded={openTeeth.has(tooth.number)}
+                  onToggle={() => {
+                    setOpenTeeth((prev) => {
+                      const next = new Set(prev);
+                      if (next.has(tooth.number)) next.delete(tooth.number);
+                      else next.add(tooth.number);
+                      return next;
+                    });
+                  }}
+                  onPatch={(patch) => {
+                    patchTooth(tooth.number, patch);
+                  }}
+                  onAddItem={(option) => {
+                    addToothItem(tooth.number, option);
+                  }}
+                  onRemoveItem={(index) => {
+                    removeToothItem(tooth.number, index);
+                  }}
+                  onRemove={() => {
+                    removeTooth(tooth.number);
+                  }}
+                  readOnly={readOnly}
+                />
+              ))}
+            </div>
+          </Section>
+          <Section title="Wizyty">
+            <VisitList
               visits={visits}
-              options={toothOptions}
-              onPatch={(patch) => {
-                patchTooth(tooth.number, patch);
-              }}
-              onAddItem={(option) => {
-                addToothItem(tooth.number, option);
-              }}
-              onRemoveItem={(index) => {
-                removeToothItem(tooth.number, index);
-              }}
-              onRemove={() => {
-                removeTooth(tooth.number);
-              }}
+              teeth={teeth}
+              totals={totals}
+              onAdd={addVisit}
+              onRemove={removeVisit}
+              onLabelChange={setVisitLabel}
               readOnly={readOnly}
             />
-          ))}
-        </div>
-      </Section>
-
-      <Section title="Wizyty">
-        <VisitList
-          visits={visits}
-          onAdd={addVisit}
-          onRemove={removeVisit}
-          onLabelChange={setVisitLabel}
-          readOnly={readOnly}
-        />
-      </Section>
-
-      <Section title="Pozycje ogólne">
-        <GeneralItems
-          items={generalItems}
-          options={generalOptions}
-          visits={visits}
-          onAdd={addGeneral}
-          onRemove={removeGeneral}
-          onVisitChange={setGeneralVisit}
-          readOnly={readOnly}
-        />
-      </Section>
-
-      <Section title="Podgląd kosztów">
-        <TotalsPreview totals={totals} />
-      </Section>
-
-      {readOnly ? (
-        <Section title="Link dla pacjenta">
-          <p className="text-muted-foreground mb-2 text-sm">
-            Kosztorys jest zatwierdzony, więc nie da się go już zmienić (nowa wersja = nowy kosztorys i nowy link).
-          </p>
-          {patientToken ? (
-            <CopyLink path={`/p/${patientToken}`} />
-          ) : (
-            <p className="text-destructive text-sm">Ten kosztorys nie ma linku dla pacjenta.</p>
+          </Section>
+          <GeneralItems
+            items={generalItems}
+            options={generalOptions}
+            visits={visits}
+            onAdd={addGeneral}
+            onRemove={removeGeneral}
+            onVisitChange={setGeneralVisit}
+            readOnly={readOnly}
+          />
+          {readOnly && (
+            <Section title="Link dla pacjenta">
+              <p className="mb-3 text-sm">Kosztorys jest zatwierdzony i nie można go zmienić.</p>
+              {patientToken ? (
+                <CopyLink path={`/p/${patientToken}`} />
+              ) : (
+                <p>Ten kosztorys nie ma linku dla pacjenta.</p>
+              )}
+            </Section>
           )}
-        </Section>
-      ) : (
-        // The two actions that end the task, kept reachable from anywhere in a
-        // form that gets long. Same buttons, same names, same order, same
-        // gating — only the position changed.
-        //
-        // `sticky`, not `fixed`. A fixed bar sits outside the flow, so it needs
-        // the container to reserve its height by hand — and a hand-picked
-        // reserve is wrong the moment the bar grows a wrapped error line, at
-        // which point it covers the last tooth row. Worse, a fixed bar can park
-        // itself over a control that Playwright has just scrolled to and eat the
-        // click, failing a spec with a message that never mentions a bar. Sticky
-        // occupies real space at the end of the flow, so it cannot overlap
-        // anything, and still pins to the bottom while there is more form below.
-        <div className="border-border bg-background/95 no-print sticky bottom-0 z-10 -mx-4 border-t px-4 backdrop-blur-sm">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 py-3">
-            <Button type="button" size="lg" disabled={approveDisabled || submitting} onClick={handleApprove}>
+          {saveError && (
+            <div id="save-error" role="alert" className="text-destructive text-sm">
+              {saveError}
+              <Button
+                variant="outline"
+                disabled={saving || submitting || parsing}
+                onClick={() => void handleSaveDraft()}
+              >
+                Ponów zapis
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+      {!readOnly && (
+        <footer className="editor-actions bg-background mt-6 border-t py-3">
+          <p role="status" className="text-sm">
+            {saveStatus}
+          </p>
+          <div className="flex gap-2">
+            <Button variant="outline" disabled={saving || submitting || parsing} onClick={() => void handleSaveDraft()}>
+              Zapisz szkic
+            </Button>
+            <Button
+              disabled={approveDisabled || submitting || saving || parsing}
+              aria-describedby="action-reason"
+              onClick={() => void handleApprove()}
+            >
               {submitting ? "Zatwierdzanie…" : "Zatwierdź"}
             </Button>
-            <Button type="button" size="lg" variant="outline" disabled={saving} onClick={() => void handleSaveDraft()}>
-              {saving ? "Zapisywanie…" : "Zapisz szkic"}
-            </Button>
-            {savedAt && !saveError && <span className="text-muted-foreground text-sm">Zapisano {savedAt}</span>}
-            {approveReason && <p className="text-muted-foreground basis-full text-sm">{approveReason}</p>}
-            {submitError && <p className="text-destructive basis-full text-sm">{submitError}</p>}
-            {saveError && <p className="text-destructive basis-full text-sm">{saveError}</p>}
           </div>
-        </div>
+          <p id="action-reason" className="text-sm">
+            {parsing ? (
+              "Poczekaj na zakończenie uzupełniania."
+            ) : saving || submitting ? (
+              "Trwa zapis danych."
+            ) : approveDisabled || submitError ? (
+              <a href="#approval-issues" className="underline">
+                Sprawdź: Do uzupełnienia
+              </a>
+            ) : (
+              "Zatwierdzenie zamknie edycję."
+            )}
+            {saveError && (
+              <>
+                {" "}
+                ·{" "}
+                <a href="#save-error" className="underline">
+                  Błąd zapisu — ponów
+                </a>
+              </>
+            )}
+          </p>
+        </footer>
       )}
     </div>
   );

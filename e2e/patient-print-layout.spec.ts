@@ -43,18 +43,14 @@ test("risk #12: the printed estimate keeps the two treatment variants side by si
   await page.goto("/admin/quotes/new");
   await waitForIslands(page);
 
-  await page.getByLabel(/Tylko do Twojej referencji/).fill(`e2e-risk12-${stamp}@example.test`);
-  await page.getByRole("textbox", { name: "Numery FDI, np. 17,16,34" }).fill("16");
+  await page.getByLabel("E-mail odbiorcy", { exact: true }).fill(`e2e-risk12-${stamp}@example.test`);
+  await page.getByRole("textbox", { name: "Dodaj zęby — numery FDI" }).fill("16");
   await page.getByRole("button", { name: "Dodaj", exact: true }).click();
-  await expect(page.getByText("16 — pierwszy trzonowiec prawy górny")).toBeVisible();
+  await expect(page.getByText(/16 — pierwszy trzonowiec prawy górny/)).toBeVisible();
 
-  const picker = page.getByRole("combobox", { name: "Dodaj pozycję z cennika…" });
-  const treatment = await picker.getByRole("option", { name: /^Leczenie kanałowe trzonowca/ }).getAttribute("value");
-  // Fail here, not two assertions later: without this, a renamed pricelist entry
-  // selects the empty option and the test dies on a print-geometry assertion
-  // that has nothing to do with the actual problem.
-  expect(treatment, "the pricelist must still offer a molar root canal").toBeTruthy();
-  await picker.selectOption(treatment ?? "");
+  await page.getByRole("button", { name: "Dodaj zabieg — ząb 16" }).click();
+  await page.getByRole("combobox", { name: "Szukaj — Dodaj zabieg — ząb 16" }).fill("Leczenie kanałowe trzonowca");
+  await page.getByRole("option", { name: /^Leczenie kanałowe trzonowca/ }).click();
   await expect(page.getByText(/^Leczenie kanałowe trzonowca · /)).toBeVisible();
 
   await page.getByRole("button", { name: "Zatwierdź" }).click();

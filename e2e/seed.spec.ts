@@ -29,14 +29,11 @@ test("risk #6: the dentystka is not locked out — a draft round-trips through h
   // thrown away when React takes over.
   await waitForIslands(page);
 
-  await page.getByLabel(/Tylko do Twojej referencji/).fill(patientEmail);
+  await page.getByLabel("E-mail odbiorcy", { exact: true }).fill(patientEmail);
 
-  // The option's visible label carries its price ("Lakierowanie (200 zł)"),
-  // which is pricelist data rather than behaviour — find the option by name and
-  // select it by value, so a price change never breaks this test.
-  const generalPicker = page.getByRole("combobox", { name: "Dodaj pozycję ogólną…" });
-  const varnishValue = await generalPicker.getByRole("option", { name: /^Lakierowanie/ }).getAttribute("value");
-  await generalPicker.selectOption(varnishValue ?? "");
+  await page.getByRole("button", { name: "Dodaj pozycję ogólną…" }).click();
+  await page.getByRole("combobox", { name: "Szukaj — Dodaj pozycję ogólną…" }).fill("Lakierowanie");
+  await page.getByRole("option", { name: /^Lakierowanie/ }).click();
   await expect(page.getByText(/^Lakierowanie · /)).toBeVisible();
 
   await page.getByRole("button", { name: "Zapisz szkic" }).click();

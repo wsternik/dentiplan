@@ -17,17 +17,24 @@ export function NativeSelect({ className, children, ...props }: SelectHTMLAttrib
   );
 }
 
-/**
- * A titled block grouping a part of the editor. A hairline rule under the title
- * rather than a drop shadow around the box: in this palette structure is drawn
- * with rules, and depth is not a thing the form has.
- */
-export function Section({ title, children }: { title: string; children: ReactNode }) {
+/** Editor sections can carry a compact toolbar without repeating surfaces. */
+export function Section({
+  title,
+  children,
+  actions,
+  compact = false,
+}: {
+  title: string;
+  children: ReactNode;
+  actions?: ReactNode;
+  compact?: boolean;
+}) {
   return (
-    <section className="border-border bg-card rounded-md border p-4 sm:p-5">
-      <h2 className="text-muted-foreground border-border mb-4 border-b pb-2 text-xs font-semibold tracking-tight">
-        {title}
-      </h2>
+    <section className="border-border bg-card rounded-md border p-4">
+      <div className={cn("mb-3 flex flex-wrap items-center justify-between gap-2", compact && "sr-only")}>
+        <h2 className="text-foreground text-lg font-semibold tracking-tight">{title}</h2>
+        {actions}
+      </div>
       {children}
     </section>
   );

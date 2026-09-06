@@ -38,20 +38,18 @@ test("risk #3: an approved quote's patient page serves the quote and neither the
   await page.goto("/admin/quotes/new");
   await waitForIslands(page);
 
-  await page.getByLabel(/Tylko do Twojej referencji/).fill(patientEmail);
-  await page.getByLabel(/Pole robocze/).fill(diagnosisNote);
+  await page.getByLabel("E-mail odbiorcy", { exact: true }).fill(patientEmail);
+  await page.getByLabel("Notatka z diagnozy", { exact: true }).fill(diagnosisNote);
 
-  await page.getByRole("textbox", { name: "Numery FDI, np. 17,16,34" }).fill("16");
+  await page.getByRole("textbox", { name: "Dodaj zęby — numery FDI" }).fill("16");
   await page.getByRole("button", { name: "Dodaj", exact: true }).click();
-  await expect(page.getByText("16 — pierwszy trzonowiec prawy górny")).toBeVisible();
+  await expect(page.getByText(/16 — pierwszy trzonowiec prawy górny/)).toBeVisible();
 
   // The option's visible label carries its price, which is pricelist data rather
   // than behaviour — match the option by name and select it by value.
-  const toothPicker = page.getByRole("combobox", { name: "Dodaj pozycję z cennika…" });
-  const treatmentValue = await toothPicker
-    .getByRole("option", { name: /^Leczenie kanałowe trzonowca/ })
-    .getAttribute("value");
-  await toothPicker.selectOption(treatmentValue ?? "");
+  await page.getByRole("button", { name: "Dodaj zabieg — ząb 16" }).click();
+  await page.getByRole("combobox", { name: "Szukaj — Dodaj zabieg — ząb 16" }).fill("Leczenie kanałowe trzonowca");
+  await page.getByRole("option", { name: /^Leczenie kanałowe trzonowca/ }).click();
   await expect(page.getByText(/^Leczenie kanałowe trzonowca · /)).toBeVisible();
 
   // --- She approves it, which freezes the quote and mints the patient link ---

@@ -1,56 +1,49 @@
-// Live two-variant totals (FR-032/FR-064), recomputed on every change via the
-// pure Phase-1 cost engine. The anesthesia variant is labeled recommended.
-
 import { Badge } from "@/components/ui/badge";
 import type { QuoteTotals } from "@/types";
 import { formatPln, formatRange } from "./format";
 
 export function TotalsPreview({ totals }: { totals: QuoteTotals }) {
-  const standard = totals.standard;
-  const anesthesia = totals.anesthesia;
-
+  const { standard, anesthesia } = totals;
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <div className="border-border border-l-border/80 rounded-md border border-l-[3px] p-3">
-        <h3 className="mb-2 text-sm font-semibold tracking-tight">Wariant standardowy (wiele wizyt)</h3>
-        {standard && standard.perVisit.length > 0 ? (
-          <ul className="space-y-1 text-sm">
-            {standard.perVisit.map((entry) => (
-              <li key={entry.visitNumber} className="flex justify-between gap-4">
-                <span className="text-muted-foreground">Wizyta {entry.visitNumber}</span>
-                <span className="numeric">{formatRange(entry.cost)}</span>
+    <section aria-label="Podgląd kosztów" className="totals-grid grid gap-3 sm:grid-cols-2">
+      <div className="bg-card rounded border p-4">
+        <h2 className="font-medium">
+          Wariant standardowy <span className="text-muted-foreground block text-sm">Wiele wizyt</span>
+        </h2>
+        <p className="numeric my-3 text-3xl font-semibold tracking-tight">
+          {standard?.grandTotal ? formatRange(standard.grandTotal) : formatPln(0)}
+        </p>
+        <details className="border-t pt-3 text-sm">
+          <summary className="cursor-pointer">Szczegóły kosztów</summary>
+          <ul className="mt-3 space-y-2">
+            {standard?.perVisit.map((entry) => (
+              <li key={entry.visitNumber} className="flex flex-wrap justify-between gap-2">
+                <span>Wizyta {entry.visitNumber}</span>
+                <span>{formatRange(entry.cost)}</span>
               </li>
             ))}
           </ul>
-        ) : (
-          <p className="text-muted-foreground text-sm">Brak pozycji przypisanych do wizyt.</p>
-        )}
-        <div className="border-border mt-2 flex justify-between gap-4 border-t pt-2 text-sm font-semibold">
-          <span>Razem</span>
-          <span className="numeric">{standard?.grandTotal ? formatRange(standard.grandTotal) : formatPln(0)}</span>
-        </div>
+          <p className="text-muted-foreground mt-2">
+            Suma obejmuje także pozycje bez przypisania do wizyty. Zęby poza planem i niepewne nie są wliczane.
+          </p>
+        </details>
       </div>
-
-      <div className="border-border border-l-primary rounded-md border border-l-[6px] p-3">
-        <h3 className="mb-2 flex flex-wrap items-center gap-2 text-sm font-semibold tracking-tight">
-          Wariant w znieczuleniu (jedna sesja)
-          <Badge>rekomendowane</Badge>
-        </h3>
-        {anesthesia ? (
-          <div className="space-y-1 text-sm">
-            <div className="flex justify-between gap-4">
-              <span className="text-muted-foreground">Opłata za znieczulenie</span>
-              <span className="numeric">{formatPln(anesthesia.fee)}</span>
-            </div>
-            <div className="border-border mt-2 flex justify-between gap-4 border-t pt-2 font-semibold">
-              <span>Razem</span>
-              <span className="numeric">{formatRange(anesthesia.total)}</span>
-            </div>
-          </div>
-        ) : (
-          <p className="text-muted-foreground text-sm">—</p>
-        )}
+      <div className="border-l-primary bg-card rounded border border-l-4 p-4">
+        <h2 className="font-medium">
+          Wariant w znieczuleniu <span className="text-muted-foreground block text-sm">Jedna sesja</span>
+        </h2>
+        <Badge className="mt-2">rekomendowane</Badge>
+        <p className="numeric my-3 text-3xl font-semibold tracking-tight">
+          {anesthesia ? formatRange(anesthesia.total) : "—"}
+        </p>
+        <details className="border-t pt-3 text-sm">
+          <summary className="cursor-pointer">Szczegóły kosztów</summary>
+          <p className="mt-3">Opłata za znieczulenie: {anesthesia ? formatPln(anesthesia.fee) : "—"}</p>
+          <p className="text-muted-foreground mt-2">
+            Wariant nie uwzględnia osobnych pozycji znieczulenia miejscowego.
+          </p>
+        </details>
       </div>
-    </div>
+    </section>
   );
 }
