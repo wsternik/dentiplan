@@ -555,20 +555,20 @@ has been in the record since S-01.
 
 #### Automated
 
-- [x] 1.1 Unit tests pass: `npm test`
-- [x] 1.2 Test asserts the quadrant 3/4 correction, naming the upstream defect
-- [x] 1.3 Test asserts every valid FDI number gets a position; 51–85 share successors' slots at reduced scale
-- [x] 1.4 Test asserts a quote holding both 55 and 15 draws both
-- [x] 1.5 Test asserts chart cost equals the tooth's contribution to `standard.grandTotal`; out-of-plan teeth carry none
-- [x] 1.6 Type checking passes: `astro check`
-- [x] 1.7 Linting passes: `npm run lint`
-- [x] 1.8 Layer rules hold: `npm run depcruise`
-- [x] 1.9 No vendored identifiers outside `paths.ts`: `grep -rn "Odontogram\|--dark-blue\|data-read-only" src/`
+- [x] 1.1 Unit tests pass: `npm test` — 486fc5c
+- [x] 1.2 Test asserts the quadrant 3/4 correction, naming the upstream defect — 486fc5c
+- [x] 1.3 Test asserts every valid FDI number gets a position; 51–85 share successors' slots at reduced scale — 486fc5c
+- [x] 1.4 Test asserts a quote holding both 55 and 15 draws both — 486fc5c
+- [x] 1.5 Test asserts chart cost equals the tooth's contribution to `standard.grandTotal`; out-of-plan teeth carry none — 486fc5c
+- [x] 1.6 Type checking passes: `astro check` — 486fc5c
+- [x] 1.7 Linting passes: `npm run lint` — 486fc5c
+- [x] 1.8 Layer rules hold: `npm run depcruise` — 486fc5c
+- [x] 1.9 No vendored identifiers outside `paths.ts`: `grep -rn "Odontogram\|--dark-blue\|data-read-only" src/` — 486fc5c
 
 #### Manual
 
-- [x] 1.10 `THIRD-PARTY-NOTICES.md` correct on version, commit, author, and the missing-LICENSE caveat
-- [x] 1.11 The quadrant fix is an explicit table with a reason, not arithmetic
+- [x] 1.10 `THIRD-PARTY-NOTICES.md` correct on version, commit, author, and the missing-LICENSE caveat — 486fc5c
+- [x] 1.11 The quadrant fix is an explicit table with a reason, not arithmetic — 486fc5c
 
 ### Phase 2: The `ToothChart` component and the patient page
 
