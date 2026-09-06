@@ -54,7 +54,7 @@ What's already in place in the codebase as of `2026-05-25` (auto-researched + us
 Foundations below assume these are present and do NOT re-scaffold them.
 
 - **Frontend:** present — Astro 6 SSR + React 19 islands + Tailwind 4 + shadcn/ui ("new-york"); pages w `src/pages/` (`index.astro`, `dashboard.astro`, `auth/{signin,signup,confirm-email}.astro`); jeden komponent UI shadcn (`button.tsx`). _(Stan z 25 V; `dashboard.astro` już nie istnieje — patrz aktualizacja niżej.)_
-  **Aktualizacja 5 IX (`ui-redesign`):** starter usunięty (`dashboard.astro`, `Welcome.astro`, `LibBadge.astro`), shadcn przetematyzowany przez tokeny w `src/styles/global.css`, dwa kroje z npm (Literata do czytania, Archivo do interfejsu i liczb). Paleta rezerwuje nasycony kolor dla znaczenia klinicznego — tokeny pilności `--urgency-*` (wartość „mark" do wypełnień i `-ink` do tekstu) czekają na odontogram z S-06, a status jest rysowany obrysem i kryciem, nie odcieniem. Uzasadnienie: `context/changes/ui-redesign/design-brief.md`.
+  **Aktualizacja 5 IX (`ui-redesign`):** starter usunięty (`dashboard.astro`, `Welcome.astro`, `LibBadge.astro`), shadcn przetematyzowany przez tokeny w `src/styles/global.css`, dwa kroje z npm (Literata do czytania, Archivo do interfejsu i liczb). Paleta rezerwuje nasycony kolor dla znaczenia klinicznego — tokeny pilności `--urgency-*` (wartość „mark" do wypełnień i `-ink` do tekstu) są od 6 IX używane przez schemat uzębienia z S-06, a status jest rysowany obrysem i kryciem, nie odcieniem. Uzasadnienie: `context/changes/ui-redesign/design-brief.md`.
 - **Backend / API:** present — Astro endpointy w `src/pages/api/auth/{signin,signout,signup}.ts`; brak innych endpointów domenowych.
 - **Data:** absent — Supabase project jest skonfigurowany (`SUPABASE_URL` / `SUPABASE_KEY` jako secrets na produkcji), ale `supabase/migrations/` nie istnieje; brak schematu domenowego (quote, tooth, visit, snapshot).
 - **Auth:** present — Supabase SSR z cookie sessions (`src/lib/supabase.ts`), middleware (`src/middleware.ts`) chroniący trasy z `PROTECTED_ROUTES`, endpoint `signin/signout/signup`. KV namespace `dentiplan-production-session` powiązany jako `SESSION`. Polityka haseł i hashing — po stronie Supabase (per tech-stack.md).
@@ -174,6 +174,18 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Risk:** Podział, który przychodzi kompletny i pewny siebie, bywa zatwierdzany bez czytania — a zatwierdzony kosztorys jest niezmienny, więc korekta to nowy link. Odpowiedź: kod, nie prompt — system numeruje i nazywa wizyty, a każda wartość bez pokrycia w notatce jest nazwana w ostrzeżeniu. Nowe ryzyko #11 w `test-plan.md`, pokryte testami jednostkowymi na nagranych odpowiedziach modelu (bez płatnego wywołania w suicie).
 - **Status:** done — zamyka drugą połowę FR-011 („proponowany podział na wizyty"), z której S-02 dowiozło tylko pierwszą.
 
+### S-06: Tooth chart on the patient page and in the editor
+
+- **Outcome:** pacjent widzi nad listą pogrupowaną rysunek swojego łuku zębowego: każdy ząb z kosztorysu wypełniony kolorem pilności i obrysowany zgodnie ze statusem, reszta ust narysowana bez wypełnienia. Najechanie, sfokusowanie albo dotknięcie zęba nazywa go po polsku, podaje zabieg i jego udział w planie podstawowym. Wydrukowany schemat zachowuje rozróżnialność statusów bez koloru. W edytorze ten sam rysunek jest wyborem zębów: kliknięcie zęba spoza planu dodaje go, kliknięcie zęba z planu przenosi do jego wiersza. Lista pogrupowana (FR-061) zostaje jako warstwa dostępności i druku.
+- **Change ID:** tooth-chart-visualization
+- **PRD refs:** FR-061, FR-074, FR-075, FR-076
+- **Prerequisites:** S-01
+- **Parallel with:** —
+- **Blockers:** —
+- **Unknowns:** —
+- **Risk:** Geometria pochodzi z `react-odontogram` 0.5.6 (MIT), **skopiowana jako dane**, nie zainstalowana — jej `readOnly` wyłącza `pointer-events` (a strona pacjenta potrzebuje tooltipa), zaznaczenie jest niekontrolowane, FDI 51–85 w niej nie istnieje, a status niesie w niej sam kolor. Skopiowane są wyłącznie ścieżki, cztery transformacje i viewBox; licencja podróżuje w `THIRD-PARTY-NOTICES.md`. Biblioteka rysuje ćwiartki FDI 3 i 4 zamienione miejscami — korekta jest tabelą w naszym `layout.ts` z testem, nie łatką na skopiowanych bajtach, więc ponowne skopiowanie geometrii nie może jej po cichu cofnąć. Ryzyko #8 w `test-plan.md` (rysunek i lista nie mogą się rozjechać) pokryte testem E2E.
+- **Status:** in progress — `feat/tooth-chart-visualization`.
+
 ## Backlog Handoff
 
 | Roadmap ID | Change ID                         | Suggested issue title                                                       | Ready for `/10x-plan` | Notes                                                                                      |
@@ -198,6 +210,8 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 > Wszystkie pozycje świadomie poza scope v1, zgodnie z PRD `## Non-Goals` i shape-notes Phase 3.
 
+- ~~**Graficzna wizualizacja SVG łuków zębowych z hover-sync**~~ — **unparked 2026-09-06**, przeniesione do `### S-06` powyżej. Odroczenie było wyceną, nie decyzją produktową: rysunek okazał się czystą funkcją z danych obecnych w rekordzie od S-01, a geometria — jednym plikiem danych z biblioteki MIT. Lista pogrupowana (FR-061) zostaje jako warstwa dostępności i druku.
+
 - **Multi-tenant SaaS dla wielu gabinetów** — Why parked: PRD §Non-Goals; v1 obsługuje wyłącznie Dentinę. Drugi gabinet = osobna instancja.
 - **Natywne aplikacje mobilne / desktop** — Why parked: PRD §Non-Goals; tylko web responsywny.
 - **Integracja z systemami dokumentacji medycznej (Estomed, Dentiplus, NFZ)** — Why parked: PRD §Non-Goals; tekst diagnozy wkleja się ręcznie.
@@ -210,7 +224,6 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Pełna zgodność WCAG-AA** — Why parked: PRD §NFR; minimalny rozsądek wizualny tak, audyt — nie w v1.
 - **High availability / multi-region SLA** — Why parked: PRD §Non-Goals; downtime w nocy = OK.
 - **Certyfikacja medyczna (CE / wyrób medyczny)** — Why parked: PRD §Non-Goals; aplikacja jest narzędziem prezentacyjno-rachunkowym.
-- **Graficzna wizualizacja SVG łuków zębowych z hover-sync** — Why parked: PRD §Non-Goals "Odroczone na v2"; substytuowane przez listę pogrupowaną (FR-061).
 - **Drag-and-drop zębów między wizytami** — Why parked: PRD §Non-Goals "Odroczone na v2"; substytuowane przez dropdown "Wizyta nr [N]" (FR-030).
 - **Automatyczna wysyłka e-maili z aplikacji** — Why parked: PRD §Non-Goals "Odroczone na v2"; dentystka kopiuje link manualnie (FR-052).
 - **UI edycji cennika w panelu admin** — Why parked: PRD §Non-Goals "Odroczone na v2"; cennik jako seed JSON w repo (F-02).

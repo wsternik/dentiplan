@@ -574,17 +574,17 @@ has been in the record since S-01.
 
 #### Automated
 
-- [ ] 2.1 `npm test`, `astro check`, `npm run lint`, `npm run depcruise` pass
-- [ ] 2.2 Existing E2E green with no spec edits: `npm run test:e2e`
-- [ ] 2.3 FR-074/075/076 present in `prd.md`
+- [x] 2.1 `npm test`, `astro check`, `npm run lint`, `npm run depcruise` pass
+- [x] 2.2 Existing E2E green with no spec edits: `npm run test:e2e`
+- [x] 2.3 FR-074/075/076 present in `prd.md`
 
 #### Manual
 
-- [ ] 2.4 The drawing looks good in the S8 palette, on a phone, and in greyscale
-- [ ] 2.5 Statuses distinguishable without colour when printed at ~717px A4 width
-- [ ] 2.6 Tooltip answers a tap, not only a hover
-- [ ] 2.7 Keyboard reaches teeth; labels are Polish tooth names, treatments and statuses
-- [ ] 2.8 Mixed dentition draws, and the approximation reads as an approximation
+- [x] 2.4 The drawing looks good in the S8 palette, on a phone, and in greyscale
+- [x] 2.5 Statuses distinguishable without colour when printed at ~717px A4 width
+- [x] 2.6 Tooltip answers a tap, not only a hover
+- [x] 2.7 Keyboard reaches teeth; labels are Polish tooth names, treatments and statuses
+- [x] 2.8 Mixed dentition draws, and the approximation reads as an approximation
 
 ### Phase 3: The editor
 

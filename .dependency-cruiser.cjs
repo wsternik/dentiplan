@@ -268,12 +268,15 @@ module.exports = {
       comment:
         'A component from one family (admin / auth / patient) imports a component ' +
         'from another. Shared UI belongs in src/components/ui. Flagged as a warning ' +
-        'so it shows up in review without failing the build.',
+        'so it shows up in review without failing the build. src/components/tooth-chart ' +
+        'is exempt for the same reason as ui: it is a shared family by design — the ' +
+        'patient page and the editor draw the same chart, and a second copy of it is ' +
+        'exactly the divergence this rule exists to prevent.',
       severity: 'warn',
       from: { path: '^src/components/([^/]+)/' },
       to: {
         path: '^src/components/[^/]+/',
-        pathNot: ['^src/components/$1/', '^src/components/ui/'],
+        pathNot: ['^src/components/$1/', '^src/components/ui/', '^src/components/tooth-chart/'],
       },
     },
   ],

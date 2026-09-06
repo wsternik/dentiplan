@@ -30,3 +30,28 @@ export function toothClasses(tooth: ChartTooth): string {
   }
   return cn(URGENCY_FILL[tooth.urgency ?? "unknown"], STATUS_SHAPE[tooth.status]);
 }
+
+/**
+ * Whether this tooth gets the hairline hatch on top of its fill.
+ *
+ * Only `out-of-current-plan` does, and the chart asks here rather than reading
+ * the status itself: the component owns no clinical vocabulary, and the day a
+ * fourth status appears there is one place to answer for it.
+ */
+export function needsHatch(tooth: ChartTooth): boolean {
+  return tooth.status === "out-of-current-plan";
+}
+
+/**
+ * Classes for the hatch overlay path.
+ *
+ * The hatch is a second `<path>` filled with an SVG `<pattern>`, drawn over the
+ * urgency fill — not a CSS `repeating-linear-gradient`, which browsers drop in
+ * print unless the reader ticks "Background graphics" (`lessons.md`). An SVG
+ * pattern is document content, so it prints like the rest of the drawing.
+ *
+ * It carries the same 65% as the tooth's own path. They are siblings, not
+ * ancestor and descendant, so the two dims sit side by side rather than
+ * multiplying — the composed-dimming rule is about inheritance.
+ */
+export const HATCH_OVERLAY_CLASSES = "opacity-65";

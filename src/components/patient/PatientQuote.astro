@@ -9,6 +9,9 @@
 
 import type { PatientType, QuoteContent } from "@/types";
 import { formatDate } from "@/lib/quote/format";
+import { toChartTeeth } from "@/lib/tooth-chart/model";
+import { ToothChart } from "@/components/tooth-chart/ToothChart";
+import { ChartLegend } from "@/components/tooth-chart/ChartLegend";
 import ToothGroups from "./ToothGroups.astro";
 import VariantComparison from "./VariantComparison.astro";
 import DeferredSection from "./DeferredSection.astro";
@@ -26,6 +29,12 @@ const inPlan = content.teeth.filter((tooth) => tooth.status === "in-plan");
 const deferred = content.teeth.filter((tooth) => tooth.status === "out-of-current-plan");
 const uncertain = content.teeth.filter((tooth) => tooth.status === "uncertain");
 const audience = patientType === "child" ? "dla dziecka" : "dla osoby dorosłej";
+// The chart draws the whole mouth, so it takes `content.teeth` whole — the three
+// buckets above are the sections below, which stay exactly where they are. The
+// drawing is a parallel layer to FR-061's list, never a replacement for it: the
+// list is what a screen reader reads in sentences and what survives a printer
+// that drops everything but text.
+const chartTeeth = toChartTeeth(content);
 ---
 
 {
@@ -44,6 +53,17 @@ const audience = patientType === "child" ? "dla dziecka" : "dla osoby dorosłej"
 
   <div class="mt-10 space-y-12">
     <VariantComparison totals={content.totals} visits={content.visits} />
+
+    <section class="tooth-chart-block space-y-4">
+      <h2 class="text-xl font-medium tracking-tight">Twoje zęby na schemacie</h2>
+      <ToothChart client:load teeth={chartTeeth} mode="read-only" />
+      {
+        /* No client directive: the legend is static markup and has no behaviour,
+          so it is rendered to HTML and ships no JavaScript. */
+      }
+      <ChartLegend />
+    </section>
+
     {inPlan.length > 0 && <ToothGroups teeth={inPlan} />}
     {deferred.length > 0 && <DeferredSection teeth={deferred} />}
     <ScenariosSection uncertain={uncertain} totals={content.totals} />
