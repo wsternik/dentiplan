@@ -54,7 +54,9 @@ is altered.
 
 ## Scope
 
-**In scope:** the wire schema (`label` out, `rationale` + `urgencyFromNote` in); a
+**In scope:** the warnings block's own framing — the list that carries the
+proposals is still headed "what we failed to read"; the wire schema (`label` out,
+`rationale` + `urgencyFromNote` in); a
 pure `visits.ts` owning ordering, the label dictionary and the visit ceiling;
 code-composed warnings for every inferred value; the grouping and urgency rules in
 the prompt; general items carrying a visit (FR-032); PRD FR-014/FR-015/FR-033,
@@ -109,6 +111,12 @@ place. Phase 2's manual check needs a configured `ANTHROPIC_API_KEY`.
 - **Phase 3 assumes the UI needs no change.** `GeneralItems` already renders a visit
   select and the cost engine already buckets. If that turns out wrong, it is a
   finding for the phase notes, not a silent expansion.
+- **A proposed visit can arrive empty.** If every tooth of a proposed visit is
+  already in the form, the merge still appends the visit, now labelled — and
+  `computeQuoteTotals` keys `perVisit` on items rather than on `content.visits`
+  (`cost.ts:104`), so it shows in `VisitList` and nowhere in the totals.
+  Pre-existing; this change multiplies visits and so multiplies the odds. Accepted
+  — she deletes it with one click (FR-031).
 - **Alignment with S12.** If the eval matrix ever runs, its corpus has to contain
   split cases, or it will grade a prompt on half of what the prompt now does.
 

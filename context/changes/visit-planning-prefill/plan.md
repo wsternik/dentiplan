@@ -123,6 +123,15 @@ Four phases, in an order chosen so that each one fails loudly on its own:
    widening rather than a tightening. Cheapest to cut if the session runs long.
 4. **Then the documents**, in the same session as the code.
 
+**Phases 1 and 2 are inseparable, and the ordering hides it.** After phase 1 the
+schema _requires_ `urgencyFromNote` and `rationale` while the prompt still tells
+the model to propose visits only when the note suggests them, and never explains
+either field. Structured output will make it emit values it was given no basis
+for — so the inferred-urgency warning is confidently wrong until phase 2 lands.
+All four phases merge in one PR, so nothing reaches production in that state; but
+phase 2 is not an enhancement of phase 1, it is what makes phase 1 truthful.
+Neither may be cut, and phase 1 must not be judged by trying the button.
+
 The through-line is the S7 doctrine, extended rather than invented: _the model
 states facts; the code writes sentences._ `rationale` is a fact channel that
 happens to be prose, so it goes where `note` was not allowed to go — into
@@ -202,13 +211,15 @@ zachowawcze"`, `"Leczenie kanałowe"`, `"Ekstrakcje"`, `"Higienizacja"`.
   visit normally claims that label, and the field stays editable (FR-031). The
   empty-teeth branch is where phase 3 adds _Higienizacja_; until then a visit
   with no teeth is unlabelled, which `VisitList` renders as its placeholder.
-- `orderVisits(visits, teeth)` → `{ visits: Visit[]; teeth: ToothEntry[] }`.
+- `orderVisits(visits, teeth)` →
+  `{ visits: Visit[]; teeth: ToothEntry[]; renumbered: Map<number, number> }`.
   Ranks each visit by the strongest urgency among its teeth (`urgent` <
   `moderate` < `mild` < none), **stable-sorts** so a tie keeps the model's array
   order, renumbers `1..n`, rewrites every tooth's `visitNumber` through the
-  old→new map, and sets each visit's `label` from `visitLabel`. Returns a
-  `Map<number, number>` too if phase 3 needs it for general items — otherwise
-  keep the return shape minimal.
+  old→new map, and sets each visit's `label` from `visitLabel`. It returns that
+  map rather than keeping it private: phase 3 needs exactly it to remap general
+  items, and returning it from the start keeps phase 3 additive instead of
+  changing this signature twice.
 
 #### 3. The mapper
 
@@ -282,7 +293,26 @@ fixture, as `parse-diagnosis.test.ts:142` already does for `note`.
 `merge.test.ts` needs its inline `PrefillResult` literals updated; its seven
 existing cases must stay green untouched in meaning.
 
-#### 6. The contract-surfaces doc
+#### 6. The warnings block's own framing
+
+**File**: `src/components/admin/ParseWarnings.tsx`
+
+**Intent**: The list this change fills is headed
+_"Z notatki nie udało się odczytać wszystkiego:"_ (`ParseWarnings.tsx:28`), with the
+group labelled _"Ostrzeżenia z wypełniania notatki"_ (`:26`). That was accurate when
+every entry was a phrase we failed to place. From this phase on, the same list
+carries the model's proposals — the inferred urgencies, the reasoning behind the
+split — and those are decisions waiting for her, not failures. Under a heading
+announcing failures they read as defects and get skimmed, which is precisely the
+failure mode risk #11 describes. The session's acceptance criterion rests on this
+list being read, so the framing is part of the feature, not polish.
+
+**Contract**: rewrite the heading and the `aria-label` to cover both kinds of entry
+— what the note did not yield, and what the model supplied on its own. Text only:
+no markup, layout or hydration change, so the component's structure and the
+position-keyed list (`:30-35`) stay exactly as they are.
+
+#### 7. The contract-surfaces doc
 
 **File**: `docs/reference/contract-surfaces.md`
 
@@ -302,11 +332,12 @@ closing the hole makes the document quietly wrong.
 - Type checking passes: `npx astro check`
 - Linting passes: `npm run lint`
 - Every fixture parses against the new schema (asserted inside the tests, not separately)
-- The invariant test fails when `label` is restored to the schema and copied through — verify by breaking it once, then reverting
 
 #### Manual Verification
 
-- Not applicable in this phase — nothing user-visible changes until the prompt does. No E2E run: no file under `src/components/`, `src/pages/` or `src/layouts/` is touched.
+- The invariant test is proved to bite: restore `label` to the schema, copy it through, watch the test go red, revert. A guard nobody has seen fail is a guard nobody has tested
+- The warnings block reads as a list of decisions waiting for her, not as a list of things that went wrong
+- No E2E run: the only file under `src/components/` this phase touches is `ParseWarnings.tsx`, and the change is to two strings — nothing hydrates or lays out differently
 
 ---
 
@@ -412,7 +443,7 @@ carry it through the ordering, and stop hardcoding `null` in the merge.
 
 **Contract**: in the mapper, a general item's `visitNumber` is checked against the
 declared visits and nulled with a warning when it points at nothing, then remapped
-by `orderVisits` alongside the teeth. In `merge.ts:87`, `visitNumber: null` becomes
+through the `renumbered` map `orderVisits` returns — the same map the teeth follow. In `merge.ts:87`, `visitNumber: null` becomes
 the prefilled item's number remapped through the existing `renumbered` map — the
 same treatment teeth already get at `merge.ts:66-74`, including its
 "visit does not exist" warning path.
@@ -623,11 +654,12 @@ Drafts saved before this change reopen and prefill exactly as before.
 - [ ] 1.2 Type checking passes: `npx astro check`
 - [ ] 1.3 Linting passes: `npm run lint`
 - [ ] 1.4 Every fixture parses against the new schema
-- [ ] 1.5 The invariant test fails when `label` is restored and copied through
 
 #### Manual
 
-- [ ] 1.6 Nothing user-visible changes; no E2E run (no component/page/layout touched)
+- [ ] 1.5 The invariant test is proved to bite: restore `label`, watch it go red, revert
+- [ ] 1.6 The warnings block reads as decisions waiting for her, not as failures
+- [ ] 1.7 No E2E run: the only component touched is `ParseWarnings.tsx`, text only
 
 ### Phase 2: The prompt asks for a plan
 
