@@ -46,3 +46,26 @@ Privacy is enforced structurally rather than by policy: `parseDiagnosis` takes a
 FR-072).
 
 This closes PRD Open Q #12 and Open Roadmap Question #1.
+
+## Vendored code
+
+**`react-odontogram` 0.5.6 (MIT), path data only.** S-06's tooth chart needs a
+drawing of a dental arch. The eight crown outlines, the four quadrant transforms
+and the viewBox were **copied** into `src/lib/tooth-chart/paths.ts` rather than
+installed from npm. Attribution and the licence notice are in
+`THIRD-PARTY-NOTICES.md` at the repo root.
+
+Why copied and not a dependency: what the library offers that we want is its
+geometry, and what it offers that we cannot use is everything else — its
+`readOnly` mode disables interaction rather than freezing it (the patient page
+needs a chart that is inert but still hoverable and keyboard-reachable), its
+styling is a `:root` palette of its own that would fight the S8 tokens, its
+labels are English, and **its FDI quadrant mapping is wrong** (it draws quadrant
+3 on the viewer's left, where quadrant 4 belongs). Depending on it would mean
+overriding almost all of it while inheriting a defect we would have to patch.
+Copying the inert half leaves the mapping ours to get right, in `layout.ts`,
+with a test.
+
+What this means for updates: **nothing.** Tooth geometry is frozen — there is no
+upstream fix to track, no version to bump, and no supply-chain surface. If the
+drawing ever needs to change it changes here, as our own file.

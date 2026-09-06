@@ -44,3 +44,46 @@ export const STATUS_OUTLINE: Record<ToothStatus, string> = {
   uncertain: "border-border border-dashed",
   "out-of-current-plan": "border-border border-dashed bg-muted/40",
 };
+
+// ---------------------------------------------------------------------------
+// SVG expression of the same two enums (S-06's tooth chart)
+// ---------------------------------------------------------------------------
+//
+// The chart is the third consumer this file was extracted for, and it cannot
+// reuse the two tables above: their values are `bg-*` and `border-*`, which do
+// nothing on an SVG `<path>`. The chart needs `fill-*` and `stroke-*`. All
+// three tables live here anyway, because the thing worth preventing is not
+// duplicate strings — it is a surface that says something different about a
+// tooth than the surface next to it. A reviewer changing an urgency's meaning
+// sees every place it is expressed, in one file.
+
+/**
+ * Fill for a tooth's urgency on the chart.
+ *
+ * Carries the `unknown` key that `URGENCY_MARK` deliberately lacks: a list can
+ * omit a dot next to a tooth whose urgency was never recorded, but a chart
+ * cannot omit the tooth. `--urgency-unknown` exists for exactly this.
+ */
+export const URGENCY_FILL: Record<Urgency | "unknown", string> = {
+  urgent: "fill-urgency-urgent",
+  moderate: "fill-urgency-moderate",
+  mild: "fill-urgency-mild",
+  unknown: "fill-urgency-unknown",
+};
+
+/**
+ * Outline treatment for a tooth's plan status on the chart — the SVG form of
+ * `STATUS_OUTLINE`, and the same three distinctions from the design brief:
+ * solid, dashed, and dimmed-plus-hatched. None of them is a hue, so all three
+ * survive greyscale and a black-and-white printer.
+ *
+ * The hatch is applied by `style.ts` as an SVG `<pattern>` fill, not as a CSS
+ * `repeating-linear-gradient`: browsers drop background images in print unless
+ * the reader ticks "Background graphics", and that is a defect this repo has
+ * already shipped once (`lessons.md`).
+ */
+export const STATUS_SHAPE: Record<ToothStatus, string> = {
+  "in-plan": "stroke-foreground [stroke-width:1.5]",
+  uncertain: "stroke-foreground [stroke-width:1.5] [stroke-dasharray:4_3]",
+  "out-of-current-plan": "stroke-foreground [stroke-width:1] [stroke-dasharray:2_2] opacity-65",
+};

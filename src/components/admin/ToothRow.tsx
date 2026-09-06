@@ -36,7 +36,31 @@ export function ToothRow({ tooth, visits, options, onPatch, onAddItem, onRemoveI
   const unpriced = isInPlan && tooth.pricelistItems.length === 0;
 
   return (
-    <div className={cn("rounded-md border p-3", STATUS_OUTLINE[tooth.status])}>
+    // `id` + `tabIndex={-1}` make the row addressable from the chart (FR-076):
+    // a click on a tooth already in the plan scrolls here and focuses this
+    // container instead of adding the tooth a second time. `number` is a stable
+    // anchor because `QuoteEditor` keeps `teeth` in ascending order. `-1` is a
+    // programmatic focus target only — it adds no tab stop of its own, and
+    // `focus-visible` keeps the ring for the keyboard path (Enter on a tooth),
+    // where the reader actually needs to be told where she landed.
+    //
+    // `role` + `aria-label` are what she is told. A focus target with no name
+    // announces nothing, and "which tooth" is the entire content of the jump.
+    // It also gives every control in the row a per-row accessible container:
+    // the three selects carry page-global names ("Status", "Rodzaj leczenia",
+    // "Pilność"), so without this the only way to reach one of them is by
+    // position.
+    <div
+      id={`tooth-${tooth.number}`}
+      role="group"
+      aria-label={toothName(tooth.number)}
+      tabIndex={-1}
+      className={cn(
+        "rounded-md border p-3 focus-visible:outline-2 focus-visible:outline-offset-2",
+        "focus-visible:outline-ring",
+        STATUS_OUTLINE[tooth.status],
+      )}
+    >
       <div className="mb-2 flex items-start justify-between gap-2">
         <div>
           <div className="text-foreground flex items-center gap-2 text-sm font-medium">

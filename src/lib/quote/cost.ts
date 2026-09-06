@@ -65,8 +65,14 @@ function priceToRange(price: PriceValue): CostRange {
  * Sum a tooth's (or general slot's) pricelist items into one range. When
  * `skipLocalAnesthesia` is set (the anesthesia variant, FR-041) items flagged
  * `localAnesthesia` are dropped from the sum.
+ *
+ * Exported for S-06's tooth chart, whose tooltip shows a tooth's contribution to
+ * the standard plan. It calls this rather than summing again: two cost paths
+ * that can disagree are the defect class this file exists to prevent, and a
+ * tooltip whose arithmetic contradicts the total printed underneath it is the
+ * worst version of it.
  */
-function sumItems(items: PricelistItemRef[], skipLocalAnesthesia = false): CostRange {
+export function sumItems(items: PricelistItemRef[], skipLocalAnesthesia = false): CostRange {
   return items.reduce<CostRange>((acc, item) => {
     if (skipLocalAnesthesia && item.localAnesthesia) return acc;
     return addRanges(acc, priceToRange(item.price));

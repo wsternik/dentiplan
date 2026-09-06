@@ -4,6 +4,10 @@
 // row shows number + Polish name + treatment + urgency. Empty groups are
 // dropped so the grid only shows quadrants that actually have teeth.
 //
+// The section carries `aria-labelledby` pointing at its own `<h2>`: a
+// `<section>` with no accessible name is not exposed as a landmark, and these
+// three lists are how a patient using a screen reader navigates this document.
+//
 // Quadrants are laid out two to a row in FDI quadrant order (1,2,3,4 — upper
 // right, upper left, lower left, lower right; clockwise around the mouth, which
 // is why the lower row reads left-then-right). This is the block S-06 replaces
@@ -38,8 +42,8 @@ const grouped = GROUPS.map((group) => ({
 })).filter((group) => group.teeth.length > 0);
 ---
 
-<section class="space-y-5">
-  <h2 class="text-xl font-medium tracking-tight">Zakres leczenia</h2>
+<section class="space-y-5" aria-labelledby="zakres-heading">
+  <h2 id="zakres-heading" class="text-xl font-medium tracking-tight">Zakres leczenia</h2>
 
   <div class="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
     {

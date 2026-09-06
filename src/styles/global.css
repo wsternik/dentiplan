@@ -230,6 +230,31 @@
     break-inside: avoid;
   }
 
+  /* The chart is the one thing on this page whose meaning is carried by fill
+     and stroke rather than by words, so it has to survive the printer's default
+     settings. `print-color-adjust: exact` keeps the urgency fills; the status
+     hatch is an SVG `<pattern>`, which is document content and prints on its
+     own — the CSS `repeating-linear-gradient` version of it would not, and that
+     is a defect this repo has already shipped once. The drawing is capped in
+     height so it cannot eat a page on its own. */
+  .tooth-chart-block {
+    break-inside: avoid;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .tooth-chart {
+    max-width: 190px;
+  }
+
+  /* The same call the deferred section already makes below: opacity prints as
+     grey mush, so the dim comes off on paper. It carries nothing here — an
+     out-of-plan tooth is still the only one with a hairline hatch and a thin
+     dashed outline, and both of those print. */
+  .tooth-chart path {
+    opacity: 1;
+  }
+
   /* Applied to the units that are actually page-sized. A blanket rule on
      `section` covers blocks that grow with the tooth count, and `break-inside:
      avoid` on a block taller than a page is a hint the engine has to violate —

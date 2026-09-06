@@ -18,6 +18,10 @@
 //     exactly like the ones in the plan, which is the single thing this section
 //     exists to prevent. `print-color-adjust: exact` pins it, and the rule falls
 //     back to a `double` border, which is a border and always prints.
+//
+// The section carries `aria-labelledby` pointing at its own `<h2>`: a
+// `<section>` with no accessible name is not exposed as a landmark, and these
+// three lists are how a patient using a screen reader navigates this document.
 
 import type { ToothEntry } from "@/types";
 import { toothName } from "@/lib/quote/tooth-name";
@@ -30,9 +34,9 @@ const { teeth } = Astro.props;
 const sorted = [...teeth].sort((a, b) => a.number - b.number);
 ---
 
-<section class="deferred space-y-3 opacity-65">
+<section class="deferred space-y-3 opacity-65" aria-labelledby="odroczone-heading">
   <div>
-    <h2 class="text-xl font-medium tracking-tight">Odroczone</h2>
+    <h2 id="odroczone-heading" class="text-xl font-medium tracking-tight">Odroczone</h2>
     <div class="hatched mt-2 h-1"></div>
   </div>
   <p class="font-sans text-sm">Te zęby nie są częścią bieżącego planu leczenia.</p>
