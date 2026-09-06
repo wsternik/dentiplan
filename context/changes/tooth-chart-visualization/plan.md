@@ -157,9 +157,14 @@ never as arithmetic — the whole point is that the obvious index-order version 
 Also exports `chartPositions(teeth: ToothEntry[]): ChartPosition[]` returning every
 drawable position (not only teeth in the quote), each with its FDI number, slot, shape
 index, dentition, and scale. Milk-tooth rule, per the mixed-dentition decision: milk
-quadrants 5–8 map to permanent quadrants 1–4; a milk tooth occupies the slot of its
-permanent successor (51→11 … 55→15) drawn at ~0.85 scale, and the permanent tooth is
-omitted from that slot when a milk tooth is present in the quote. Shapes are reused —
+quadrants 5–8 map to permanent quadrants 1–4, and a milk tooth shares the slot of its
+permanent successor (51→11 … 55→15), drawn at ~0.85 scale in the crown position.
+
+**A slot never drops a tooth.** During exfoliation a quote can legitimately hold both
+55 and 15 — the exact case the mixed-dentition decision exists to serve — so when both
+are present the slot renders both: the milk tooth in the crown position and the
+permanent successor offset outward along the arch, each its own button. Omitting either
+would leave a tooth that is in the plan undrawn, which the end state forbids. Shapes are reused —
 1–3 for incisors and canine, the molar shapes for milk molars. **This is an
 approximation and is named as one** in the module comment, in `research.md`, and in the
 chart's own legend; it is not presented as anatomical fidelity.
@@ -174,10 +179,23 @@ domain logic.
 **Contract**: `toChartTeeth(content: QuoteContent): ChartTooth[]` where `ChartTooth` is
 `{ number, name, slot, shapeIndex, dentition, scale, urgency, status, treatmentType, cost, inQuote }`.
 `name` comes from `toothName()` (`src/lib/quote/tooth-name.ts:76`); labels from
-`src/lib/quote/labels.ts`. `cost` is the tooth's own `pricelistItems` sum — **export the
+`src/lib/quote/labels.ts`. `cost` is the tooth's contribution to the **standard plan** — **export the
 existing `sumItems` from `src/lib/quote/cost.ts:69` and call it**; do not write a second
 summer, because two cost paths that can disagree is precisely the defect class this repo
-has already been bitten by. Teeth absent from the quote come back with `inQuote: false`,
+has already been bitten by.
+
+**The tooltip shows the standard-plan cost and nothing else, and says so.** Two facts
+from `cost.ts` force this. The anesthesia variant sums `sumItems(items, true)` — dropping
+`localAnesthesia` items (`:71`) — and then adds `anesthesiaFee(inPlanTeeth)` (`:147-153`),
+which is a property of the whole set (`base + max(0, n - included) * perExtraTooth`) and
+cannot be attributed to one tooth without inventing an allocation. And only
+`status === "in-plan"` teeth contribute at all (`:101`), so an `uncertain` or
+`out-of-current-plan` tooth has a non-zero item sum but contributes nothing to any total
+the patient is shown. So: `cost` is populated only for `in-plan` teeth, the tooltip
+labels it as the standard-plan amount, and the anesthesia fee stays where it already
+lives — in the variant comparison, which owns the set-level number. A tooltip whose
+arithmetic disagrees with the total printed underneath it is the worst defect available
+on this page. Teeth absent from the quote come back with `inQuote: false`,
 `urgency: null` and no cost — the chart draws every position, so it needs an entry for
 every position.
 
@@ -227,8 +245,9 @@ nothing, because tooth geometry is frozen.
 
 - Unit tests pass: `npm test`
 - A test asserts `slotForQuadrant` maps quadrant 3 to the lower-right slot and 4 to the lower-left, naming the upstream defect in its title
-- A test asserts every FDI number valid per `isValidToothNumber` gets exactly one position, and 51–85 land on their successors' slots at reduced scale
-- A test asserts a tooth's chart cost equals `computeQuoteTotals`' contribution for that tooth
+- A test asserts every FDI number valid per `isValidToothNumber` gets a position, and 51–85 land on their successors' slots at reduced scale
+- A test asserts a quote holding both a milk tooth and its permanent successor (55 and 15) draws both
+- A test asserts a tooth's chart cost equals its contribution to `standard.grandTotal`, and that teeth outside the plan carry no cost
 - Type checking passes: `astro check`
 - Linting passes: `npm run lint`
 - Layer rules hold: `npm run depcruise`
@@ -277,9 +296,12 @@ library's `readOnly`, which is why we are not using the library.
 hover/focus-only by default, which is the patient case failing). Carries
 `class="no-print"`. Positioned relative to the chart container; no positioner is copied.
 
-**File**: `src/components/tooth-chart/ChartLegend.astro` (new)
+**File**: `src/components/tooth-chart/ChartLegend.tsx` (new)
 
-**Contract**: Urgency swatches and the three status treatments, plus the milk/permanent
+**Contract**: React, not Astro — the editor page renders only
+`<QuoteEditor client:load />` (`admin/quotes/new.astro:20`), and a React island cannot
+import an `.astro` component, so an Astro legend would be unusable on one of its two
+surfaces. Urgency swatches and the three status treatments, plus the milk/permanent
 signal. Prints. Every entry pairs its colour with a shape or a glyph — a legend whose
 entries differ only by hue would reintroduce on paper exactly what the status shapes
 exist to prevent.
@@ -292,9 +314,11 @@ exist to prevent.
 existing rule forbids. Answer it deliberately now rather than discovering it at lint
 time in phase 3.
 
-**Contract**: Add `tooth-chart` to the allowed-import list in
-`no-cross-component-family-imports` (`:267`) alongside `ui`, with a comment saying it is
-a shared family for the same reason `ui/` is.
+**Contract**: The rule (`:267-278`) has **no allowlist** — it captures the family by
+regex from `from.path` and exempts only the same family (back-reference) and
+`^src/components/ui/` in `to.pathNot`. The working edit is a third entry in that
+`pathNot` array: `'^src/components/tooth-chart/'`, plus a line in the rule's `comment`
+saying it is a shared family for the same reason `ui/` is.
 
 #### 3. Patient page
 
@@ -379,10 +403,28 @@ so a chart click can `scrollIntoView` and focus it. The ascending-sort invariant
 
 **File**: `src/components/admin/QuoteEditor.tsx` (modify)
 
-**Contract**: Extract `addToothNumbers(numbers: number[])` from `addTeeth()`
-(`:120-151`) — everything from the dedupe (`:123,132`) onward. `addTeeth()` keeps the
-token parsing (`:121-126`) and the Polish warning literals (`:129,133`), which belong to
-the text input, and delegates. The chart calls `addToothNumbers([n])`. Mount
+**Contract**: Extract `addToothNumbers(numbers: number[]): string[]` from `addTeeth()`
+(`:119-151`). The seam is not simply "dedupe onward", and getting it wrong loses
+warnings:
+
+- `addTeeth()` keeps tokenizing (`:121`), the `Number()`/`isValidToothNumber` check with
+  its `Nieprawidłowy numer zęba` literal (`:127-131`, which needs the raw token), and
+  `setToothInput("")` (`:150`) — clearing the text box must **not** happen on a chart click.
+- `addToothNumbers()` takes the dedupe (`:123`, `:132-135`), the entry literal
+  (`:136-145`) and the sorted write (`:148`). The duplicate warning
+  `Ząb ${n} jest już dodany` (`:133`) travels **with** the dedupe, not with the parser.
+- **`addToothNumbers` returns its warnings rather than setting them.** `warnings` is
+  currently built on both sides of this seam and flushed once at `:149`; two
+  `setToothWarnings` calls would have the second clobber the first and the parse
+  warnings would silently vanish. `addTeeth()` concatenates both lists and calls
+  `setToothWarnings` once.
+- Build `seen` inside the `setTeeth(prev => …)` updater rather than from the render
+  closure (`:123`): the existing code reads `teeth` from the closure while writing
+  functionally, which two chart clicks in one tick would turn into a double insert.
+- Preserve the `additions.length > 0` guard (`:148`) — a batch of pure duplicates must
+  leave state untouched while still surfacing its warnings.
+
+The chart calls `addToothNumbers([n])`. Mount
 `<ToothChart client:load … mode={readOnly ? "read-only" : "interactive"} />` above the
 row list (`:510`), fed from the same `teeth` state the rows render — no second source.
 Clicking a tooth already in the plan focuses its row instead of adding it. The text
@@ -429,10 +471,16 @@ list. Add the corresponding rollout-phase row in the table at `:96`.
 **File**: `e2e/tooth-chart.spec.ts` (new)
 
 **Contract**: Follows `seed.spec.ts` — role-based locators, self-contained
-setup→action→assertion→cleanup, `Date.now()`-tagged data, `waitForIslands()`
+setup→action→assertion, `Date.now()`-tagged data, `waitForIslands()`
 (`e2e/support/app.ts:19-21`) after navigation. **The patient page has had no island
 until now**, so this barrier is newly load-bearing there. Test name binds to risk #8.
 Asserts chart and list agree — a positive membership check across both, not a count.
+
+**No cleanup, by necessity.** Risk #8 needs the patient page, which needs an approved
+quote, and FR-053 makes an approved quote immutable — the test cannot delete what it
+creates. It follows the precedent set for the same constraint in
+`patient-link-content.spec.ts:17-20`: tag the data with a unique stamp and assert only
+on its own quote. The rows are swept by the SQL clean-up that closes the session.
 
 ### Success Criteria:
 
@@ -509,17 +557,18 @@ has been in the record since S-01.
 
 - [ ] 1.1 Unit tests pass: `npm test`
 - [ ] 1.2 Test asserts the quadrant 3/4 correction, naming the upstream defect
-- [ ] 1.3 Test asserts every valid FDI number gets one position; 51–85 share successors' slots at reduced scale
-- [ ] 1.4 Test asserts chart cost agrees with `computeQuoteTotals`
-- [ ] 1.5 Type checking passes: `astro check`
-- [ ] 1.6 Linting passes: `npm run lint`
-- [ ] 1.7 Layer rules hold: `npm run depcruise`
-- [ ] 1.8 No vendored identifiers outside `paths.ts`: `grep -rn "Odontogram\|--dark-blue\|data-read-only" src/`
+- [ ] 1.3 Test asserts every valid FDI number gets a position; 51–85 share successors' slots at reduced scale
+- [ ] 1.4 Test asserts a quote holding both 55 and 15 draws both
+- [ ] 1.5 Test asserts chart cost equals the tooth's contribution to `standard.grandTotal`; out-of-plan teeth carry none
+- [ ] 1.6 Type checking passes: `astro check`
+- [ ] 1.7 Linting passes: `npm run lint`
+- [ ] 1.8 Layer rules hold: `npm run depcruise`
+- [ ] 1.9 No vendored identifiers outside `paths.ts`: `grep -rn "Odontogram\|--dark-blue\|data-read-only" src/`
 
 #### Manual
 
-- [ ] 1.9 `THIRD-PARTY-NOTICES.md` correct on version, commit, author, and the missing-LICENSE caveat
-- [ ] 1.10 The quadrant fix is an explicit table with a reason, not arithmetic
+- [ ] 1.10 `THIRD-PARTY-NOTICES.md` correct on version, commit, author, and the missing-LICENSE caveat
+- [ ] 1.11 The quadrant fix is an explicit table with a reason, not arithmetic
 
 ### Phase 2: The `ToothChart` component and the patient page
 

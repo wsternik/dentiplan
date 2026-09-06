@@ -94,6 +94,7 @@ the timebox runs out.
 - **Milk-tooth geometry is an approximation** and is labelled as one everywhere it
   appears. If the dentystka finds it misleading, the honest fallback is a permanent-only
   chart with a milk badge, not a better-looking guess.
+- The tooltip deliberately shows one of the two variant costs. If patients read it as the total, the fix is wording, not arithmetic.
 - The patient page ships React for the first time. Watch the weight on a slow phone;
   server-rendering the base drawing and hydrating only the tooltip is the escape hatch.
 - FR-074–076 sit outside the patient-view band (060s, currently maxed at FR-072). The
