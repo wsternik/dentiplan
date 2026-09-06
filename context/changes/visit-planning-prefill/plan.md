@@ -665,16 +665,16 @@ Drafts saved before this change reopen and prefill exactly as before.
 
 #### Automated
 
-- [x] 2.1 Unit tests pass: `npm test`
-- [x] 2.2 Type checking passes: `npx astro check`
-- [x] 2.3 Linting passes: `npm run lint`
-- [x] 2.4 Prompt ceiling and mapper ceiling are provably the same constant
+- [x] 2.1 Unit tests pass: `npm test` — a9d467f
+- [x] 2.2 Type checking passes: `npx astro check` — a9d467f
+- [x] 2.3 Linting passes: `npm run lint` — a9d467f
+- [x] 2.4 Prompt ceiling and mapper ceiling are provably the same constant — a9d467f
 
 #### Manual
 
-- [x] 2.5 A six-tooth note with no visits produces a split with urgent teeth first and inference warnings
-- [x] 2.6 A general-anesthesia note produces one visit plus the warning, not a second variant
-- [x] 2.7 No E2E run (no component/page/layout touched)
+- [x] 2.5 A six-tooth note with no visits produces a split with urgent teeth first and inference warnings — a9d467f
+- [x] 2.6 A general-anesthesia note produces one visit plus the warning, not a second variant — a9d467f
+- [x] 2.7 No E2E run (no component/page/layout touched) — a9d467f
 
 ### Phase 3: General items get a visit (FR-032)
 
