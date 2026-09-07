@@ -17,8 +17,9 @@
 //                makes uncorrectable.
 //
 // PATIENT-SAFE INVARIANT (FR-066): `content` is returned verbatim to anon callers.
-// It is built by `buildQuoteContent`, whose types have no e-mail slot; the patient's
-// e-mail travels as a sibling of the tree and lands in its own column (FR-072).
+// It is built by `buildQuoteContent`, whose types have no e-mail or diagnosis-note
+// slot; both admin-only values travel as siblings of the tree and land in their
+// own columns (FR-072).
 
 import type { APIRoute } from "astro";
 import { z } from "zod";
@@ -28,6 +29,7 @@ import { generateToken } from "@/lib/quote/token";
 import {
   approvalBlockReason,
   buildQuoteContent,
+  DiagnosisNoteSchema,
   PatientEmailSchema,
   QuotePayloadSchema,
 } from "@/lib/services/quote-payload";
@@ -41,6 +43,7 @@ export const prerender = false;
 const ApproveRequestSchema = QuotePayloadSchema.extend({
   id: z.uuid().optional(),
   patient_email: PatientEmailSchema,
+  diagnosis_note: DiagnosisNoteSchema,
 });
 
 function jsonError(message: string, status: number): Response {
@@ -104,6 +107,7 @@ export const POST: APIRoute = async (context) => {
         status: "approved",
         patient_type: payload.patient_type,
         patient_email: payload.patient_email,
+        diagnosis_note: payload.diagnosis_note,
         content,
         token,
         approved_at: approvedAt,
@@ -122,6 +126,7 @@ export const POST: APIRoute = async (context) => {
       status: "approved",
       patient_type: payload.patient_type,
       patient_email: payload.patient_email,
+      diagnosis_note: payload.diagnosis_note,
       content,
       token,
       approved_at: approvedAt,

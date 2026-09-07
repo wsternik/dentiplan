@@ -9,10 +9,9 @@
 // so the leak assertions here run against `response.text()`, not the DOM.
 //
 // Why this is a browser test and not an integration one: the risk is about what
-// survives the whole journey — a session, the editor island, the approval freeze,
-// and finally an anonymous token route. The diagnosis field in particular exists
-// only in island state and is deliberately never sent anywhere, which no
-// endpoint-level test can reproduce.
+// survives the whole journey — a session, the editor island, the private
+// diagnosis-note column, the approval freeze, and finally an anonymous token
+// route. No endpoint-level test can reproduce that complete boundary.
 //
 // Isolation: approving freezes a row that FR-053 makes immutable, so this test
 // cannot delete what it creates — no cleanup is possible through the app. Every

@@ -2,7 +2,13 @@ import { describe, expect, it } from "vitest";
 
 import { resolvePricelistItem } from "@/lib/pricing";
 
-import { approvalBlockReason, buildQuoteContent, PatientEmailSchema, QuotePayloadSchema } from "./quote-payload";
+import {
+  approvalBlockReason,
+  buildQuoteContent,
+  DiagnosisNoteSchema,
+  PatientEmailSchema,
+  QuotePayloadSchema,
+} from "./quote-payload";
 
 // Real pricelist ids — the point of this module is that ids resolve against the
 // live seed, so fixtures would defeat the test.
@@ -41,6 +47,11 @@ describe("QuotePayloadSchema", () => {
   it("has no slot for an e-mail — a stray one is stripped, never carried", () => {
     const parsed = QuotePayloadSchema.parse(payload({ patient_email: "dentystka@example.com" }));
     expect(parsed).not.toHaveProperty("patient_email");
+  });
+
+  it("has no slot for a diagnosis note — a stray one is stripped, never carried", () => {
+    const parsed = QuotePayloadSchema.parse(payload({ diagnosis_note: "Poufna notatka dentystki" }));
+    expect(parsed).not.toHaveProperty("diagnosis_note");
   });
 });
 
@@ -130,5 +141,19 @@ describe("PatientEmailSchema", () => {
   it("rejects a malformed address and an over-long one", () => {
     expect(() => PatientEmailSchema.parse("pacjentka")).toThrow();
     expect(() => PatientEmailSchema.parse(`${"x".repeat(250)}@example.com`)).toThrow();
+  });
+});
+
+describe("DiagnosisNoteSchema", () => {
+  it("preserves a non-empty note verbatim", () => {
+    expect(DiagnosisNoteSchema.parse("  Pierwsza linia\nDruga linia  ")).toBe("  Pierwsza linia\nDruga linia  ");
+  });
+
+  it.each([undefined, null, "", " \n\t "])("normalises %j to null", (value) => {
+    expect(DiagnosisNoteSchema.parse(value)).toBeNull();
+  });
+
+  it("rejects a note longer than the prefill limit", () => {
+    expect(() => DiagnosisNoteSchema.parse("x".repeat(4001))).toThrow();
   });
 });

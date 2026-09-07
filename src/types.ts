@@ -4,8 +4,8 @@
 // the row-level shape every later slice (S-01–S-04) imports. Types are derived
 // from their Zod schemas via `z.infer` so the runtime validator and the compile-
 // time type can never drift. The generated DB row types live in
-// `src/db/database.types.ts` (regenerate with `supabase gen types typescript
-// --local > src/db/database.types.ts` after any migration).
+// `src/db/database.types.ts` (regenerate with `supabase gen types --linked
+// --lang typescript > src/db/database.types.ts` after any remote migration).
 //
 // INVARIANT (FR-066): `get_quote_by_token` returns the entire `content` jsonb
 // verbatim to anon. `content` must therefore contain ONLY patient-safe data —

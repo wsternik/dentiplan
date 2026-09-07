@@ -3,9 +3,9 @@
 // cost variants live via the pure Phase-1 engine. No persistence here — the
 // Approve action is wired to the server endpoint in Phase 3.
 //
-// PATIENT-SAFE INVARIANT: `rawText` is a transient scratch field held in island
-// state only. It is never part of the approval payload and never persisted —
-// `content` returned to anon callers must never carry the raw diagnosis.
+// PATIENT-SAFE INVARIANT: `rawText` is persisted only in the admin-only
+// `diagnosis_note` column. It is never part of `treePayload()` or the patient-safe
+// `content` returned to anon callers.
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -101,6 +101,7 @@ export default function QuoteEditor({
   initialContent,
   initialPatientType,
   initialPatientEmail,
+  initialDiagnosisNote,
   readOnly = false,
   patientToken,
 }: QuoteEditorProps) {
@@ -113,7 +114,7 @@ export default function QuoteEditor({
   const [visits, setVisits] = useState<Visit[]>(initialContent?.visits ?? []);
   const [generalItems, setGeneralItems] = useState<GeneralItem[]>(initialContent?.generalItems ?? []);
   const [patientEmail, setPatientEmail] = useState(initialPatientEmail ?? "");
-  const [rawText, setRawText] = useState("");
+  const [rawText, setRawText] = useState(initialDiagnosisNote ?? "");
   const [toothInput, setToothInput] = useState("");
   const [toothWarnings, setToothWarnings] = useState<string[]>([]);
 
@@ -307,7 +308,11 @@ export default function QuoteEditor({
     inFlight.current = true;
     setSaving(true);
     setSaveError(null);
-    const body = { ...treePayload(), patient_email: patientEmail.trim() || null };
+    const body = {
+      ...treePayload(),
+      patient_email: patientEmail.trim() || null,
+      diagnosis_note: rawText,
+    };
     try {
       const res = savedId
         ? await fetch(`/api/admin/quotes/${savedId}`, {
@@ -349,7 +354,8 @@ export default function QuoteEditor({
   // round trip is long enough for her to have added a tooth while she waited —
   // and put the answer back.
   //
-  // `rawText` is the only thing sent, and it still never enters `treePayload()`.
+  // `rawText` is the only thing sent to the model, and it never enters
+  // `treePayload()` or patient-visible `content`.
   function applyPrefill(result: PrefillResult): string[] {
     const merged = mergePrefill(treeRef.current, result, generalCounter.current);
     generalCounter.current = merged.generalIdSeed;
@@ -409,16 +415,17 @@ export default function QuoteEditor({
     setSubmitting(true);
     setSubmitError(null);
     // Send pricelist items BY ID only — the resolved client price is preview-only
-    // and is never trusted for the immutable freeze (server re-resolves). rawText
-    // is intentionally absent from the payload (patient-safe invariant).
+    // and is never trusted for the immutable freeze (server re-resolves).
     //
     // `id`, when present, turns this into a draft→approved transition on that row
     // rather than a fresh insert, so reopening and approving a draft leaves one
     // quote, not two. `patient_email` is a sibling of the tree and lands in its
-    // own column — never inside `content` (FR-072/FR-066).
+    // own column — never inside `content` (FR-072/FR-066). The raw diagnosis is
+    // another sibling and follows the same boundary into `diagnosis_note`.
     const payload = {
       ...treePayload(),
       patient_email: patientEmail.trim(),
+      diagnosis_note: rawText,
       ...(savedId ? { id: savedId } : {}),
     };
     try {
@@ -496,35 +503,42 @@ export default function QuoteEditor({
         )}
       </Section>
 
-      {!readOnly && (
+      {(!readOnly || rawText.trim().length > 0) && (
         <Section title="Notatka z diagnozy (roboczo)">
-          <Label htmlFor="rawText" className="text-muted-foreground mb-1">
-            Pole robocze — nie jest zapisywane ani widoczne dla pacjenta.
-          </Label>
-          <Textarea
-            id="rawText"
-            rows={4}
-            placeholder="Wklej opis diagnozy do pomocy przy wypełnianiu…"
-            value={rawText}
-            onChange={(e) => {
-              setRawText(e.target.value);
-            }}
-          />
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              disabled={parsing || rawText.trim().length === 0}
-              onClick={() => void handlePrefill()}
-            >
-              {parsing ? "Wypełnianie…" : "Wypełnij z notatki"}
-            </Button>
-            <span className="text-muted-foreground text-xs">
-              Uzupełnia formularz — niczego nie nadpisuje i nie zatwierdza.
-            </span>
-          </div>
-          {parseError && <p className="text-destructive mt-2 text-sm">{parseError}</p>}
-          <ParseWarnings warnings={parseWarnings} />
+          {readOnly ? (
+            <p className="text-sm whitespace-pre-line">{rawText}</p>
+          ) : (
+            <>
+              <Label htmlFor="rawText" className="text-muted-foreground mb-1">
+                Pole robocze — zapisywane tylko w panelu, niewidoczne dla pacjenta.
+              </Label>
+              <Textarea
+                id="rawText"
+                rows={4}
+                maxLength={4000}
+                placeholder="Wklej opis diagnozy do pomocy przy wypełnianiu…"
+                value={rawText}
+                onChange={(e) => {
+                  setRawText(e.target.value);
+                }}
+              />
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={parsing || rawText.trim().length === 0}
+                  onClick={() => void handlePrefill()}
+                >
+                  {parsing ? "Wypełnianie…" : "Wypełnij z notatki"}
+                </Button>
+                <span className="text-muted-foreground text-xs">
+                  Uzupełnia formularz — niczego nie nadpisuje i nie zatwierdza.
+                </span>
+              </div>
+              {parseError && <p className="text-destructive mt-2 text-sm">{parseError}</p>}
+              <ParseWarnings warnings={parseWarnings} />
+            </>
+          )}
         </Section>
       )}
 
