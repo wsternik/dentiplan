@@ -1,10 +1,10 @@
 ---
 change_id: quote-form-polish
 title: Save diagnosis notes and simplify the quote form
-status: impl_reviewed
+status: archived
 created: 2026-09-07
 updated: 2026-09-07
-archived_at: null
+archived_at: 2026-09-07T17:33:31Z
 ---
 
 ## Notes

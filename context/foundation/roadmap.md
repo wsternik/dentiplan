@@ -3,7 +3,7 @@ project: DentiPlan
 version: 1
 status: draft
 created: 2026-05-25
-updated: 2026-09-06
+updated: 2026-09-07
 prd_version: 1
 main_goal: low-complexity
 top_blocker: decisions
@@ -261,6 +261,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 ## Done
 
+- **S-10: dentystka rozpoczyna nowy kosztorys od wklejenia notatki diagnozy, a szczegółowy formularz otwiera tylko do ręcznej korekty. Notatka zapisuje się przy szkicu i zatwierdzonym kosztorysie, jest czytelna wyłącznie w uwierzytelnionym panelu i nigdy nie trafia do `content`, anonimowego RPC ani strony pacjenta. Podczas wypełniania z notatki formularz wyraźnie pokazuje stan pracy i nie pozwala go edytować, zachowując przewijanie strony.** — Archived 2026-09-07 → `context/archive/2026-09-07-quote-form-polish/`. Lesson: —.
 - **S-07: dentystka pokazuje pacjentowi QR do zatwierdzonego kosztorysu w panelu, a wydruk zawiera QR i czytelny adres tej samej wersji online** — Delivered 2026-09-07 as `patient-link-qr`. Lesson: medium drukowe trzeba weryfikować także w wymiarach papieru, nie tylko przez emulację `print`.
 - **S-06: pacjent widzi nad listą pogrupowaną rysunek swojego łuku zębowego — każdy ząb z kosztorysu wypełniony kolorem pilności i obrysowany zgodnie ze statusem, tooltip po najechaniu/dotknięciu, a w edytorze ten sam rysunek jest wyborem zębów** — Archived 2026-09-06 → `context/archive/2026-09-06-tooth-chart-visualization/`. Lesson: —.
 - **S-09: dentystka wkleja tę samą notatkę co w S-02 i formularz wraca z planem, nie tylko z listą zębów: zęby rozłożone na wizyty, wizyta z najpilniejszymi zębami jako pierwsza, nazwy wizyt ze słownika systemu, a wszystko wywnioskowane — nazwane w ostrzeżeniach FR-012** — Archived 2026-09-06 → `context/archive/2026-09-06-visit-planning-prefill/`. Lesson: zielony zestaw testów jednostkowych nic nie mówi o czasie, jaki prompt wydaje — dłuższy prompt to zmiana kosztu wywołania, nie tylko jego treści.
