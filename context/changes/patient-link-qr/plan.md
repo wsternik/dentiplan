@@ -261,15 +261,15 @@ No data migration, API change, or deployment ordering is required. Each phase is
 
 #### Automated
 
-- [x] 2.1 Touched React files pass ESLint: `npx eslint src/components/admin/QrCode.tsx src/components/admin/ApprovalConfirmation.tsx src/components/admin/QuoteEditor.tsx`
-- [x] 2.2 The full unit suite passes: `npm test`
-- [x] 2.3 Existing browser contracts pass unchanged: `npm run test:e2e`
+- [x] 2.1 Touched React files pass ESLint: `npx eslint src/components/admin/QrCode.tsx src/components/admin/ApprovalConfirmation.tsx src/components/admin/QuoteEditor.tsx` — 90e4000
+- [x] 2.2 The full unit suite passes: `npm test` — 90e4000
+- [x] 2.3 Existing browser contracts pass unchanged: `npm run test:e2e` — 90e4000
 
 #### Manual
 
-- [x] 2.4 Immediately after approval, a horizontally centred QR code at least 200 px wide is visible and the URL beneath it matches the copy field exactly
-- [x] 2.5 Reopening an approved quote exposes the same QR behaviour; a draft has no QR affordance
-- [x] 2.6 The approval confirmation still contains exactly one textbox and remains usable by keyboard
+- [x] 2.4 Immediately after approval, a horizontally centred QR code at least 200 px wide is visible and the URL beneath it matches the copy field exactly — 90e4000
+- [x] 2.5 Reopening an approved quote exposes the same QR behaviour; a draft has no QR affordance — 90e4000
+- [x] 2.6 The approval confirmation still contains exactly one textbox and remains usable by keyboard — 90e4000
 
 ### Phase 3: Print footer and product records
 
