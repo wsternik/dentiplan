@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { ChartTooth } from "./model";
-import { chartLabel } from "./label";
+import { chartLabel, CHART_LABEL_PLATE, CHART_LABEL_PLATE_CLASS, CHART_LABEL_TEXT_CLASS } from "./label";
 import { toothCenter } from "./geometry";
 
 function tooth(overrides: Partial<ChartTooth> = {}): ChartTooth {
@@ -34,5 +34,11 @@ describe("chartLabel", () => {
 
   it("does not label teeth outside the quote", () => {
     expect(chartLabel(tooth({ inQuote: false, urgency: null, status: null }))).toBeNull();
+  });
+
+  it("isolates every small label from the clinical fill with the normal high-contrast token pair", () => {
+    expect(CHART_LABEL_PLATE).toEqual({ width: 22, height: 16, radius: 4 });
+    expect(CHART_LABEL_PLATE_CLASS).toContain("fill-background");
+    expect(CHART_LABEL_TEXT_CLASS).toBe("fill-foreground");
   });
 });

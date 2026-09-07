@@ -164,6 +164,17 @@ export default function QuoteEditor({
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<string | null>(null);
+  // Every server write freezes a snapshot before its await. Keeping the editor
+  // inert until that request settles prevents a later visible edit from being
+  // omitted while the UI still reports the snapshot as saved or approved.
+  const operationBusy = parsing || saving || submitting;
+  const operationStatus = parsing
+    ? "Wypełnianie formularza z notatki."
+    : submitting
+      ? "Zatwierdzanie kosztorysu."
+      : saving
+        ? "Zapisywanie szkicu."
+        : "";
 
   const totals = useMemo(() => computeQuoteTotals({ teeth, visits, generalItems }), [teeth, visits, generalItems]);
   const readOnlyPatientPath = patientToken ? `/p/${patientToken}` : null;
@@ -481,14 +492,14 @@ export default function QuoteEditor({
   }
 
   const diagnosisNoteSection = (!readOnly || rawText.trim().length > 0) && (
-    <Section title="Notatka z diagnozy (roboczo)">
+    <Section title="Notatka z diagnozy">
       {readOnly ? (
         <p className="text-sm whitespace-pre-line">{rawText}</p>
       ) : (
         <>
           <Label htmlFor="rawText" className="text-muted-foreground mb-1">
             <span className="sr-only">Pole robocze — </span>
-            Prywatna notatka — zapisywana tylko w panelu, niewidoczna dla pacjenta.
+            Zapisywana razem z kosztorysem, widoczna tylko dla Ciebie — nigdy nie trafia na stronę pacjenta.
           </Label>
           <Textarea
             id="rawText"
@@ -504,7 +515,7 @@ export default function QuoteEditor({
             <Button
               type="button"
               variant="outline"
-              disabled={parsing || rawText.trim().length === 0}
+              disabled={operationBusy || rawText.trim().length === 0}
               onClick={() => void handlePrefill()}
             >
               {parsing ? "Wypełnianie…" : "Wypełnij z notatki"}
@@ -521,9 +532,9 @@ export default function QuoteEditor({
   );
 
   return (
-    <div className="relative mx-auto max-w-4xl px-4 py-8" aria-busy={parsing} aria-label="Edytor kosztorysu">
+    <div className="relative mx-auto max-w-4xl px-4 py-8" aria-busy={operationBusy} aria-label="Edytor kosztorysu">
       <span className="sr-only" role="status" aria-live="polite">
-        {parsing ? "Wypełnianie formularza z notatki." : ""}
+        {operationStatus}
       </span>
       {parsing && (
         <div className="bg-background/60 absolute inset-0 z-30 cursor-wait" aria-hidden="true">
@@ -535,7 +546,10 @@ export default function QuoteEditor({
         </div>
       )}
 
-      <div inert={parsing || undefined} className={cn("space-y-4", parsing && "pointer-events-none select-none")}>
+      <div
+        inert={operationBusy || undefined}
+        className={cn("space-y-4", operationBusy && "pointer-events-none select-none")}
+      >
         <div className="border-border flex flex-wrap items-baseline justify-between gap-4 border-b pb-4">
           <h1 className="font-serif text-2xl font-medium tracking-tight">
             {readOnly ? "Kosztorys zatwierdzony" : savedId ? "Kosztorys (szkic)" : "Nowy kosztorys"}
@@ -749,14 +763,14 @@ export default function QuoteEditor({
             // anything, and still pins to the bottom while there is more form below.
             <div className="border-border bg-background/95 no-print sticky bottom-0 z-10 -mx-4 border-t px-4 backdrop-blur-sm">
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 py-3">
-                <Button type="button" size="lg" disabled={approveDisabled || submitting} onClick={handleApprove}>
+                <Button type="button" size="lg" disabled={approveDisabled || operationBusy} onClick={handleApprove}>
                   {submitting ? "Zatwierdzanie…" : "Zatwierdź"}
                 </Button>
                 <Button
                   type="button"
                   size="lg"
                   variant="outline"
-                  disabled={saving}
+                  disabled={operationBusy}
                   onClick={() => void handleSaveDraft()}
                 >
                   {saving ? "Zapisywanie…" : "Zapisz szkic"}

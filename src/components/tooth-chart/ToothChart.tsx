@@ -27,7 +27,12 @@ import { CHART_VIEWBOX_PADDED, toothTransform } from "@/lib/tooth-chart/geometry
 import type { ChartTooth } from "@/lib/tooth-chart/model";
 import { TOOTH_SHAPES, SLOT_TRANSFORMS } from "@/lib/tooth-chart/paths";
 import { HATCH_OVERLAY_CLASSES, HATCH_PATTERN_ID, needsHatch, toothClasses } from "@/lib/tooth-chart/style";
-import { chartLabel } from "@/lib/tooth-chart/label";
+import {
+  chartLabel,
+  CHART_LABEL_PLATE,
+  CHART_LABEL_PLATE_CLASS,
+  CHART_LABEL_TEXT_CLASS,
+} from "@/lib/tooth-chart/label";
 import { cn } from "@/lib/utils";
 
 import { ToothTooltip } from "./ToothTooltip";
@@ -195,17 +200,26 @@ export function ToothChart({ teeth, mode, onToothClick }: Props) {
         {ordered.map((tooth) => {
           const label = chartLabel(tooth);
           return label === null ? null : (
-            <text
-              key={`label-${tooth.number}`}
-              x={label.x}
-              y={label.y}
-              textAnchor="middle"
-              dominantBaseline="central"
-              aria-hidden="true"
-              className="fill-muted-foreground pointer-events-none font-sans text-[12px] font-medium"
-            >
-              {label.text}
-            </text>
+            <g key={`label-${tooth.number}`} aria-hidden="true" className="pointer-events-none">
+              <rect
+                x={label.x - CHART_LABEL_PLATE.width / 2}
+                y={label.y - CHART_LABEL_PLATE.height / 2}
+                width={CHART_LABEL_PLATE.width}
+                height={CHART_LABEL_PLATE.height}
+                rx={CHART_LABEL_PLATE.radius}
+                className={CHART_LABEL_PLATE_CLASS}
+                strokeWidth="0.75"
+              />
+              <text
+                x={label.x}
+                y={label.y}
+                textAnchor="middle"
+                dominantBaseline="central"
+                className={cn(CHART_LABEL_TEXT_CLASS, "font-sans text-[12px] font-medium")}
+              >
+                {label.text}
+              </text>
+            </g>
           );
         })}
       </svg>

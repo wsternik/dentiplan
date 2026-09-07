@@ -32,7 +32,7 @@ Persist an optional raw diagnosis note with a quote for the authenticated dentis
 
 - `src/components/admin/TotalsPreview.tsx`, `src/components/patient/VariantComparison.astro`, and patient page copy: use “narkoza” only where the copy denotes general anaesthesia.
 - `src/lib/llm/prompt.ts` and `prompt.test.ts`: rename the Polish prompt section and retain an assertion for it.
-- `e2e/patient-print-layout.spec.ts` and `e2e/patient-link-content.spec.ts`: change exactly the two literal headings that cite the updated text; no locator or behavioural change.
+- In the phase-1 commit, `e2e/patient-print-layout.spec.ts` and `e2e/patient-link-content.spec.ts`: change exactly the two literal headings that cite the updated text; no locator or behavioural change.
 - Leave the local-anaesthesia pricing item, `localAnesthesia`, and English names untouched.
 
 ### Success Criteria
@@ -40,7 +40,7 @@ Persist an optional raw diagnosis note with a quote for the authenticated dentis
 #### Automated Verification
 
 - `npm test` passes with the prompt-section assertion.
-- `git diff main...HEAD -- e2e/*.spec.ts` contains only the two approved string substitutions.
+- The phase-1 E2E diff contains only the two approved string substitutions. The full-branch exception discovered in phase 3 is documented below.
 - `npm run test:e2e` passes.
 
 #### Manual Verification
@@ -76,13 +76,14 @@ Persist an optional raw diagnosis note with a quote for the authenticated dentis
 - In `src/components/admin/QuoteEditor.tsx`, make the note block the first and dominant section only for a new draft.
 - Start the detailed form collapsed behind “Dostosuj formularz ręcznie”; after prefill, keep it collapsed until the dentist explicitly opens it.
 - Preserve the existing open form for existing drafts and read-only quotes, all field semantics, and approval flow.
-- Include the note in the existing draft autosave and approval request bodies without making it a prefill/approval requirement.
+- Include the note in the existing explicit draft-save and approval request bodies without making it a prefill/approval requirement.
+- Existing end-to-end scenarios that create a quote may click the new disclosure before using their unchanged accessible field locators. This is a deliberate journey precondition introduced by the approved note-first flow, not a changed role, label, or assertion. Four such setup clicks and the now-truthful risk-#3 comment are the only full-branch E2E exceptions beyond the two phase-1 heading substitutions.
 
 ### Success Criteria
 
 #### Automated Verification
 
-- `npm run test:e2e` passes without unrelated specification edits.
+- `npm run test:e2e` passes; existing-spec edits are limited to the two heading substitutions, the four disclosure setup clicks, and the risk-#3 comment described above.
 
 #### Manual Verification
 
@@ -105,7 +106,7 @@ Persist an optional raw diagnosis note with a quote for the authenticated dentis
 #### Automated Verification
 
 - Chart-label unit tests, `npm test`, and `npm run test:e2e` pass.
-- `patient-print-layout.spec.ts` remains behavioural-identical except for its approved heading string.
+- `patient-print-layout.spec.ts` remains behaviourally identical except for its approved heading string and the disclosure click required to reach the unchanged manual fields.
 
 #### Manual Verification
 
@@ -139,7 +140,7 @@ Persist an optional raw diagnosis note with a quote for the authenticated dentis
 
 ## Migration Notes
 
-The migration is additive and nullable, so no backfill is required. Before phase 2 completes, link the Supabase CLI to `ebvqvxtuhdcfopifuzsl`, record the applied state, run the documented manual `supabase db push`, regenerate types, and record the result. A rollback can remove the unused nullable column only before writes rely on it; after deployment, revert application code first and preserve data unless a deliberate migration is approved.
+The migration is additive and nullable, so no backfill is required. Before phase 2 completes, link the Supabase CLI to `ebvqvxtuhdcfopifuzsl`, record the applied state, run the documented manual `supabase db push`, regenerate types, and record the result. Verified again during implementation review on 2026-09-07 with Supabase CLI 2.104.0: local and remote histories both contain `20260603194110` and `20260907085625`, with no divergence. A rollback can remove the unused nullable column only before writes rely on it; after deployment, revert application code first and preserve data unless a deliberate migration is approved.
 
 ## References
 
@@ -177,7 +178,7 @@ The migration is additive and nullable, so no backfill is required. Before phase
 
 #### Automated
 
-- [x] 3.1 Note-first creation and autosave/approval wiring pass E2E. — 1214271
+- [x] 3.1 Note-first creation and draft-save/approval wiring pass E2E. — 1214271
 
 #### Manual
 
