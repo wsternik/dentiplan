@@ -1,7 +1,7 @@
 ---
 change_id: patient-link-qr
 title: Patient link QR in admin and print
-status: implementing
+status: implemented
 created: 2026-09-06
 updated: 2026-09-07
 archived_at: null

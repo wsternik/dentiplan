@@ -275,14 +275,14 @@ No data migration, API change, or deployment ordering is required. Each phase is
 
 #### Automated
 
-- [x] 3.1 Touched Astro and CSS files pass their checks: `npx eslint 'src/pages/p/[token].astro' src/components/patient/PatientQuote.astro && npx prettier --check src/styles/global.css`
-- [x] 3.2 The full unit suite passes: `npm test`
-- [x] 3.3 Existing E2E suite passes unchanged at the required media dimensions: `npm run test:e2e`
-- [x] 3.4 Production build succeeds: `npm run build`
-- [x] 3.5 Product records contain FR-054, FR-055, and a done S-07 entry: `rg -n 'FR-054|FR-055|patient-link-qr' context/foundation/prd.md context/foundation/roadmap.md`
+- [x] 3.1 Touched Astro and CSS files pass their checks: `npx eslint 'src/pages/p/[token].astro' src/components/patient/PatientQuote.astro && npx prettier --check src/styles/global.css` — 53eee4a
+- [x] 3.2 The full unit suite passes: `npm test` — 53eee4a
+- [x] 3.3 Existing E2E suite passes unchanged at the required media dimensions: `npm run test:e2e` — 53eee4a
+- [x] 3.4 Production build succeeds: `npm run build` — 53eee4a
+- [x] 3.5 Product records contain FR-054, FR-055, and a done S-07 entry: `rg -n 'FR-054|FR-055|patient-link-qr' context/foundation/prd.md context/foundation/roadmap.md` — 53eee4a
 
 #### Manual
 
-- [x] 3.6 At print media and approximately 717 px printable width, the footer is visible, stays together, and its QR measures at least 2 cm
-- [x] 3.7 The patient page has no QR footer visible in screen media
-- [x] 3.8 A real phone opens the exact current patient URL from both the admin-screen QR and a PDF/print rendering
+- [x] 3.6 At print media and approximately 717 px printable width, the footer is visible, stays together, and its QR measures at least 2 cm — 53eee4a
+- [x] 3.7 The patient page has no QR footer visible in screen media — 53eee4a
+- [x] 3.8 A real phone opens the exact current patient URL from both the admin-screen QR and a PDF/print rendering — 53eee4a
