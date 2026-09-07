@@ -21,7 +21,7 @@ The dentystka can show a scannable QR immediately after approval or from a reope
 | Encoder          | `qrcode-generator`, correction M                    | Zero dependencies and a browser/Workers-compatible ESM runtime                              |
 | Type interop     | Narrow local declaration for the named ESM factory  | The package's bundled `export =` declaration does not match its named runtime export        |
 | Output           | Pure in-process SVG renderer                        | One implementation serves React and Astro without external disclosure or storage            |
-| Admin UX         | Visible and centred, at least 200 px                | Makes the scan action immediately available beneath the existing link control               |
+| Admin UX         | Visible and centred, at least 200 px                | Makes the scan action immediately available beside a copy button, without a duplicate input |
 | Admin URL source | Same `path` prop as `CopyLink`                      | Prevents the copied link and QR payload from drifting                                       |
 | Print URL source | `Astro.url.origin` plus current `/p/<token>`        | Produces an absolute QR payload during SSR                                                  |
 | Print geometry   | Four-module quiet zone, at least 2 cm               | Gives scanners physical clearance and survives default print settings                       |
@@ -49,11 +49,11 @@ The existing relative patient path remains the source of truth. React turns it i
 
 ## Phases at a Glance
 
-| Phase                               | What it delivers                                      | Key risk                                                      |
-| ----------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------- |
-| 1. Pure SVG renderer                | Dependency, renderer, and deterministic unit coverage | Quiet zone or output contract becomes scanner-hostile         |
-| 2. Admin QR disclosure              | Same QR affordance in both approved admin views       | QR URL drifts from the copyable link or adds a second textbox |
-| 3. Print footer and product records | SSR QR, physical print rules, PRD and roadmap         | Screen leakage or an A4-only layout regression                |
+| Phase                               | What it delivers                                      | Key risk                                                |
+| ----------------------------------- | ----------------------------------------------------- | ------------------------------------------------------- |
+| 1. Pure SVG renderer                | Dependency, renderer, and deterministic unit coverage | Quiet zone or output contract becomes scanner-hostile   |
+| 2. Admin QR disclosure              | Same QR affordance in both approved admin views       | QR URL drifts from the copied link or duplicates its UI |
+| 3. Print footer and product records | SSR QR, physical print rules, PRD and roadmap         | Screen leakage or an A4-only layout regression          |
 
 **Prerequisites:** Existing S-01 patient link and approved-quote views on green `main`.
 **Estimated effort:** Three small implementation phases plus review and closure.

@@ -25,7 +25,7 @@
 
 import { test, expect } from "@playwright/test";
 
-import { waitForIslands } from "./support/app";
+import { patientUrlFromQr, waitForIslands } from "./support/app";
 
 /**
  * A4 at a browser's default margins, in CSS pixels. Letter is slightly wider
@@ -59,7 +59,7 @@ test("risk #12: the printed estimate keeps the two treatment variants side by si
 
   await page.getByRole("button", { name: "Zatwierdź" }).click();
   await expect(page.getByRole("heading", { name: "Kosztorys zatwierdzony" })).toBeVisible();
-  const patientUrl = await page.getByRole("textbox").inputValue();
+  const patientUrl = await patientUrlFromQr(page);
 
   // --- The patient prints it ---
   const anonymous = await browser.newContext({ storageState: { cookies: [], origins: [] } });

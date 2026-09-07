@@ -17,3 +17,14 @@ import { expect, type Page } from "@playwright/test";
 export async function waitForIslands(page: Page): Promise<void> {
   await expect(page.locator("astro-island[ssr]")).toHaveCount(0);
 }
+
+/** Read the patient URL from the visible fallback link beneath its QR code. */
+export async function patientUrlFromQr(page: Page): Promise<string> {
+  const href = await page
+    .getByRole("region", { name: "Kod QR linku dla pacjenta" })
+    .getByRole("link")
+    .getAttribute("href");
+
+  expect(href).toContain("/p/");
+  return href ?? "";
+}

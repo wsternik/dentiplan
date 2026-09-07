@@ -8,8 +8,6 @@
 //
 //   - a link named "Nowy kosztorys" — `seed.spec.ts` clicks that name on
 //     `/admin`, and a second match makes the locator ambiguous;
-//   - any textbox — `patient-link-content.spec.ts` reads an unqualified
-//     `getByRole("textbox")` on the approval confirmation and expects exactly one.
 //
 // Admin-only, so there is no signed-out branch: every page that renders this is
 // behind `PROTECTED_ROUTES`.
