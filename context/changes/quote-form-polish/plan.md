@@ -165,13 +165,13 @@ The migration is additive and nullable, so no backfill is required. Before phase
 
 #### Automated
 
-- [x] 2.1 Apply and type-regenerate the nullable diagnosis-note migration.
-- [x] 2.2 Prove payload stripping and anonymous non-disclosure with unit and E2E tests.
-- [x] 2.3 Run unit, lint, and production-build verification.
+- [x] 2.1 Apply and type-regenerate the nullable diagnosis-note migration. — cd68b26
+- [x] 2.2 Prove payload stripping and anonymous non-disclosure with unit and E2E tests. — cd68b26
+- [x] 2.3 Run unit, lint, and production-build verification. — cd68b26
 
 #### Manual
 
-- [x] 2.4 Verify admin-only draft and approved note rendering, including empty state.
+- [x] 2.4 Verify admin-only draft and approved note rendering, including empty state. — cd68b26
 
 ### Phase 3: Note-first quote creation
 
