@@ -187,12 +187,12 @@ The migration is additive and nullable, so no backfill is required. Before phase
 
 #### Automated
 
-- [x] 4.1 Responsive/read-only/chart/hint/overlay coverage and E2E pass.
-- [x] 4.2 Preserve the patient print contract outside the approved heading update.
+- [x] 4.1 Responsive/read-only/chart/hint/overlay coverage and E2E pass. — b17164f
+- [x] 4.2 Preserve the patient print contract outside the approved heading update. — b17164f
 
 #### Manual
 
-- [x] 4.3 Verify A4, keyboard/touch hints, and visible parsing busy state.
+- [x] 4.3 Verify A4, keyboard/touch hints, and visible parsing busy state. — b17164f
 
 ### Phase 5: Product documents
 
