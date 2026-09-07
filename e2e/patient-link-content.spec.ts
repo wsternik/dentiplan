@@ -23,7 +23,7 @@
 
 import { test, expect } from "@playwright/test";
 
-import { waitForIslands } from "./support/app";
+import { patientUrlFromQr, waitForIslands } from "./support/app";
 
 test("risk #3: an approved quote's patient page serves the quote and neither the recipient e-mail nor the diagnosis note", async ({
   page,
@@ -58,10 +58,9 @@ test("risk #3: an approved quote's patient page serves the quote and neither the
   await page.getByRole("button", { name: "Zatwierdź" }).click();
   await expect(page.getByRole("heading", { name: "Kosztorys zatwierdzony" })).toBeVisible();
 
-  // The confirmation view holds exactly one textbox — the copyable link — so a
-  // strict role locator both finds it and fails loudly if that ever changes.
-  const patientUrl = await page.getByRole("textbox").inputValue();
-  expect(patientUrl).toContain("/p/");
+  await expect(page.getByRole("textbox")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Kopiuj link" })).toBeVisible();
+  const patientUrl = await patientUrlFromQr(page);
 
   // The e-mail really was stored: without this, "it is absent from the patient
   // page" would also hold for a quote that never carried one, and the assertion

@@ -1,4 +1,5 @@
 ---
+/* eslint-disable astro/no-set-html-directive -- The local QR renderer emits fixed SVG markup and never interpolates patientUrl. */
 // Patient view orchestrator (FR-061–065). Splits the frozen content tree into
 // in-plan / deferred / uncertain buckets and lays out the sections read-only.
 // Renders ONLY what's in `content` — no name, email, or identifier (FR-066).
@@ -9,6 +10,7 @@
 
 import type { PatientType, QuoteContent } from "@/types";
 import { formatDate } from "@/lib/quote/format";
+import { renderPatientQrSvg } from "@/lib/quote/qr";
 import { toChartTeeth } from "@/lib/tooth-chart/model";
 import { ToothChart } from "@/components/tooth-chart/ToothChart";
 import { ChartLegend } from "@/components/tooth-chart/ChartLegend";
@@ -22,9 +24,10 @@ interface Props {
   content: QuoteContent;
   patientType: PatientType;
   createdAt: string;
+  patientUrl: string;
 }
 
-const { content, patientType, createdAt } = Astro.props;
+const { content, patientType, createdAt, patientUrl } = Astro.props;
 const inPlan = content.teeth.filter((tooth) => tooth.status === "in-plan");
 const deferred = content.teeth.filter((tooth) => tooth.status === "out-of-current-plan");
 const uncertain = content.teeth.filter((tooth) => tooth.status === "uncertain");
@@ -71,9 +74,8 @@ const chartTeeth = toChartTeeth(content);
 
   <Disclaimer />
 
-  {
-    /* Reserved for the QR code S-07 puts on the printed page. Hidden on screen;
-      `@media print` in `global.css` reveals it. */
-  }
-  <footer id="patient-print-footer" class="hidden pt-8"></footer>
+  <footer id="patient-print-footer" class="hidden pt-8">
+    <div class="patient-print-qr" aria-hidden="true" set:html={renderPatientQrSvg(patientUrl)} />
+    <p class="patient-print-url font-sans text-xs">Wersja online: {patientUrl}</p>
+  </footer>
 </main>

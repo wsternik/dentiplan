@@ -5,6 +5,12 @@ plan with two comparable cost estimates, shared as a single unguessable link.
 
 Live: **https://dentiplan-production.wsternik.workers.dev**
 
+## Agent onboarding
+
+Start with [AGENTS.md](AGENTS.md) for repository rules, quality gates and the
+change workflow. It is the canonical guide for Codex; [CLAUDE.md](CLAUDE.md)
+retains the Claude Code entry point and toolkit-managed instructions.
+
 ## The problem
 
 After the first consultation (panoramic X-ray plus clinical examination), the

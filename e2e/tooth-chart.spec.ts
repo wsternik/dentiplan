@@ -25,7 +25,7 @@
 
 import { test, expect, type Locator, type Page } from "@playwright/test";
 
-import { waitForIslands } from "./support/app";
+import { patientUrlFromQr, waitForIslands } from "./support/app";
 
 /**
  * The patient page's heading for each tooth list, and the status the chart must
@@ -226,8 +226,7 @@ test("risk #8: an approved quote's chart and its written lists describe the same
   await page.getByRole("button", { name: "Zatwierdź" }).click();
   await expect(page.getByRole("heading", { name: "Kosztorys zatwierdzony" })).toBeVisible();
 
-  const patientUrl = await page.getByRole("textbox").inputValue();
-  expect(patientUrl).toContain("/p/");
+  const patientUrl = await patientUrlFromQr(page);
 
   // --- The patient opens the link and sees one mouth, drawn and written ---
   await page.goto(patientUrl);
