@@ -34,6 +34,7 @@ export function ToothRow({ tooth, visits, options, onPatch, onAddItem, onRemoveI
   const dentition = dentitionForTooth(tooth.number);
   const isInPlan = tooth.status === "in-plan";
   const unpriced = isInPlan && tooth.pricelistItems.length === 0;
+  const visit = visits.find((entry) => entry.number === tooth.visitNumber);
 
   return (
     // `id` + `tabIndex={-1}` make the row addressable from the chart (FR-076):
@@ -69,9 +70,11 @@ export function ToothRow({ tooth, visits, options, onPatch, onAddItem, onRemoveI
             )}
             {toothName(tooth.number)}
           </div>
-          <Badge variant="secondary" className="mt-1">
-            {DENTITION_LABELS[dentition]}
-          </Badge>
+          {!readOnly && (
+            <Badge variant="secondary" className="mt-1">
+              {DENTITION_LABELS[dentition]}
+            </Badge>
+          )}
         </div>
         {!readOnly && (
           <Button type="button" variant="ghost" size="icon" aria-label={`Usuń ząb ${tooth.number}`} onClick={onRemove}>
@@ -80,66 +83,97 @@ export function ToothRow({ tooth, visits, options, onPatch, onAddItem, onRemoveI
         )}
       </div>
 
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-        <NativeSelect
-          disabled={readOnly}
-          aria-label="Rodzaj leczenia"
-          value={tooth.treatmentType ?? ""}
-          onChange={(e) => {
-            onPatch({ treatmentType: (e.target.value || null) as TreatmentType | null });
-          }}
-        >
-          <option value="">— rodzaj leczenia —</option>
-          {(Object.keys(TREATMENT_LABELS) as TreatmentType[]).map((key) => (
-            <option key={key} value={key}>
-              {TREATMENT_LABELS[key]}
-            </option>
-          ))}
-        </NativeSelect>
+      {readOnly ? (
+        <div className="flex flex-wrap gap-2" aria-label="Szczegóły leczenia">
+          <Badge variant="secondary" className="h-auto max-w-full justify-start py-1 text-left whitespace-normal">
+            {DENTITION_LABELS[dentition]}
+          </Badge>
+          <Badge variant="outline" className="h-auto max-w-full justify-start py-1 text-left whitespace-normal">
+            <span className="text-muted-foreground">Rodzaj leczenia:</span>
+            {tooth.treatmentType ? TREATMENT_LABELS[tooth.treatmentType] : "nie określono"}
+          </Badge>
+          <Badge variant="outline" className="h-auto max-w-full justify-start py-1 text-left whitespace-normal">
+            <span className="text-muted-foreground">Pilność:</span>
+            {tooth.urgency ? URGENCY_LABELS[tooth.urgency] : "nie określono"}
+          </Badge>
+          <Badge variant="outline" className="h-auto max-w-full justify-start py-1 text-left whitespace-normal">
+            <span className="text-muted-foreground">Status:</span>
+            {STATUS_LABELS[tooth.status]}
+          </Badge>
+          {isInPlan && visits.length > 0 && (
+            <Badge variant="outline" className="h-auto max-w-full justify-start py-1 text-left whitespace-normal">
+              <span className="text-muted-foreground">Wizyta:</span>
+              {visit ? `${visit.number}${visit.label ? ` — ${visit.label}` : ""}` : "bez przypisania"}
+            </Badge>
+          )}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+          <NativeSelect
+            aria-label="Rodzaj leczenia"
+            value={tooth.treatmentType ?? ""}
+            onChange={(e) => {
+              onPatch({ treatmentType: (e.target.value || null) as TreatmentType | null });
+            }}
+          >
+            <option value="">— rodzaj leczenia —</option>
+            {(Object.keys(TREATMENT_LABELS) as TreatmentType[]).map((key) => (
+              <option key={key} value={key}>
+                {TREATMENT_LABELS[key]}
+              </option>
+            ))}
+          </NativeSelect>
 
-        <NativeSelect
-          disabled={readOnly}
-          aria-label="Pilność"
-          value={tooth.urgency ?? ""}
-          onChange={(e) => {
-            onPatch({ urgency: (e.target.value || null) as Urgency | null });
-          }}
-        >
-          <option value="">— pilność —</option>
-          {(Object.keys(URGENCY_LABELS) as Urgency[]).map((key) => (
-            <option key={key} value={key}>
-              {URGENCY_LABELS[key]}
-            </option>
-          ))}
-        </NativeSelect>
+          <NativeSelect
+            aria-label="Pilność"
+            value={tooth.urgency ?? ""}
+            onChange={(e) => {
+              onPatch({ urgency: (e.target.value || null) as Urgency | null });
+            }}
+          >
+            <option value="">— pilność —</option>
+            {(Object.keys(URGENCY_LABELS) as Urgency[]).map((key) => (
+              <option key={key} value={key}>
+                {URGENCY_LABELS[key]}
+              </option>
+            ))}
+          </NativeSelect>
 
-        <NativeSelect
-          disabled={readOnly}
-          aria-label="Status"
-          value={tooth.status}
-          onChange={(e) => {
-            const status = e.target.value as ToothStatus;
-            // Only in-plan teeth carry a visit link (FR-030); clear it otherwise.
-            onPatch(status === "in-plan" ? { status } : { status, visitNumber: null });
-          }}
-        >
-          {(Object.keys(STATUS_LABELS) as ToothStatus[]).map((key) => (
-            <option key={key} value={key}>
-              {STATUS_LABELS[key]}
-            </option>
-          ))}
-        </NativeSelect>
-      </div>
+          <NativeSelect
+            aria-label="Status"
+            value={tooth.status}
+            onChange={(e) => {
+              const status = e.target.value as ToothStatus;
+              // Only in-plan teeth carry a visit link (FR-030); clear it otherwise.
+              onPatch(status === "in-plan" ? { status } : { status, visitNumber: null });
+            }}
+          >
+            {(Object.keys(STATUS_LABELS) as ToothStatus[]).map((key) => (
+              <option key={key} value={key}>
+                {STATUS_LABELS[key]}
+              </option>
+            ))}
+          </NativeSelect>
+        </div>
+      )}
 
-      <Input
-        className="mt-2"
-        readOnly={readOnly}
-        placeholder="Notatka (opcjonalnie)"
-        value={tooth.note}
-        onChange={(e) => {
-          onPatch({ note: e.target.value });
-        }}
-      />
+      {readOnly ? (
+        tooth.note.trim().length > 0 && (
+          <p className="mt-2 text-sm whitespace-pre-line">
+            <span className="text-muted-foreground">Notatka: </span>
+            {tooth.note}
+          </p>
+        )
+      ) : (
+        <Input
+          className="mt-2"
+          placeholder="Notatka (opcjonalnie)"
+          value={tooth.note}
+          onChange={(e) => {
+            onPatch({ note: e.target.value });
+          }}
+        />
+      )}
 
       <div className="mt-2">
         {!readOnly && <PricelistPicker options={options} onAdd={onAddItem} />}
@@ -171,10 +205,9 @@ export function ToothRow({ tooth, visits, options, onPatch, onAddItem, onRemoveI
         )}
       </div>
 
-      {isInPlan && visits.length > 0 && (
+      {!readOnly && isInPlan && visits.length > 0 && (
         <NativeSelect
           className="mt-2"
-          disabled={readOnly}
           aria-label="Wizyta"
           value={tooth.visitNumber ?? ""}
           onChange={(e) => {

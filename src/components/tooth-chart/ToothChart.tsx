@@ -27,6 +27,7 @@ import { CHART_VIEWBOX_PADDED, toothTransform } from "@/lib/tooth-chart/geometry
 import type { ChartTooth } from "@/lib/tooth-chart/model";
 import { TOOTH_SHAPES, SLOT_TRANSFORMS } from "@/lib/tooth-chart/paths";
 import { HATCH_OVERLAY_CLASSES, HATCH_PATTERN_ID, needsHatch, toothClasses } from "@/lib/tooth-chart/style";
+import { chartLabel } from "@/lib/tooth-chart/label";
 import { cn } from "@/lib/utils";
 
 import { ToothTooltip } from "./ToothTooltip";
@@ -107,7 +108,10 @@ export function ToothChart({ teeth, mode, onToothClick }: Props) {
   }
 
   return (
-    <div ref={containerRef} className="tooth-chart relative mx-auto w-full max-w-[260px] sm:max-w-[320px]">
+    <div
+      ref={containerRef}
+      className="tooth-chart bg-muted/50 relative mx-auto w-full max-w-[260px] rounded-lg p-3 sm:max-w-[420px]"
+    >
       <svg
         viewBox={CHART_VIEWBOX_PADDED}
         className="h-auto w-full"
@@ -183,6 +187,25 @@ export function ToothChart({ teeth, mode, onToothClick }: Props) {
                 )}
               </g>
             </g>
+          );
+        })}
+
+        {/* Labels are a separate, unmirrored layer. Putting text inside the
+            mirrored quadrant groups would reverse the FDI numbers. */}
+        {ordered.map((tooth) => {
+          const label = chartLabel(tooth);
+          return label === null ? null : (
+            <text
+              key={`label-${tooth.number}`}
+              x={label.x}
+              y={label.y}
+              textAnchor="middle"
+              dominantBaseline="central"
+              aria-hidden="true"
+              className="fill-muted-foreground pointer-events-none font-sans text-[12px] font-medium"
+            >
+              {label.text}
+            </text>
           );
         })}
       </svg>

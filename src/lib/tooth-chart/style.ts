@@ -26,7 +26,7 @@ export const HATCH_PATTERN_ID = "tooth-chart-hatch";
  */
 export function toothClasses(tooth: ChartTooth): string {
   if (!tooth.inQuote || tooth.status === null) {
-    return cn("fill-none stroke-border [stroke-width:1]");
+    return cn("fill-background stroke-border [stroke-width:1]");
   }
   return cn(URGENCY_FILL[tooth.urgency ?? "unknown"], STATUS_SHAPE[tooth.status]);
 }

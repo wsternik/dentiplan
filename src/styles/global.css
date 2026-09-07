@@ -247,6 +247,18 @@
     max-width: 190px;
   }
 
+  .tooth-chart-layout {
+    display: block;
+  }
+
+  .chart-legend {
+    margin-top: 1rem;
+    border-top-width: 1px;
+    border-left-width: 0;
+    padding-top: 1rem;
+    padding-left: 0;
+  }
+
   /* The same call the deferred section already makes below: opacity prints as
      grey mush, so the dim comes off on paper. It carries nothing here — an
      out-of-plan tooth is still the only one with a hairline hatch and a thin
