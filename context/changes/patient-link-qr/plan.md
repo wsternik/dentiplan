@@ -2,7 +2,7 @@
 
 ## Overview
 
-Add an on-demand QR code beside the existing copyable patient link in both approved-quote admin views, and add the same online URL as a QR code to the printed patient estimate. Generation stays inside the application: a pure SVG renderer uses `qrcode-generator`, with no external QR service and no stored QR payload.
+Add a QR code beneath the existing copyable patient link in both approved-quote admin views, and add the same online URL as a QR code to the printed patient estimate. Generation stays inside the application: a pure SVG renderer uses `qrcode-generator`, with no external QR service and no stored QR payload.
 
 ## Current State Analysis
 
@@ -12,7 +12,7 @@ The public route is Astro SSR and currently passes content, patient type, and cr
 
 ## Desired End State
 
-- Immediately after approval and when reopening an approved quote, the dentystka can expand a QR code at least 200 px wide beside the existing copy control. The visible link beneath the code and the copied URL are derived from the same `path` prop.
+- Immediately after approval and when reopening an approved quote, the dentystka sees a horizontally centred QR code at least 200 px wide beneath the existing copy control. The visible link beneath the code and the copied URL are derived from the same `path` prop.
 - The public patient page remains unchanged on screen. In print media it shows a high-contrast QR code at least 2 cm square plus `Wersja online: <url>`, using the exact URL of the page being printed.
 - The QR is rendered locally as deterministic SVG with error correction level M and a four-module quiet zone. No request leaves the application and no QR representation is stored.
 - The product requirements contain FR-054 and FR-055, and roadmap slice S-07 `patient-link-qr` is marked `done` after delivery.
@@ -36,7 +36,7 @@ The public route is Astro SSR and currently passes content, patient type, and cr
 
 ## Implementation Approach
 
-Create one pure `patientUrl -> SVG string` renderer around `qrcode-generator`. Admin React surfaces generate the absolute URL after hydration and reveal the SVG on demand. The Astro patient route can construct its absolute URL from `Astro.url.origin` and the current token during SSR, then pass it to `PatientQuote` for a print-only footer. Both paths use the existing patient path as their only payload source.
+Create one pure `patientUrl -> SVG string` renderer around `qrcode-generator`. Admin React surfaces generate the absolute URL after hydration and show the centred SVG by default. The Astro patient route can construct its absolute URL from `Astro.url.origin` and the current token during SSR, then pass it to `PatientQuote` for a print-only footer. Both paths use the existing patient path as their only payload source.
 
 ## Critical Implementation Details
 
@@ -105,7 +105,7 @@ Install the zero-dependency QR encoder and add a deterministic, runtime-neutral 
 
 ### Overview
 
-Add the expandable QR affordance to both admin surfaces that already expose the copyable patient link.
+Add the visible, centred QR affordance to both admin surfaces that already expose the copyable patient link.
 
 ### Changes Required
 
@@ -113,9 +113,9 @@ Add the expandable QR affordance to both admin surfaces that already expose the 
 
 **File**: `src/components/admin/QrCode.tsx` (new)
 
-**Intent**: Keep QR generation opt-in so the approved-quote view stays compact until the dentystka needs to show a code.
+**Intent**: Keep the patient QR immediately available and visually centred beneath the copyable link.
 
-**Contract**: Accept the same relative `path: string` as `CopyLink`. A button named `Pokaż QR` toggles a panel containing the locally rendered SVG at least 200 px square and a non-input textual or anchor representation of the absolute URL beneath it. The expanded region has an accessible name; collapsing does not alter or copy the link.
+**Contract**: Accept the same relative `path: string` as `CopyLink`. Render an accessible, horizontally centred panel by default containing the locally rendered SVG at least 200 px square and a non-input textual or anchor representation of the absolute URL beneath it.
 
 #### 2. Post-approval surface
 
@@ -143,7 +143,7 @@ Add the expandable QR affordance to both admin surfaces that already expose the 
 
 #### Manual Verification
 
-- Immediately after approval, `Pokaż QR` expands a code at least 200 px wide and the URL beneath it matches the copy field exactly
+- Immediately after approval, a horizontally centred QR code at least 200 px wide is visible and the URL beneath it matches the copy field exactly
 - Reopening an approved quote exposes the same QR behaviour; a draft has no QR affordance
 - The approval confirmation still contains exactly one textbox and remains usable by keyboard
 
@@ -217,7 +217,7 @@ Render the online URL into the patient document during SSR, reveal it only for p
 
 ### Manual Testing Steps
 
-1. Approve a quote, expand the QR, and compare the visible URL with the existing copy field.
+1. Approve a quote, confirm the centred QR is immediately visible, and compare its URL with the existing copy field.
 2. Reopen that approved quote and repeat the comparison.
 3. Open its patient page and confirm the footer is absent in screen media.
 4. Render at print media and an A4-width viewport, then confirm the footer stays intact and is at least 2 cm square.
@@ -225,7 +225,7 @@ Render the online URL into the patient document during SSR, reveal it only for p
 
 ## Performance Considerations
 
-QR generation is bounded by one short URL. The admin renderer runs only when expanded; the SSR renderer runs once per successful patient-page request. SVG avoids bitmap encoding and external I/O.
+QR generation is bounded by one short URL. The admin renderer runs once when the approved view renders; the SSR renderer runs once per successful patient-page request. SVG avoids bitmap encoding and external I/O.
 
 ## Migration Notes
 
@@ -261,15 +261,15 @@ No data migration, API change, or deployment ordering is required. Each phase is
 
 #### Automated
 
-- [ ] 2.1 Touched React files pass ESLint: `npx eslint src/components/admin/QrCode.tsx src/components/admin/ApprovalConfirmation.tsx src/components/admin/QuoteEditor.tsx`
-- [ ] 2.2 The full unit suite passes: `npm test`
-- [ ] 2.3 Existing browser contracts pass unchanged: `npm run test:e2e`
+- [x] 2.1 Touched React files pass ESLint: `npx eslint src/components/admin/QrCode.tsx src/components/admin/ApprovalConfirmation.tsx src/components/admin/QuoteEditor.tsx`
+- [x] 2.2 The full unit suite passes: `npm test`
+- [x] 2.3 Existing browser contracts pass unchanged: `npm run test:e2e`
 
 #### Manual
 
-- [ ] 2.4 Immediately after approval, `Pokaż QR` expands a code at least 200 px wide and the URL beneath it matches the copy field exactly
-- [ ] 2.5 Reopening an approved quote exposes the same QR behaviour; a draft has no QR affordance
-- [ ] 2.6 The approval confirmation still contains exactly one textbox and remains usable by keyboard
+- [x] 2.4 Immediately after approval, a horizontally centred QR code at least 200 px wide is visible and the URL beneath it matches the copy field exactly
+- [x] 2.5 Reopening an approved quote exposes the same QR behaviour; a draft has no QR affordance
+- [x] 2.6 The approval confirmation still contains exactly one textbox and remains usable by keyboard
 
 ### Phase 3: Print footer and product records
 

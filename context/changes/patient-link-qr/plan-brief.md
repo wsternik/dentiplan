@@ -4,7 +4,7 @@
 
 ## What & Why
 
-Approved quotes already expose a patient link, but handing that link to someone in the practice still means copying it through another channel. This change adds an on-demand QR in the admin panel and a print-only QR on the patient estimate, both pointing to the existing `/p/<token>` URL.
+Approved quotes already expose a patient link, but handing that link to someone in the practice still means copying it through another channel. This change adds a visible QR in the admin panel and a print-only QR on the patient estimate, both pointing to the existing `/p/<token>` URL.
 
 ## Starting Point
 
@@ -21,7 +21,7 @@ The dentystka can show a scannable QR immediately after approval or from a reope
 | Encoder          | `qrcode-generator`, correction M                    | Zero dependencies and a browser/Workers-compatible ESM runtime                              |
 | Type interop     | Narrow local declaration for the named ESM factory  | The package's bundled `export =` declaration does not match its named runtime export        |
 | Output           | Pure in-process SVG renderer                        | One implementation serves React and Astro without external disclosure or storage            |
-| Admin UX         | Collapsed `Pokaż QR`, at least 200 px               | Keeps the existing compact link control and expands only when needed                        |
+| Admin UX         | Visible and centred, at least 200 px                | Makes the scan action immediately available beneath the existing link control               |
 | Admin URL source | Same `path` prop as `CopyLink`                      | Prevents the copied link and QR payload from drifting                                       |
 | Print URL source | `Astro.url.origin` plus current `/p/<token>`        | Produces an absolute QR payload during SSR                                                  |
 | Print geometry   | Four-module quiet zone, at least 2 cm               | Gives scanners physical clearance and survives default print settings                       |
@@ -45,7 +45,7 @@ The dentystka can show a scannable QR immediately after approval or from a reope
 
 ## Architecture / Approach
 
-The existing relative patient path remains the source of truth. React turns it into an absolute URL after hydration and reveals an SVG on demand; Astro builds the same absolute URL during SSR and places the renderer output in the reserved print footer. A pure module under `src/lib/quote/` contains all QR encoding and SVG generation.
+The existing relative patient path remains the source of truth. React turns it into an absolute URL after hydration and renders a centred SVG by default; Astro builds the same absolute URL during SSR and places the renderer output in the reserved print footer. A pure module under `src/lib/quote/` contains all QR encoding and SVG generation.
 
 ## Phases at a Glance
 
@@ -66,6 +66,6 @@ The existing relative patient path remains the source of truth. React turns it i
 
 ## Success Criteria Summary
 
-- Both approved admin views reveal a QR whose visible URL matches the existing copy field.
+- Both approved admin views show a centred QR whose visible URL matches the existing copy field.
 - The QR is hidden on the patient screen view and present at at least 2 cm in print.
 - A real phone opens the same patient quote from both the screen QR and the PDF/print QR.

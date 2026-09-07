@@ -8,6 +8,7 @@
 
 import { Button } from "@/components/ui/button";
 import { CopyLink } from "./CopyLink";
+import { QrCode } from "./QrCode";
 
 interface Props {
   /** The `/p/<token>` path returned by the approval endpoint. */
@@ -25,7 +26,10 @@ export function ApprovalConfirmation({ path, onReset }: Props) {
         już edytować.
       </p>
 
-      <CopyLink path={path} />
+      <div className="space-y-3">
+        <CopyLink path={path} />
+        <QrCode path={path} />
+      </div>
 
       <div className="flex flex-wrap gap-2">
         <Button type="button" variant="outline" onClick={onReset}>

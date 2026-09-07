@@ -23,6 +23,7 @@ import { ParseWarnings } from "./ParseWarnings";
 import { Section } from "./controls";
 import { CopyLink } from "./CopyLink";
 import { GeneralItems } from "./GeneralItems";
+import { QrCode } from "./QrCode";
 import { ToothRow } from "./ToothRow";
 import { TotalsPreview } from "./TotalsPreview";
 import { VisitList } from "./VisitList";
@@ -157,6 +158,7 @@ export default function QuoteEditor({
   const [savedAt, setSavedAt] = useState<string | null>(null);
 
   const totals = useMemo(() => computeQuoteTotals({ teeth, visits, generalItems }), [teeth, visits, generalItems]);
+  const readOnlyPatientPath = patientToken ? `/p/${patientToken}` : null;
   // The drawing is derived from the same tree as the totals and the rows, by
   // the same pure function the patient page uses. There is no second source of
   // truth for it to drift from, which is why the text picker and the note
@@ -655,8 +657,11 @@ export default function QuoteEditor({
           <p className="text-muted-foreground mb-2 text-sm">
             Kosztorys jest zatwierdzony, więc nie da się go już zmienić (nowa wersja = nowy kosztorys i nowy link).
           </p>
-          {patientToken ? (
-            <CopyLink path={`/p/${patientToken}`} />
+          {readOnlyPatientPath ? (
+            <div className="space-y-3">
+              <CopyLink path={readOnlyPatientPath} />
+              <QrCode path={readOnlyPatientPath} />
+            </div>
           ) : (
             <p className="text-destructive text-sm">Ten kosztorys nie ma linku dla pacjenta.</p>
           )}
