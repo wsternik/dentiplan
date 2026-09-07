@@ -198,8 +198,8 @@ The migration is additive and nullable, so no backfill is required. Before phase
 
 #### Automated
 
-- [x] 5.1 Product documents describe the delivered privacy and loading contracts.
+- [x] 5.1 Product documents describe the delivered privacy and loading contracts. — 44fde56
 
 #### Manual
 
-- [x] 5.2 Review documents against the implementation before PR.
+- [x] 5.2 Review documents against the implementation before PR. — 44fde56
