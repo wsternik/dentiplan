@@ -33,13 +33,13 @@ export function TotalsPreview({ totals }: { totals: QuoteTotals }) {
 
       <div className="border-border border-l-primary rounded-md border border-l-[6px] p-3">
         <h3 className="mb-2 flex flex-wrap items-center gap-2 text-sm font-semibold tracking-tight">
-          Wariant w znieczuleniu (jedna sesja)
+          Wariant w narkozie (jedna sesja)
           <Badge>rekomendowane</Badge>
         </h3>
         {anesthesia ? (
           <div className="space-y-1 text-sm">
             <div className="flex justify-between gap-4">
-              <span className="text-muted-foreground">Opłata za znieczulenie</span>
+              <span className="text-muted-foreground">Opłata za narkozę</span>
               <span className="numeric">{formatPln(anesthesia.fee)}</span>
             </div>
             <div className="border-border mt-2 flex justify-between gap-4 border-t pt-2 font-semibold">

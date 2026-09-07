@@ -89,7 +89,7 @@ test("risk #3: an approved quote's patient page serves the quote and neither the
     // satisfied by an error page, which proves nothing (FR-064, FR-065).
     await expect(anonymousPage.getByRole("heading", { name: "Twój kosztorys leczenia" })).toBeVisible();
     await expect(anonymousPage.getByRole("heading", { name: "Leczenie w kilku wizytach" })).toBeVisible();
-    await expect(anonymousPage.getByRole("heading", { name: "Leczenie w znieczuleniu (jedna sesja)" })).toBeVisible();
+    await expect(anonymousPage.getByRole("heading", { name: "Leczenie w narkozie (jedna sesja)" })).toBeVisible();
     await expect(anonymousPage.getByRole("note", { name: "Zastrzeżenie" })).toContainText(
       "To jest kosztorys szacunkowy",
     );

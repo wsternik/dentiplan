@@ -155,11 +155,11 @@ The migration is additive and nullable, so no backfill is required. Before phase
 
 #### Automated
 
-- [ ] 1.1 Prompt, UI, and two approved E2E string updates pass tests.
+- [x] 1.1 Prompt, UI, and two approved E2E string updates pass tests.
 
 #### Manual
 
-- [ ] 1.2 Verify general and local anaesthesia wording remains distinct.
+- [x] 1.2 Verify general and local anaesthesia wording remains distinct.
 
 ### Phase 2: Private diagnosis note
 

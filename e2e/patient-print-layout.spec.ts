@@ -72,7 +72,7 @@ test("risk #12: the printed estimate keeps the two treatment variants side by si
     await printed.goto(patientUrl);
 
     const standard = printed.getByRole("heading", { name: "Leczenie w kilku wizytach" });
-    const anesthesia = printed.getByRole("heading", { name: "Leczenie w znieczuleniu (jedna sesja)" });
+    const anesthesia = printed.getByRole("heading", { name: "Leczenie w narkozie (jedna sesja)" });
     await expect(standard).toBeVisible();
     await expect(anesthesia).toBeVisible();
 

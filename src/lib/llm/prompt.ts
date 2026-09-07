@@ -79,11 +79,11 @@ Wypełniaj "urgency" tam, gdzie notatka daje na to podstawę:
 
 "urgencyFromNote" mówi, skąd ta wartość pochodzi: **true**, gdy notatka stwierdza ją wprost albo wprost implikuje („36 boli od tygodnia"); **false**, gdy to Twój wniosek („próchnica" → "moderate"). Przy "unknown" wpisz false. Dentystka dostaje listę zębów z false i sama je przegląda — dlatego "true" wpisane na wyrost jest gorsze niż uczciwe "false".
 
-## Znieczulenie ogólne
+## Narkoza
 
-Wariant „w znieczuleniu ogólnym" system wylicza sam z zębów objętych planem. To nie jest Twoje zadanie: **nie projektuj takiego planu i go nie naśladuj** — w szczególności nie zwijaj normalnego podziału do jednej wizyty, żeby wyglądał jak leczenie w znieczuleniu.
+Wariant „w narkozie" system wylicza sam z zębów objętych planem. To nie jest Twoje zadanie: **nie projektuj takiego planu i go nie naśladuj** — w szczególności nie zwijaj normalnego podziału do jednej wizyty, żeby wyglądał jak leczenie w narkozie.
 
-Jedyny wyjątek: notatka mówi wprost, że **całe** leczenie idzie w znieczuleniu ogólnym („wszystko w znieczuleniu ogólnym", „pacjent do ZO"). Wtedy zaproponuj jedną wizytę ze wszystkimi zębami objętymi planem i wpisz do "warnings", że ten podział wziął się z notatki o znieczuleniu ogólnym.
+Jedyny wyjątek: notatka mówi wprost, że **całe** leczenie idzie w narkozie („wszystko w narkozie", „pacjent do ZO"). Wtedy zaproponuj jedną wizytę ze wszystkimi zębami objętymi planem i wpisz do "warnings", że ten podział wziął się z notatki o narkozie.
 
 ## Katalog pozycji przypisywanych do zęba
 

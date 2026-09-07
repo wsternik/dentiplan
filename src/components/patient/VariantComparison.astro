@@ -63,7 +63,7 @@ function visitLabel(n: number): string {
     </article>
 
     <article class="variant border-border border-l-primary bg-card rounded-md border border-l-[6px] p-5">
-      <h3 class="text-base leading-snug font-medium">Leczenie w znieczuleniu (jedna sesja)</h3>
+      <h3 class="text-base leading-snug font-medium">Leczenie w narkozie (jedna sesja)</h3>
       <p class="text-muted-foreground mt-1 font-sans text-xs">
         Całe leczenie za jednym razem — rekomendowane przez gabinet.
       </p>
@@ -71,7 +71,7 @@ function visitLabel(n: number): string {
         anesthesia && (
           <dl class="mt-5 space-y-2 font-sans text-sm">
             <div class="flex justify-between gap-4">
-              <dt class="text-muted-foreground">Opłata za znieczulenie</dt>
+              <dt class="text-muted-foreground">Opłata za narkozę</dt>
               <dd class="numeric m-0 whitespace-nowrap">{formatAmount(anesthesia.fee)}</dd>
             </div>
           </dl>
