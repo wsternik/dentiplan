@@ -117,6 +117,11 @@ export default function QuoteEditor({
   const [rawText, setRawText] = useState(initialDiagnosisNote ?? "");
   const [toothInput, setToothInput] = useState("");
   const [toothWarnings, setToothWarnings] = useState<string[]>([]);
+  // The new-quote route begins with the diagnosis note as the primary action.
+  // Reopened drafts and approved quotes already contain deliberate work, so
+  // hiding their form would make existing data look missing.
+  const [noteFirst, setNoteFirst] = useState(!quoteId && !readOnly);
+  const [manualFormOpen, setManualFormOpen] = useState(Boolean(quoteId) || readOnly);
 
   // --- Note prefill (S-02, FR-011/FR-012) ---
   const [parsing, setParsing] = useState(false);
@@ -464,12 +469,53 @@ export default function QuoteEditor({
     setSavedId(null);
     setSaveError(null);
     setSavedAt(null);
+    setNoteFirst(true);
+    setManualFormOpen(false);
     generalCounter.current = 0;
   }
 
   if (approvedPath) {
     return <ApprovalConfirmation path={approvedPath} onReset={resetQuote} />;
   }
+
+  const diagnosisNoteSection = (!readOnly || rawText.trim().length > 0) && (
+    <Section title="Notatka z diagnozy (roboczo)">
+      {readOnly ? (
+        <p className="text-sm whitespace-pre-line">{rawText}</p>
+      ) : (
+        <>
+          <Label htmlFor="rawText" className="text-muted-foreground mb-1">
+            Pole robocze — zapisywane tylko w panelu, niewidoczne dla pacjenta.
+          </Label>
+          <Textarea
+            id="rawText"
+            rows={noteFirst ? 8 : 4}
+            maxLength={4000}
+            placeholder="Wklej opis diagnozy do pomocy przy wypełnianiu…"
+            value={rawText}
+            onChange={(e) => {
+              setRawText(e.target.value);
+            }}
+          />
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={parsing || rawText.trim().length === 0}
+              onClick={() => void handlePrefill()}
+            >
+              {parsing ? "Wypełnianie…" : "Wypełnij z notatki"}
+            </Button>
+            <span className="text-muted-foreground text-xs">
+              Uzupełnia formularz — niczego nie nadpisuje i nie zatwierdza.
+            </span>
+          </div>
+          {parseError && <p className="text-destructive mt-2 text-sm">{parseError}</p>}
+          <ParseWarnings warnings={parseWarnings} />
+        </>
+      )}
+    </Section>
+  );
 
   return (
     <div className="mx-auto max-w-4xl space-y-4 px-4 py-8">
@@ -482,232 +528,220 @@ export default function QuoteEditor({
         </a>
       </div>
 
-      <Section title="E-mail odbiorcy">
-        {readOnly ? (
-          <p className="text-sm">{patientEmail || <span className="text-muted-foreground">— brak —</span>}</p>
-        ) : (
-          <>
-            <Label htmlFor="patientEmail" className="text-muted-foreground mb-1">
-              Tylko do Twojej referencji — nigdy nie trafia na stronę pacjenta. Wymagany do zatwierdzenia.
-            </Label>
-            <Input
-              id="patientEmail"
-              type="email"
-              placeholder="pacjent@example.com"
-              value={patientEmail}
-              onChange={(e) => {
-                setPatientEmail(e.target.value);
-              }}
-            />
-          </>
-        )}
-      </Section>
+      {noteFirst && diagnosisNoteSection}
 
-      {(!readOnly || rawText.trim().length > 0) && (
-        <Section title="Notatka z diagnozy (roboczo)">
+      {noteFirst && (
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full justify-center border-dashed"
+          aria-expanded={manualFormOpen}
+          aria-controls="quote-details"
+          onClick={() => {
+            setManualFormOpen((open) => !open);
+          }}
+        >
+          {manualFormOpen ? "Ukryj formularz ręczny" : "Dostosuj formularz ręcznie"}
+        </Button>
+      )}
+
+      <div id="quote-details" className="space-y-4" hidden={!manualFormOpen}>
+        <Section title="E-mail odbiorcy">
           {readOnly ? (
-            <p className="text-sm whitespace-pre-line">{rawText}</p>
+            <p className="text-sm">{patientEmail || <span className="text-muted-foreground">— brak —</span>}</p>
           ) : (
             <>
-              <Label htmlFor="rawText" className="text-muted-foreground mb-1">
-                Pole robocze — zapisywane tylko w panelu, niewidoczne dla pacjenta.
+              <Label htmlFor="patientEmail" className="text-muted-foreground mb-1">
+                Tylko do Twojej referencji — nigdy nie trafia na stronę pacjenta. Wymagany do zatwierdzenia.
               </Label>
-              <Textarea
-                id="rawText"
-                rows={4}
-                maxLength={4000}
-                placeholder="Wklej opis diagnozy do pomocy przy wypełnianiu…"
-                value={rawText}
+              <Input
+                id="patientEmail"
+                type="email"
+                placeholder="pacjent@example.com"
+                value={patientEmail}
                 onChange={(e) => {
-                  setRawText(e.target.value);
+                  setPatientEmail(e.target.value);
                 }}
               />
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={parsing || rawText.trim().length === 0}
-                  onClick={() => void handlePrefill()}
-                >
-                  {parsing ? "Wypełnianie…" : "Wypełnij z notatki"}
-                </Button>
-                <span className="text-muted-foreground text-xs">
-                  Uzupełnia formularz — niczego nie nadpisuje i nie zatwierdza.
-                </span>
-              </div>
-              {parseError && <p className="text-destructive mt-2 text-sm">{parseError}</p>}
-              <ParseWarnings warnings={parseWarnings} />
             </>
           )}
         </Section>
-      )}
 
-      <Section title="Typ pacjenta">
-        <div className="flex gap-2">
-          <Button
-            type="button"
-            disabled={readOnly}
-            variant={patientType === "child" ? "default" : "outline"}
-            onClick={() => {
-              setPatientType("child");
-            }}
-          >
-            Dziecko
-          </Button>
-          <Button
-            type="button"
-            disabled={readOnly}
-            variant={patientType === "adult" ? "default" : "outline"}
-            onClick={() => {
-              setPatientType("adult");
-            }}
-          >
-            Dorosły
-          </Button>
-        </div>
-      </Section>
+        {!noteFirst && diagnosisNoteSection}
 
-      <Section title="Zęby">
-        {!readOnly && (
+        <Section title="Typ pacjenta">
           <div className="flex gap-2">
-            {/* The placeholder IS this field's accessible name — `seed.spec.ts`
+            <Button
+              type="button"
+              disabled={readOnly}
+              variant={patientType === "child" ? "default" : "outline"}
+              onClick={() => {
+                setPatientType("child");
+              }}
+            >
+              Dziecko
+            </Button>
+            <Button
+              type="button"
+              disabled={readOnly}
+              variant={patientType === "adult" ? "default" : "outline"}
+              onClick={() => {
+                setPatientType("adult");
+              }}
+            >
+              Dorosły
+            </Button>
+          </div>
+        </Section>
+
+        <Section title="Zęby">
+          {!readOnly && (
+            <div className="flex gap-2">
+              {/* The placeholder IS this field's accessible name — `seed.spec.ts`
                 and `patient-link-content.spec.ts` both locate it that way. It
                 does not move. */}
-            <Input
-              placeholder="Numery FDI, np. 17,16,34"
-              value={toothInput}
-              onChange={(e) => {
-                setToothInput(e.target.value);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  addTeeth();
-                }
-              }}
-            />
-            <Button type="button" onClick={addTeeth}>
-              Dodaj
-            </Button>
-          </div>
-        )}
-        {toothWarnings.length > 0 && (
-          <ul className="text-urgency-moderate-ink border-urgency-moderate/50 mt-2 space-y-0.5 border-l-2 pl-3 text-xs">
-            {toothWarnings.map((w) => (
-              <li key={w}>{w}</li>
-            ))}
-          </ul>
-        )}
-        {/* The same drawing the patient gets, above the rows it addresses.
+              <Input
+                placeholder="Numery FDI, np. 17,16,34"
+                value={toothInput}
+                onChange={(e) => {
+                  setToothInput(e.target.value);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addTeeth();
+                  }
+                }}
+              />
+              <Button type="button" onClick={addTeeth}>
+                Dodaj
+              </Button>
+            </div>
+          )}
+          {toothWarnings.length > 0 && (
+            <ul className="text-urgency-moderate-ink border-urgency-moderate/50 mt-2 space-y-0.5 border-l-2 pl-3 text-xs">
+              {toothWarnings.map((w) => (
+                <li key={w}>{w}</li>
+              ))}
+            </ul>
+          )}
+          {/* The same drawing the patient gets, above the rows it addresses.
             `read-only` on an approved quote is inert but still hoverable —
             FR-053 freezes the quote, not the tooltip. */}
-        <div className="mt-4 space-y-3">
-          <ToothChart
-            teeth={chartTeeth}
-            mode={readOnly ? "read-only" : "interactive"}
-            onToothClick={handleChartToothClick}
-          />
-          <ChartLegend />
-        </div>
-
-        <div className="mt-3 space-y-3">
-          {teeth.length === 0 && (
-            <p className="text-muted-foreground text-sm">
-              {readOnly ? "Brak zębów w kosztorysie." : "Brak zębów. Dodaj numery powyżej."}
-            </p>
-          )}
-          {teeth.map((tooth) => (
-            <ToothRow
-              key={tooth.number}
-              tooth={tooth}
-              visits={visits}
-              options={toothOptions}
-              onPatch={(patch) => {
-                patchTooth(tooth.number, patch);
-              }}
-              onAddItem={(option) => {
-                addToothItem(tooth.number, option);
-              }}
-              onRemoveItem={(index) => {
-                removeToothItem(tooth.number, index);
-              }}
-              onRemove={() => {
-                removeTooth(tooth.number);
-              }}
-              readOnly={readOnly}
+          <div className="mt-4 space-y-3">
+            <ToothChart
+              teeth={chartTeeth}
+              mode={readOnly ? "read-only" : "interactive"}
+              onToothClick={handleChartToothClick}
             />
-          ))}
-        </div>
-      </Section>
-
-      <Section title="Wizyty">
-        <VisitList
-          visits={visits}
-          onAdd={addVisit}
-          onRemove={removeVisit}
-          onLabelChange={setVisitLabel}
-          readOnly={readOnly}
-        />
-      </Section>
-
-      <Section title="Pozycje ogólne">
-        <GeneralItems
-          items={generalItems}
-          options={generalOptions}
-          visits={visits}
-          onAdd={addGeneral}
-          onRemove={removeGeneral}
-          onVisitChange={setGeneralVisit}
-          readOnly={readOnly}
-        />
-      </Section>
-
-      <Section title="Podgląd kosztów">
-        <TotalsPreview totals={totals} />
-      </Section>
-
-      {readOnly ? (
-        <Section title="Link dla pacjenta">
-          <p className="text-muted-foreground mb-2 text-sm">
-            Kosztorys jest zatwierdzony, więc nie da się go już zmienić (nowa wersja = nowy kosztorys i nowy link).
-          </p>
-          {readOnlyPatientPath ? (
-            <div className="space-y-3">
-              <CopyLink path={readOnlyPatientPath} />
-              <QrCode path={readOnlyPatientPath} />
-            </div>
-          ) : (
-            <p className="text-destructive text-sm">Ten kosztorys nie ma linku dla pacjenta.</p>
-          )}
-        </Section>
-      ) : (
-        // The two actions that end the task, kept reachable from anywhere in a
-        // form that gets long. Same buttons, same names, same order, same
-        // gating — only the position changed.
-        //
-        // `sticky`, not `fixed`. A fixed bar sits outside the flow, so it needs
-        // the container to reserve its height by hand — and a hand-picked
-        // reserve is wrong the moment the bar grows a wrapped error line, at
-        // which point it covers the last tooth row. Worse, a fixed bar can park
-        // itself over a control that Playwright has just scrolled to and eat the
-        // click, failing a spec with a message that never mentions a bar. Sticky
-        // occupies real space at the end of the flow, so it cannot overlap
-        // anything, and still pins to the bottom while there is more form below.
-        <div className="border-border bg-background/95 no-print sticky bottom-0 z-10 -mx-4 border-t px-4 backdrop-blur-sm">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 py-3">
-            <Button type="button" size="lg" disabled={approveDisabled || submitting} onClick={handleApprove}>
-              {submitting ? "Zatwierdzanie…" : "Zatwierdź"}
-            </Button>
-            <Button type="button" size="lg" variant="outline" disabled={saving} onClick={() => void handleSaveDraft()}>
-              {saving ? "Zapisywanie…" : "Zapisz szkic"}
-            </Button>
-            {savedAt && !saveError && <span className="text-muted-foreground text-sm">Zapisano {savedAt}</span>}
-            {approveReason && <p className="text-muted-foreground basis-full text-sm">{approveReason}</p>}
-            {submitError && <p className="text-destructive basis-full text-sm">{submitError}</p>}
-            {saveError && <p className="text-destructive basis-full text-sm">{saveError}</p>}
+            <ChartLegend />
           </div>
-        </div>
-      )}
+
+          <div className="mt-3 space-y-3">
+            {teeth.length === 0 && (
+              <p className="text-muted-foreground text-sm">
+                {readOnly ? "Brak zębów w kosztorysie." : "Brak zębów. Dodaj numery powyżej."}
+              </p>
+            )}
+            {teeth.map((tooth) => (
+              <ToothRow
+                key={tooth.number}
+                tooth={tooth}
+                visits={visits}
+                options={toothOptions}
+                onPatch={(patch) => {
+                  patchTooth(tooth.number, patch);
+                }}
+                onAddItem={(option) => {
+                  addToothItem(tooth.number, option);
+                }}
+                onRemoveItem={(index) => {
+                  removeToothItem(tooth.number, index);
+                }}
+                onRemove={() => {
+                  removeTooth(tooth.number);
+                }}
+                readOnly={readOnly}
+              />
+            ))}
+          </div>
+        </Section>
+
+        <Section title="Wizyty">
+          <VisitList
+            visits={visits}
+            onAdd={addVisit}
+            onRemove={removeVisit}
+            onLabelChange={setVisitLabel}
+            readOnly={readOnly}
+          />
+        </Section>
+
+        <Section title="Pozycje ogólne">
+          <GeneralItems
+            items={generalItems}
+            options={generalOptions}
+            visits={visits}
+            onAdd={addGeneral}
+            onRemove={removeGeneral}
+            onVisitChange={setGeneralVisit}
+            readOnly={readOnly}
+          />
+        </Section>
+
+        <Section title="Podgląd kosztów">
+          <TotalsPreview totals={totals} />
+        </Section>
+
+        {readOnly ? (
+          <Section title="Link dla pacjenta">
+            <p className="text-muted-foreground mb-2 text-sm">
+              Kosztorys jest zatwierdzony, więc nie da się go już zmienić (nowa wersja = nowy kosztorys i nowy link).
+            </p>
+            {readOnlyPatientPath ? (
+              <div className="space-y-3">
+                <CopyLink path={readOnlyPatientPath} />
+                <QrCode path={readOnlyPatientPath} />
+              </div>
+            ) : (
+              <p className="text-destructive text-sm">Ten kosztorys nie ma linku dla pacjenta.</p>
+            )}
+          </Section>
+        ) : (
+          // The two actions that end the task, kept reachable from anywhere in a
+          // form that gets long. Same buttons, same names, same order, same
+          // gating — only the position changed.
+          //
+          // `sticky`, not `fixed`. A fixed bar sits outside the flow, so it needs
+          // the container to reserve its height by hand — and a hand-picked
+          // reserve is wrong the moment the bar grows a wrapped error line, at
+          // which point it covers the last tooth row. Worse, a fixed bar can park
+          // itself over a control that Playwright has just scrolled to and eat the
+          // click, failing a spec with a message that never mentions a bar. Sticky
+          // occupies real space at the end of the flow, so it cannot overlap
+          // anything, and still pins to the bottom while there is more form below.
+          <div className="border-border bg-background/95 no-print sticky bottom-0 z-10 -mx-4 border-t px-4 backdrop-blur-sm">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 py-3">
+              <Button type="button" size="lg" disabled={approveDisabled || submitting} onClick={handleApprove}>
+                {submitting ? "Zatwierdzanie…" : "Zatwierdź"}
+              </Button>
+              <Button
+                type="button"
+                size="lg"
+                variant="outline"
+                disabled={saving}
+                onClick={() => void handleSaveDraft()}
+              >
+                {saving ? "Zapisywanie…" : "Zapisz szkic"}
+              </Button>
+              {savedAt && !saveError && <span className="text-muted-foreground text-sm">Zapisano {savedAt}</span>}
+              {approveReason && <p className="text-muted-foreground basis-full text-sm">{approveReason}</p>}
+              {submitError && <p className="text-destructive basis-full text-sm">{submitError}</p>}
+              {saveError && <p className="text-destructive basis-full text-sm">{saveError}</p>}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

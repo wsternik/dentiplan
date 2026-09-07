@@ -36,6 +36,7 @@ test("risk #3: an approved quote's patient page serves the quote and neither the
   // --- The dentystka builds a quote from her own notes ---
   await page.goto("/admin/quotes/new");
   await waitForIslands(page);
+  await page.getByRole("button", { name: "Dostosuj formularz ręcznie" }).click();
 
   await page.getByLabel(/Tylko do Twojej referencji/).fill(patientEmail);
   await page.getByLabel(/Pole robocze/).fill(diagnosisNote);

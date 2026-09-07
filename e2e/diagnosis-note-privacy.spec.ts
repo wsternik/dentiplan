@@ -22,6 +22,7 @@ test("risk #13: a persisted diagnosis note stays in the admin panel and out of p
 
   await page.goto("/admin/quotes/new");
   await waitForIslands(page);
+  await page.getByRole("button", { name: "Dostosuj formularz ręcznie" }).click();
 
   await page.getByLabel(/Tylko do Twojej referencji/).fill(patientEmail);
   await page.getByLabel(/Pole robocze/).fill(diagnosisNote);

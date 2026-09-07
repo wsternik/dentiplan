@@ -42,6 +42,7 @@ test("risk #12: the printed estimate keeps the two treatment variants side by si
   // --- The dentystka produces a quote with both variants priced ---
   await page.goto("/admin/quotes/new");
   await waitForIslands(page);
+  await page.getByRole("button", { name: "Dostosuj formularz ręcznie" }).click();
 
   await page.getByLabel(/Tylko do Twojej referencji/).fill(`e2e-risk12-${stamp}@example.test`);
   await page.getByRole("textbox", { name: "Numery FDI, np. 17,16,34" }).fill("16");

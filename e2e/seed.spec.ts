@@ -28,6 +28,7 @@ test("risk #6: the dentystka is not locked out — a draft round-trips through h
   // The editor is a React island; typing into it before it hydrates is silently
   // thrown away when React takes over.
   await waitForIslands(page);
+  await page.getByRole("button", { name: "Dostosuj formularz ręcznie" }).click();
 
   await page.getByLabel(/Tylko do Twojej referencji/).fill(patientEmail);
 
