@@ -41,6 +41,7 @@ const PatientRowSchema = z.object({
 const { token } = Astro.params;
 
 let quote: { content: QuoteContent; patientType: PatientType; createdAt: string } | null = null;
+let patientUrl: string | null = null;
 
 const supabase = token ? createClient(Astro.request.headers, Astro.cookies) : null;
 if (supabase && token) {
@@ -53,6 +54,7 @@ if (supabase && token) {
     if (parsed.success && parsed.data.length > 0) {
       const row = parsed.data[0];
       quote = { content: row.content, patientType: row.patient_type, createdAt: row.created_at };
+      patientUrl = new URL(`/p/${token}`, Astro.url.origin).toString();
     }
   }
 }
@@ -68,8 +70,13 @@ if (!quote) {
     <meta name="referrer" content="no-referrer" />
   </Fragment>
   {
-    quote ? (
-      <PatientQuote content={quote.content} patientType={quote.patientType} createdAt={quote.createdAt} />
+    quote && patientUrl ? (
+      <PatientQuote
+        content={quote.content}
+        patientType={quote.patientType}
+        createdAt={quote.createdAt}
+        patientUrl={patientUrl}
+      />
     ) : (
       <PatientError />
     )

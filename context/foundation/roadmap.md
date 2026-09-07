@@ -32,6 +32,7 @@ DentiPlan przekształca półustrukturyzowany wpis diagnozy dentystki (np. `Do l
 | F-01 | quotes-data-foundation            | (foundation) schemat domeny (quote, tooth, visit, general-item, e-mail, snapshot, token) gotowy w Supabase z RLS                                                  | —             | FR-050, FR-051, FR-070, FR-072, Access Control                                                                                                                                                                                                                                               | done     |
 | F-02 | pricelist-seed-foundation         | (foundation) cennik gabinetu zdefiniowany jako seed w repo, z flagą `local-anesthesia` per pozycja                                                                | —             | FR-025, FR-026, FR-029, FR-041                                                                                                                                                                                                                                                               | done     |
 | S-01 | first-thin-quote-and-patient-link | dentystka wkleja diagnozę, ręcznie wypełnia formularz, zatwierdza i otrzymuje link `/p/<token>`, który pokazuje pacjentowi dwa warianty side-by-side              | F-01, F-02    | US-01, US-02, FR-001, FR-002, FR-003, FR-010, FR-013, FR-020, FR-021, FR-022, FR-023, FR-024, FR-025, FR-026, FR-027, FR-028, FR-029, FR-030, FR-031, FR-032, FR-040, FR-041, FR-042, FR-043, FR-044, FR-050, FR-051, FR-052, FR-053, FR-060, FR-061, FR-062, FR-063, FR-064, FR-065, FR-066 | done     |
+| S-07 | patient-link-qr                   | dentystka pokazuje pacjentowi QR do zatwierdzonego kosztorysu, a wydruk zawiera QR i czytelny adres tej samej wersji online                                       | S-01          | FR-052, FR-054, FR-055                                                                                                                                                                                                                                                                       | done     |
 | S-02 | llm-parsing-prefill               | dentystka wkleja diagnozę i formularz dostaje wstępnie wypełnione pola z parsowania LLM                                                                           | S-01          | FR-011, FR-012                                                                                                                                                                                                                                                                               | done     |
 | S-03 | admin-quote-list                  | dentystka przegląda listę swoich kosztorysów, otwiera drafty do edycji, widzi e-maile odbiorców                                                                   | S-01          | FR-070, FR-071, FR-072                                                                                                                                                                                                                                                                       | done     |
 | S-04 | rodo-retention-enforcement        | link `/p/<token>` po 12 miesiącach od utworzenia zwraca "Link nieaktywny lub nieprawidłowy", e-mail pacjenta jest usuwany z rekordu                               | S-01          | NFR: Data retention & ochrona danych osobowych                                                                                                                                                                                                                                               | proposed |
@@ -42,11 +43,11 @@ DentiPlan przekształca półustrukturyzowany wpis diagnozy dentystki (np. `Do l
 
 Navigation aid — groups items that share a Prerequisites chain. Canonical ordering still lives in the dependency graph below; this table is the proposed reading order across parallel tracks.
 
-| Stream | Theme                | Chain                                      | Note                                                                                               |
-| ------ | -------------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------- |
-| A      | Wzdłuż gwiazdy       | `F-01` → `S-01` → `S-02` / `S-03` / `S-04` | Główny ciąg do north star i jego rozszerzeń; `S-02`, `S-03`, `S-04` są względem siebie równoległe. |
-| B      | Konfiguracja cennika | `F-02` → dołącza do Stream A na `S-01`     | Niezależna decyzja seedu cennika; gotowa równolegle do `F-01`.                                     |
-| C      | Twardnienie auth     | `S-05`                                     | Hardening bazowego scaffoldu — niezależny od reszty, można robić w dowolnym momencie.              |
+| Stream | Theme                | Chain                                               | Note                                                                                           |
+| ------ | -------------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| A      | Wzdłuż gwiazdy       | `F-01` → `S-01` → `S-02` / `S-03` / `S-04` / `S-07` | Główny ciąg do north star i jego rozszerzeń; późniejsze slice'y są względem siebie równoległe. |
+| B      | Konfiguracja cennika | `F-02` → dołącza do Stream A na `S-01`              | Niezależna decyzja seedu cennika; gotowa równolegle do `F-01`.                                 |
+| C      | Twardnienie auth     | `S-05`                                              | Hardening bazowego scaffoldu — niezależny od reszty, można robić w dowolnym momencie.          |
 
 ## Baseline
 
@@ -187,6 +188,18 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Risk:** Geometria pochodzi z `react-odontogram` 0.5.6 (MIT), **skopiowana jako dane**, nie zainstalowana — jej `readOnly` wyłącza `pointer-events` (a strona pacjenta potrzebuje tooltipa), zaznaczenie jest niekontrolowane, FDI 51–85 w niej nie istnieje, a status niesie w niej sam kolor. Skopiowane są wyłącznie ścieżki, cztery transformacje i viewBox; licencja podróżuje w `THIRD-PARTY-NOTICES.md`. Biblioteka rysuje ćwiartki FDI 3 i 4 zamienione miejscami — korekta jest tabelą w naszym `layout.ts` z testem, nie łatką na skopiowanych bajtach, więc ponowne skopiowanie geometrii nie może jej po cichu cofnąć. Ryzyko #8 w `test-plan.md` (rysunek i lista nie mogą się rozjechać) pokryte testem E2E.
 - **Status:** done — zmergowane 2026-09-06 (PR #10, `bab0a0b`).
 
+### S-07: Kod QR zatwierdzonego kosztorysu w panelu i na wydruku
+
+- **Outcome:** po zatwierdzeniu dentystka widzi wycentrowany QR do tego samego adresu, który może skopiować, zarówno w potwierdzeniu, jak i po ponownym otwarciu kosztorysu. Wydruk strony pacjenta zawiera skanowalny QR i czytelny adres dokładnie tej wersji online; na ekranie footer drukowy pozostaje ukryty.
+- **Change ID:** patient-link-qr
+- **PRD refs:** FR-052, FR-054, FR-055
+- **Prerequisites:** S-01
+- **Parallel with:** S-02, S-03, S-04
+- **Blockers:** —
+- **Unknowns:** —
+- **Risk:** Samo emulowanie medium `print` nie weryfikuje geometrii papieru, dlatego układ jest sprawdzany także przy szerokości drukowalnej A4 (~717 px), a QR ma fizyczny rozmiar 2,5 cm i czteromodułowy biały margines zapisany w samym SVG. Ostateczną czytelność z ekranu i PDF potwierdza skan prawdziwym telefonem.
+- **Status:** done — zrealizowane 2026-09-07 jako `patient-link-qr`.
+
 ## Backlog Handoff
 
 | Roadmap ID | Change ID                         | Suggested issue title                                                       | Ready for `/10x-plan` | Notes                                                                                      |
@@ -237,6 +250,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 ## Done
 
+- **S-07: dentystka pokazuje pacjentowi QR do zatwierdzonego kosztorysu w panelu, a wydruk zawiera QR i czytelny adres tej samej wersji online** — Delivered 2026-09-07 as `patient-link-qr`. Lesson: medium drukowe trzeba weryfikować także w wymiarach papieru, nie tylko przez emulację `print`.
 - **S-06: pacjent widzi nad listą pogrupowaną rysunek swojego łuku zębowego — każdy ząb z kosztorysu wypełniony kolorem pilności i obrysowany zgodnie ze statusem, tooltip po najechaniu/dotknięciu, a w edytorze ten sam rysunek jest wyborem zębów** — Archived 2026-09-06 → `context/archive/2026-09-06-tooth-chart-visualization/`. Lesson: —.
 - **S-09: dentystka wkleja tę samą notatkę co w S-02 i formularz wraca z planem, nie tylko z listą zębów: zęby rozłożone na wizyty, wizyta z najpilniejszymi zębami jako pierwsza, nazwy wizyt ze słownika systemu, a wszystko wywnioskowane — nazwane w ostrzeżeniach FR-012** — Archived 2026-09-06 → `context/archive/2026-09-06-visit-planning-prefill/`. Lesson: zielony zestaw testów jednostkowych nic nie mówi o czasie, jaki prompt wydaje — dłuższy prompt to zmiana kosztu wywołania, nie tylko jego treści.
 - **F-01: (foundation) schemat domeny (quote, tooth, visit, general-item, e-mail, snapshot, token) gotowy w Supabase z RLS** — Archived 2026-06-03 → `context/archive/2026-06-03-quotes-data-foundation/`. Lesson: —.

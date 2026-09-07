@@ -151,9 +151,11 @@ Nie jest personą-operatorem w sensie produktu. Otrzymuje link, otwiera stronę,
 - FR-052: After approval, the admin panel displays the patient URL (`/p/<token>`) in a copy-friendly format for the dentystka to send manually (no automated e-mail in v1). Priority: must-have
 - FR-053: An approved quote is read-only. Editing requires creating a new quote (new snapshot, new token); the original remains intact and accessible by its original token. Priority: must-have
   > Socrates: Counter-argument considered: "dentystka zechce poprawić literówkę po wysłaniu — zmuszanie do nowego linku frustrujące". Resolution: utrzymano read-only. Eliminuje klasę bugów "co pacjent widział wczoraj vs. dzisiaj" i upraszcza prawnie. Workflow: regeneracja kosztorysu, nowy link, pacjent dostaje "wersja zaktualizowana — proszę użyć nowego linku" mailem (kanał poza aplikacją w v1). Stary link aktywny = forensic snapshot.
+- FR-054: After approval, the admin panel displays a locally generated QR code for the same absolute patient URL as FR-052, both immediately after approval and when an approved quote is reopened. Priority: must-have
 
 ### Patient view (public, token-only)
 
+- FR-055: The printed patient view contains a locally generated QR code at least 2 cm square plus a readable fallback URL, both pointing to the exact online version of that quote; the QR footer is absent from screen media. Priority: must-have
 - FR-060: A request to `/p/<token>` with a valid, active token returns the patient view. An invalid, unknown, or revoked token returns a generic "Link nieaktywny lub nieprawidłowy" page with no information disclosure (no leak of whether such a token ever existed). Priority: must-have
 - FR-061: The patient view displays a grouped tooth list (`górne prawe`, `górne lewe`, `dolne prawe`, `dolne lewe`) for teeth marked `in-plan`, with treatment type and urgency per tooth. Priority: must-have
   > Socrates: Counter-argument considered: "pacjent nie zna notacji FDI — numer '47' to abrakadabra bez wizualizacji". Resolution: utrzymano listę pogrupowaną. FR-021 wymusza pokazanie nazwy obok numeru ("47 — drugi trzonowiec dolny prawy"), więc pacjent czyta lokalizację słownie. Bonus: grupowanie wg ćwiartki daje przestrzenny kontekst bez SVG. SVG = v2.

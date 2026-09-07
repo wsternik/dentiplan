@@ -276,6 +276,32 @@
   }
 
   #patient-print-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25cm;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    color: #000;
+    border-top: 1px solid #999;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .patient-print-qr {
+    width: 2.5cm;
+    height: 2.5cm;
+  }
+
+  .patient-print-qr svg {
     display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .patient-print-url {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    text-align: center;
   }
 }
