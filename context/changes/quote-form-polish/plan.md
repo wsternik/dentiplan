@@ -177,11 +177,11 @@ The migration is additive and nullable, so no backfill is required. Before phase
 
 #### Automated
 
-- [x] 3.1 Note-first creation and autosave/approval wiring pass E2E.
+- [x] 3.1 Note-first creation and autosave/approval wiring pass E2E. — 1214271
 
 #### Manual
 
-- [x] 3.2 Verify progressive disclosure for new versus existing quotes.
+- [x] 3.2 Verify progressive disclosure for new versus existing quotes. — 1214271
 
 ### Phase 4: Editor, chart, and loading polish
 
