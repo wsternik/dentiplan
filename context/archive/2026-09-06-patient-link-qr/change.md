@@ -1,10 +1,10 @@
 ---
 change_id: patient-link-qr
 title: Patient link QR in admin and print
-status: impl_reviewed
+status: archived
 created: 2026-09-06
 updated: 2026-09-07
-archived_at: null
+archived_at: 2026-09-07T05:55:13Z
 ---
 
 ## Notes
