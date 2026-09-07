@@ -93,3 +93,24 @@
 - Fixed: F1, F2 (Fix A), F3, F4, F5.
 - Post-fix verification: `npm test` 128/128, `npm run lint`, `npm run build`, and `npm run test:e2e` 9/9 all pass.
 - The phase-1 commit diff contains only the two approved E2E heading substitutions; the full-branch additions are exactly the documented disclosure/comment exceptions plus new specs.
+
+## Pipeline review triage
+
+The first-pass PR review raised one major finding: the change did not directly
+prove that an authenticated `PUT` cannot replace `diagnosis_note` after a quote
+has been approved. The database trigger is column-agnostic (`before update` on
+the whole row and keyed only on `OLD.status = 'approved'`), and the route also
+scopes its update to `status = 'draft'`. **Decision: fixed.** Risk #13 now sends
+the captured quote payload back to the draft-update endpoint with a replacement
+note after approval, expects `409`, reloads the stored quote, and proves that the
+original note remains while the replacement is absent. The targeted Playwright
+run passed (2/2 including auth setup), followed by the full E2E run (9/9).
+
+The required real-provider check also passed: a six-tooth note returned HTTP
+200 with schema-valid content in 27.271 s, within the explicit 45 s request
+budget.
+
+The two remaining minor observations require no change: the trigger definition
+above already proves that it covers every column, and `SUPABASE_URL` /
+`SUPABASE_KEY` are the names committed in `.env.example` and loaded by
+`playwright.config.ts`.

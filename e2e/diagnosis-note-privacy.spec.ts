@@ -42,7 +42,14 @@ test("risk #13: a persisted diagnosis note stays in the admin panel and out of p
   await waitForIslands(page);
   await expect(page.getByLabel(/Pole robocze/)).toHaveValue(diagnosisNote);
 
+  const approvalRequestPromise = page.waitForRequest(
+    (request) => request.method() === "POST" && new URL(request.url()).pathname === "/api/admin/quotes/approve",
+  );
   await page.getByRole("button", { name: "Zatwierdź" }).click();
+  const approvalRequest = await approvalRequestPromise;
+  const approvalPayload = approvalRequest.postDataJSON() as Record<string, unknown>;
+  const approvedQuoteId = approvalPayload.id;
+  expect(approvedQuoteId).toEqual(expect.any(String));
   await expect(page.getByRole("heading", { name: "Kosztorys zatwierdzony" })).toBeVisible();
   const patientUrl = await patientUrlFromQr(page);
 
@@ -54,6 +61,16 @@ test("risk #13: a persisted diagnosis note stays in the admin panel and out of p
   await waitForIslands(page);
   await expect(page.getByText(diagnosisNote, { exact: true })).toBeVisible();
   await expect(page.getByRole("textbox")).toHaveCount(0);
+
+  const { id: _approvedId, ...draftPayload } = approvalPayload;
+  const replacementNote = `E2E-NOTATKA-ZMIENIONA-${stamp}`;
+  const approvedUpdate = await page.request.put(`/api/admin/quotes/${String(approvedQuoteId)}`, {
+    data: { ...draftPayload, diagnosis_note: replacementNote },
+  });
+  expect(approvedUpdate.status()).toBe(409);
+  await page.reload();
+  await expect(page.getByText(diagnosisNote, { exact: true })).toBeVisible();
+  await expect(page.getByText(replacementNote, { exact: true })).toHaveCount(0);
 
   const anonymous = await browser.newContext({ storageState: { cookies: [], origins: [] } });
   try {
