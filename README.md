@@ -99,6 +99,10 @@ npx supabase start          # prints the URL and anon key to paste into .env
 npx supabase db reset       # applies supabase/migrations/
 ```
 
+For the hosted Supabase project, apply committed migrations deliberately with
+`npx supabase db push` before deploying code that uses them; the deploy pipeline
+does not run database migrations.
+
 ```bash
 npm run dev                 # http://localhost:4321
 ```

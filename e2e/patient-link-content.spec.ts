@@ -9,10 +9,9 @@
 // so the leak assertions here run against `response.text()`, not the DOM.
 //
 // Why this is a browser test and not an integration one: the risk is about what
-// survives the whole journey — a session, the editor island, the approval freeze,
-// and finally an anonymous token route. The diagnosis field in particular exists
-// only in island state and is deliberately never sent anywhere, which no
-// endpoint-level test can reproduce.
+// survives the whole journey — a session, the editor island, the private
+// diagnosis-note column, the approval freeze, and finally an anonymous token
+// route. No endpoint-level test can reproduce that complete boundary.
 //
 // Isolation: approving freezes a row that FR-053 makes immutable, so this test
 // cannot delete what it creates — no cleanup is possible through the app. Every
@@ -37,6 +36,7 @@ test("risk #3: an approved quote's patient page serves the quote and neither the
   // --- The dentystka builds a quote from her own notes ---
   await page.goto("/admin/quotes/new");
   await waitForIslands(page);
+  await page.getByRole("button", { name: "Dostosuj formularz ręcznie" }).click();
 
   await page.getByLabel(/Tylko do Twojej referencji/).fill(patientEmail);
   await page.getByLabel(/Pole robocze/).fill(diagnosisNote);
@@ -89,7 +89,7 @@ test("risk #3: an approved quote's patient page serves the quote and neither the
     // satisfied by an error page, which proves nothing (FR-064, FR-065).
     await expect(anonymousPage.getByRole("heading", { name: "Twój kosztorys leczenia" })).toBeVisible();
     await expect(anonymousPage.getByRole("heading", { name: "Leczenie w kilku wizytach" })).toBeVisible();
-    await expect(anonymousPage.getByRole("heading", { name: "Leczenie w znieczuleniu (jedna sesja)" })).toBeVisible();
+    await expect(anonymousPage.getByRole("heading", { name: "Leczenie w narkozie (jedna sesja)" })).toBeVisible();
     await expect(anonymousPage.getByRole("note", { name: "Zastrzeżenie" })).toContainText(
       "To jest kosztorys szacunkowy",
     );

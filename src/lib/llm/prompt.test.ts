@@ -87,7 +87,7 @@ describe("buildInstructions", () => {
     // FR-041–FR-044 computes that variant from the in-plan teeth. A model that
     // imitates it by collapsing the plan to one visit produces a split that looks
     // deliberate and is not (plan: "What We're NOT Doing").
-    expect(section(buildInstructions(), "Znieczulenie ogólne")).not.toEqual("");
+    expect(section(buildInstructions(), "Narkoza")).not.toEqual("");
   });
 
   it("states the same visit ceiling the mapper enforces", () => {

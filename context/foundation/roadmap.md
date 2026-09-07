@@ -200,6 +200,17 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Risk:** Samo emulowanie medium `print` nie weryfikuje geometrii papieru, dlatego układ jest sprawdzany także przy szerokości drukowalnej A4 (~717 px), a QR ma fizyczny rozmiar 2,5 cm i czteromodułowy biały margines zapisany w samym SVG. Ostateczną czytelność z ekranu i PDF potwierdza skan prawdziwym telefonem.
 - **Status:** done — zrealizowane 2026-09-07 jako `patient-link-qr`.
 
+### S-10: Prywatna notatka diagnozy i formularz note-first
+
+- **Outcome:** dentystka rozpoczyna nowy kosztorys od wklejenia notatki diagnozy, a szczegółowy formularz otwiera tylko do ręcznej korekty. Notatka zapisuje się przy szkicu i zatwierdzonym kosztorysie, jest czytelna wyłącznie w uwierzytelnionym panelu i nigdy nie trafia do `content`, anonimowego RPC ani strony pacjenta. Podczas wypełniania z notatki formularz wyraźnie pokazuje stan pracy i nie pozwala go edytować, zachowując przewijanie strony.
+- **Change ID:** quote-form-polish
+- **PRD refs:** FR-077, FR-078
+- **Prerequisites:** S-01, S-02, S-03, S-06
+- **Parallel with:** S-04, S-05
+- **Blockers:** —
+- **Risk:** Surowa notatka medyczna jest użyteczna w panelu, ale stanowi dane wyłącznie administracyjne. Samo niewyrenderowanie jej w komponencie nie wystarcza: wykluczenie z obu anonimowych odpowiedzi jest sprawdzane E2E jako ryzyko #13.
+- **Status:** done — zrealizowane 2026-09-07 jako `quote-form-polish`.
+
 ## Backlog Handoff
 
 | Roadmap ID | Change ID                         | Suggested issue title                                                       | Ready for `/10x-plan` | Notes                                                                                      |

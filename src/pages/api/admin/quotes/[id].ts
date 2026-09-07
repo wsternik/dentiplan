@@ -14,12 +14,18 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase";
-import { buildQuoteContent, PatientEmailSchema, QuotePayloadSchema } from "@/lib/services/quote-payload";
+import {
+  buildQuoteContent,
+  DiagnosisNoteSchema,
+  PatientEmailSchema,
+  QuotePayloadSchema,
+} from "@/lib/services/quote-payload";
 
 export const prerender = false;
 
 const DraftRequestSchema = QuotePayloadSchema.extend({
   patient_email: PatientEmailSchema.nullish(),
+  diagnosis_note: DiagnosisNoteSchema,
 });
 
 function jsonError(message: string, status: number): Response {
@@ -68,6 +74,7 @@ export const PUT: APIRoute = async (context) => {
     .update({
       patient_type: payload.patient_type,
       patient_email: payload.patient_email ?? null,
+      diagnosis_note: payload.diagnosis_note,
       content,
     })
     .eq("id", id.data)

@@ -3,15 +3,16 @@
 // cost variants live via the pure Phase-1 engine. No persistence here — the
 // Approve action is wired to the server endpoint in Phase 3.
 //
-// PATIENT-SAFE INVARIANT: `rawText` is a transient scratch field held in island
-// state only. It is never part of the approval payload and never persisted —
-// `content` returned to anon callers must never carry the raw diagnosis.
+// PATIENT-SAFE INVARIANT: `rawText` is persisted only in the admin-only
+// `diagnosis_note` column. It is never part of `treePayload()` or the patient-safe
+// `content` returned to anon callers.
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { InfoHint } from "@/components/ui/info-hint";
 import { ChartLegend } from "@/components/tooth-chart/ChartLegend";
 import { ToothChart } from "@/components/tooth-chart/ToothChart";
 import { computeQuoteTotals } from "@/lib/quote/cost";
@@ -31,6 +32,7 @@ import type { PickerOption } from "@/lib/pricing";
 import { mergePrefill } from "@/lib/llm/merge";
 import type { PrefillResult } from "@/lib/llm/schema";
 import type { QuoteEditorProps } from "./types";
+import { cn } from "@/lib/utils";
 
 /** Drop the picker-only `category` field down to the stored snapshot ref. */
 function toRef(option: PickerOption): PricelistItemRef {
@@ -101,6 +103,7 @@ export default function QuoteEditor({
   initialContent,
   initialPatientType,
   initialPatientEmail,
+  initialDiagnosisNote,
   readOnly = false,
   patientToken,
 }: QuoteEditorProps) {
@@ -113,9 +116,14 @@ export default function QuoteEditor({
   const [visits, setVisits] = useState<Visit[]>(initialContent?.visits ?? []);
   const [generalItems, setGeneralItems] = useState<GeneralItem[]>(initialContent?.generalItems ?? []);
   const [patientEmail, setPatientEmail] = useState(initialPatientEmail ?? "");
-  const [rawText, setRawText] = useState("");
+  const [rawText, setRawText] = useState(initialDiagnosisNote ?? "");
   const [toothInput, setToothInput] = useState("");
   const [toothWarnings, setToothWarnings] = useState<string[]>([]);
+  // The new-quote route begins with the diagnosis note as the primary action.
+  // Reopened drafts and approved quotes already contain deliberate work, so
+  // hiding their form would make existing data look missing.
+  const [noteFirst, setNoteFirst] = useState(!quoteId && !readOnly);
+  const [manualFormOpen, setManualFormOpen] = useState(Boolean(quoteId) || readOnly);
 
   // --- Note prefill (S-02, FR-011/FR-012) ---
   const [parsing, setParsing] = useState(false);
@@ -156,6 +164,17 @@ export default function QuoteEditor({
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<string | null>(null);
+  // Every server write freezes a snapshot before its await. Keeping the editor
+  // inert until that request settles prevents a later visible edit from being
+  // omitted while the UI still reports the snapshot as saved or approved.
+  const operationBusy = parsing || saving || submitting;
+  const operationStatus = parsing
+    ? "Wypełnianie formularza z notatki."
+    : submitting
+      ? "Zatwierdzanie kosztorysu."
+      : saving
+        ? "Zapisywanie szkicu."
+        : "";
 
   const totals = useMemo(() => computeQuoteTotals({ teeth, visits, generalItems }), [teeth, visits, generalItems]);
   const readOnlyPatientPath = patientToken ? `/p/${patientToken}` : null;
@@ -307,7 +326,11 @@ export default function QuoteEditor({
     inFlight.current = true;
     setSaving(true);
     setSaveError(null);
-    const body = { ...treePayload(), patient_email: patientEmail.trim() || null };
+    const body = {
+      ...treePayload(),
+      patient_email: patientEmail.trim() || null,
+      diagnosis_note: rawText,
+    };
     try {
       const res = savedId
         ? await fetch(`/api/admin/quotes/${savedId}`, {
@@ -349,7 +372,8 @@ export default function QuoteEditor({
   // round trip is long enough for her to have added a tooth while she waited —
   // and put the answer back.
   //
-  // `rawText` is the only thing sent, and it still never enters `treePayload()`.
+  // `rawText` is the only thing sent to the model, and it never enters
+  // `treePayload()` or patient-visible `content`.
   function applyPrefill(result: PrefillResult): string[] {
     const merged = mergePrefill(treeRef.current, result, generalCounter.current);
     generalCounter.current = merged.generalIdSeed;
@@ -409,16 +433,17 @@ export default function QuoteEditor({
     setSubmitting(true);
     setSubmitError(null);
     // Send pricelist items BY ID only — the resolved client price is preview-only
-    // and is never trusted for the immutable freeze (server re-resolves). rawText
-    // is intentionally absent from the payload (patient-safe invariant).
+    // and is never trusted for the immutable freeze (server re-resolves).
     //
     // `id`, when present, turns this into a draft→approved transition on that row
     // rather than a fresh insert, so reopening and approving a draft leaves one
     // quote, not two. `patient_email` is a sibling of the tree and lands in its
-    // own column — never inside `content` (FR-072/FR-066).
+    // own column — never inside `content` (FR-072/FR-066). The raw diagnosis is
+    // another sibling and follows the same boundary into `diagnosis_note`.
     const payload = {
       ...treePayload(),
       patient_email: patientEmail.trim(),
+      diagnosis_note: rawText,
       ...(savedId ? { id: savedId } : {}),
     };
     try {
@@ -457,6 +482,8 @@ export default function QuoteEditor({
     setSavedId(null);
     setSaveError(null);
     setSavedAt(null);
+    setNoteFirst(true);
+    setManualFormOpen(false);
     generalCounter.current = 0;
   }
 
@@ -464,46 +491,20 @@ export default function QuoteEditor({
     return <ApprovalConfirmation path={approvedPath} onReset={resetQuote} />;
   }
 
-  return (
-    <div className="mx-auto max-w-4xl space-y-4 px-4 py-8">
-      <div className="border-border flex flex-wrap items-baseline justify-between gap-4 border-b pb-4">
-        <h1 className="font-serif text-2xl font-medium tracking-tight">
-          {readOnly ? "Kosztorys zatwierdzony" : savedId ? "Kosztorys (szkic)" : "Nowy kosztorys"}
-        </h1>
-        <a href="/admin" className="text-muted-foreground text-sm underline underline-offset-4">
-          Lista kosztorysów
-        </a>
-      </div>
-
-      <Section title="E-mail odbiorcy">
-        {readOnly ? (
-          <p className="text-sm">{patientEmail || <span className="text-muted-foreground">— brak —</span>}</p>
-        ) : (
-          <>
-            <Label htmlFor="patientEmail" className="text-muted-foreground mb-1">
-              Tylko do Twojej referencji — nigdy nie trafia na stronę pacjenta. Wymagany do zatwierdzenia.
-            </Label>
-            <Input
-              id="patientEmail"
-              type="email"
-              placeholder="pacjent@example.com"
-              value={patientEmail}
-              onChange={(e) => {
-                setPatientEmail(e.target.value);
-              }}
-            />
-          </>
-        )}
-      </Section>
-
-      {!readOnly && (
-        <Section title="Notatka z diagnozy (roboczo)">
+  const diagnosisNoteSection = (!readOnly || rawText.trim().length > 0) && (
+    <Section title="Notatka z diagnozy">
+      {readOnly ? (
+        <p className="text-sm whitespace-pre-line">{rawText}</p>
+      ) : (
+        <>
           <Label htmlFor="rawText" className="text-muted-foreground mb-1">
-            Pole robocze — nie jest zapisywane ani widoczne dla pacjenta.
+            <span className="sr-only">Pole robocze — </span>
+            Zapisywana razem z kosztorysem, widoczna tylko dla Ciebie — nigdy nie trafia na stronę pacjenta.
           </Label>
           <Textarea
             id="rawText"
-            rows={4}
+            rows={noteFirst ? 8 : 4}
+            maxLength={4000}
             placeholder="Wklej opis diagnozy do pomocy przy wypełnianiu…"
             value={rawText}
             onChange={(e) => {
@@ -514,186 +515,275 @@ export default function QuoteEditor({
             <Button
               type="button"
               variant="outline"
-              disabled={parsing || rawText.trim().length === 0}
+              disabled={operationBusy || rawText.trim().length === 0}
               onClick={() => void handlePrefill()}
             >
               {parsing ? "Wypełnianie…" : "Wypełnij z notatki"}
             </Button>
-            <span className="text-muted-foreground text-xs">
+            <InfoHint label="Jak działa wypełnianie z notatki">
               Uzupełnia formularz — niczego nie nadpisuje i nie zatwierdza.
-            </span>
+            </InfoHint>
           </div>
           {parseError && <p className="text-destructive mt-2 text-sm">{parseError}</p>}
           <ParseWarnings warnings={parseWarnings} />
-        </Section>
+        </>
+      )}
+    </Section>
+  );
+
+  return (
+    <div className="relative mx-auto max-w-4xl px-4 py-8" aria-busy={operationBusy} aria-label="Edytor kosztorysu">
+      <span className="sr-only" role="status" aria-live="polite">
+        {operationStatus}
+      </span>
+      {parsing && (
+        <div className="bg-background/60 absolute inset-0 z-30 cursor-wait" aria-hidden="true">
+          <div className="sticky top-6 flex justify-center px-4">
+            <span className="bg-popover text-popover-foreground border-border rounded-full border px-4 py-2 text-sm font-medium shadow-md">
+              Wypełnianie formularza…
+            </span>
+          </div>
+        </div>
       )}
 
-      <Section title="Typ pacjenta">
-        <div className="flex gap-2">
-          <Button
-            type="button"
-            disabled={readOnly}
-            variant={patientType === "child" ? "default" : "outline"}
-            onClick={() => {
-              setPatientType("child");
-            }}
-          >
-            Dziecko
-          </Button>
-          <Button
-            type="button"
-            disabled={readOnly}
-            variant={patientType === "adult" ? "default" : "outline"}
-            onClick={() => {
-              setPatientType("adult");
-            }}
-          >
-            Dorosły
-          </Button>
+      <div
+        inert={operationBusy || undefined}
+        className={cn("space-y-4", operationBusy && "pointer-events-none select-none")}
+      >
+        <div className="border-border flex flex-wrap items-baseline justify-between gap-4 border-b pb-4">
+          <h1 className="font-serif text-2xl font-medium tracking-tight">
+            {readOnly ? "Kosztorys zatwierdzony" : savedId ? "Kosztorys (szkic)" : "Nowy kosztorys"}
+          </h1>
+          <a href="/admin" className="text-muted-foreground text-sm underline underline-offset-4">
+            Lista kosztorysów
+          </a>
         </div>
-      </Section>
 
-      <Section title="Zęby">
-        {!readOnly && (
-          <div className="flex gap-2">
-            {/* The placeholder IS this field's accessible name — `seed.spec.ts`
+        {noteFirst && diagnosisNoteSection}
+
+        {noteFirst && (
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full justify-center border-dashed"
+            aria-expanded={manualFormOpen}
+            aria-controls="quote-details"
+            onClick={() => {
+              setManualFormOpen((open) => !open);
+            }}
+          >
+            {manualFormOpen ? "Ukryj formularz ręczny" : "Dostosuj formularz ręcznie"}
+          </Button>
+        )}
+
+        <div id="quote-details" className="space-y-4" hidden={!manualFormOpen}>
+          {!noteFirst && diagnosisNoteSection}
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Section title="E-mail odbiorcy">
+              {readOnly ? (
+                <p className="text-sm">{patientEmail || <span className="text-muted-foreground">— brak —</span>}</p>
+              ) : (
+                <>
+                  <div className="mb-1 flex items-center gap-1">
+                    <Label htmlFor="patientEmail" className="text-muted-foreground">
+                      <span className="sr-only">
+                        Tylko do Twojej referencji — nigdy nie trafia na stronę pacjenta. Wymagany do zatwierdzenia.
+                      </span>
+                      <span aria-hidden="true">Adres e-mail</span>
+                    </Label>
+                    <InfoHint label="Informacja o adresie e-mail">
+                      Tylko do Twojej referencji — nigdy nie trafia na stronę pacjenta. Wymagany do zatwierdzenia.
+                    </InfoHint>
+                  </div>
+                  <Input
+                    id="patientEmail"
+                    type="email"
+                    placeholder="pacjent@example.com"
+                    value={patientEmail}
+                    onChange={(e) => {
+                      setPatientEmail(e.target.value);
+                    }}
+                  />
+                </>
+              )}
+            </Section>
+
+            <Section title="Typ pacjenta">
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  disabled={readOnly}
+                  variant={patientType === "child" ? "default" : "outline"}
+                  onClick={() => {
+                    setPatientType("child");
+                  }}
+                >
+                  Dziecko
+                </Button>
+                <Button
+                  type="button"
+                  disabled={readOnly}
+                  variant={patientType === "adult" ? "default" : "outline"}
+                  onClick={() => {
+                    setPatientType("adult");
+                  }}
+                >
+                  Dorosły
+                </Button>
+              </div>
+            </Section>
+          </div>
+
+          <Section title="Zęby">
+            {!readOnly && (
+              <div className="flex gap-2">
+                {/* The placeholder IS this field's accessible name — `seed.spec.ts`
                 and `patient-link-content.spec.ts` both locate it that way. It
                 does not move. */}
-            <Input
-              placeholder="Numery FDI, np. 17,16,34"
-              value={toothInput}
-              onChange={(e) => {
-                setToothInput(e.target.value);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  addTeeth();
-                }
-              }}
-            />
-            <Button type="button" onClick={addTeeth}>
-              Dodaj
-            </Button>
-          </div>
-        )}
-        {toothWarnings.length > 0 && (
-          <ul className="text-urgency-moderate-ink border-urgency-moderate/50 mt-2 space-y-0.5 border-l-2 pl-3 text-xs">
-            {toothWarnings.map((w) => (
-              <li key={w}>{w}</li>
-            ))}
-          </ul>
-        )}
-        {/* The same drawing the patient gets, above the rows it addresses.
+                <Input
+                  placeholder="Numery FDI, np. 17,16,34"
+                  value={toothInput}
+                  onChange={(e) => {
+                    setToothInput(e.target.value);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addTeeth();
+                    }
+                  }}
+                />
+                <Button type="button" onClick={addTeeth}>
+                  Dodaj
+                </Button>
+              </div>
+            )}
+            {toothWarnings.length > 0 && (
+              <ul className="text-urgency-moderate-ink border-urgency-moderate/50 mt-2 space-y-0.5 border-l-2 pl-3 text-xs">
+                {toothWarnings.map((w) => (
+                  <li key={w}>{w}</li>
+                ))}
+              </ul>
+            )}
+            {/* The same drawing the patient gets, above the rows it addresses.
             `read-only` on an approved quote is inert but still hoverable —
             FR-053 freezes the quote, not the tooltip. */}
-        <div className="mt-4 space-y-3">
-          <ToothChart
-            teeth={chartTeeth}
-            mode={readOnly ? "read-only" : "interactive"}
-            onToothClick={handleChartToothClick}
-          />
-          <ChartLegend />
-        </div>
+            <div className="tooth-chart-layout mt-4 lg:grid lg:grid-cols-2 lg:items-center lg:gap-6">
+              <ToothChart
+                teeth={chartTeeth}
+                mode={readOnly ? "read-only" : "interactive"}
+                onToothClick={handleChartToothClick}
+              />
+              <ChartLegend />
+            </div>
 
-        <div className="mt-3 space-y-3">
-          {teeth.length === 0 && (
-            <p className="text-muted-foreground text-sm">
-              {readOnly ? "Brak zębów w kosztorysie." : "Brak zębów. Dodaj numery powyżej."}
-            </p>
-          )}
-          {teeth.map((tooth) => (
-            <ToothRow
-              key={tooth.number}
-              tooth={tooth}
+            <div className="mt-3 space-y-3">
+              {teeth.length === 0 && (
+                <p className="text-muted-foreground text-sm">
+                  {readOnly ? "Brak zębów w kosztorysie." : "Brak zębów. Dodaj numery powyżej."}
+                </p>
+              )}
+              {teeth.map((tooth) => (
+                <ToothRow
+                  key={tooth.number}
+                  tooth={tooth}
+                  visits={visits}
+                  options={toothOptions}
+                  onPatch={(patch) => {
+                    patchTooth(tooth.number, patch);
+                  }}
+                  onAddItem={(option) => {
+                    addToothItem(tooth.number, option);
+                  }}
+                  onRemoveItem={(index) => {
+                    removeToothItem(tooth.number, index);
+                  }}
+                  onRemove={() => {
+                    removeTooth(tooth.number);
+                  }}
+                  readOnly={readOnly}
+                />
+              ))}
+            </div>
+          </Section>
+
+          <Section title="Wizyty">
+            <VisitList
               visits={visits}
-              options={toothOptions}
-              onPatch={(patch) => {
-                patchTooth(tooth.number, patch);
-              }}
-              onAddItem={(option) => {
-                addToothItem(tooth.number, option);
-              }}
-              onRemoveItem={(index) => {
-                removeToothItem(tooth.number, index);
-              }}
-              onRemove={() => {
-                removeTooth(tooth.number);
-              }}
+              onAdd={addVisit}
+              onRemove={removeVisit}
+              onLabelChange={setVisitLabel}
               readOnly={readOnly}
             />
-          ))}
-        </div>
-      </Section>
+          </Section>
 
-      <Section title="Wizyty">
-        <VisitList
-          visits={visits}
-          onAdd={addVisit}
-          onRemove={removeVisit}
-          onLabelChange={setVisitLabel}
-          readOnly={readOnly}
-        />
-      </Section>
+          <Section title="Pozycje ogólne">
+            <GeneralItems
+              items={generalItems}
+              options={generalOptions}
+              visits={visits}
+              onAdd={addGeneral}
+              onRemove={removeGeneral}
+              onVisitChange={setGeneralVisit}
+              readOnly={readOnly}
+            />
+          </Section>
 
-      <Section title="Pozycje ogólne">
-        <GeneralItems
-          items={generalItems}
-          options={generalOptions}
-          visits={visits}
-          onAdd={addGeneral}
-          onRemove={removeGeneral}
-          onVisitChange={setGeneralVisit}
-          readOnly={readOnly}
-        />
-      </Section>
+          <Section title="Podgląd kosztów">
+            <TotalsPreview totals={totals} />
+          </Section>
 
-      <Section title="Podgląd kosztów">
-        <TotalsPreview totals={totals} />
-      </Section>
-
-      {readOnly ? (
-        <Section title="Link dla pacjenta">
-          <p className="text-muted-foreground mb-2 text-sm">
-            Kosztorys jest zatwierdzony, więc nie da się go już zmienić (nowa wersja = nowy kosztorys i nowy link).
-          </p>
-          {readOnlyPatientPath ? (
-            <div className="space-y-3">
-              <CopyLink path={readOnlyPatientPath} />
-              <QrCode path={readOnlyPatientPath} />
-            </div>
+          {readOnly ? (
+            <Section title="Link dla pacjenta">
+              <p className="text-muted-foreground mb-2 text-sm">
+                Kosztorys jest zatwierdzony, więc nie da się go już zmienić (nowa wersja = nowy kosztorys i nowy link).
+              </p>
+              {readOnlyPatientPath ? (
+                <div className="space-y-3">
+                  <CopyLink path={readOnlyPatientPath} />
+                  <QrCode path={readOnlyPatientPath} />
+                </div>
+              ) : (
+                <p className="text-destructive text-sm">Ten kosztorys nie ma linku dla pacjenta.</p>
+              )}
+            </Section>
           ) : (
-            <p className="text-destructive text-sm">Ten kosztorys nie ma linku dla pacjenta.</p>
+            // The two actions that end the task, kept reachable from anywhere in a
+            // form that gets long. Same buttons, same names, same order, same
+            // gating — only the position changed.
+            //
+            // `sticky`, not `fixed`. A fixed bar sits outside the flow, so it needs
+            // the container to reserve its height by hand — and a hand-picked
+            // reserve is wrong the moment the bar grows a wrapped error line, at
+            // which point it covers the last tooth row. Worse, a fixed bar can park
+            // itself over a control that Playwright has just scrolled to and eat the
+            // click, failing a spec with a message that never mentions a bar. Sticky
+            // occupies real space at the end of the flow, so it cannot overlap
+            // anything, and still pins to the bottom while there is more form below.
+            <div className="border-border bg-background/95 no-print sticky bottom-0 z-10 -mx-4 border-t px-4 backdrop-blur-sm">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 py-3">
+                <Button type="button" size="lg" disabled={approveDisabled || operationBusy} onClick={handleApprove}>
+                  {submitting ? "Zatwierdzanie…" : "Zatwierdź"}
+                </Button>
+                <Button
+                  type="button"
+                  size="lg"
+                  variant="outline"
+                  disabled={operationBusy}
+                  onClick={() => void handleSaveDraft()}
+                >
+                  {saving ? "Zapisywanie…" : "Zapisz szkic"}
+                </Button>
+                {savedAt && !saveError && <span className="text-muted-foreground text-sm">Zapisano {savedAt}</span>}
+                {approveReason && <p className="text-muted-foreground basis-full text-sm">{approveReason}</p>}
+                {submitError && <p className="text-destructive basis-full text-sm">{submitError}</p>}
+                {saveError && <p className="text-destructive basis-full text-sm">{saveError}</p>}
+              </div>
+            </div>
           )}
-        </Section>
-      ) : (
-        // The two actions that end the task, kept reachable from anywhere in a
-        // form that gets long. Same buttons, same names, same order, same
-        // gating — only the position changed.
-        //
-        // `sticky`, not `fixed`. A fixed bar sits outside the flow, so it needs
-        // the container to reserve its height by hand — and a hand-picked
-        // reserve is wrong the moment the bar grows a wrapped error line, at
-        // which point it covers the last tooth row. Worse, a fixed bar can park
-        // itself over a control that Playwright has just scrolled to and eat the
-        // click, failing a spec with a message that never mentions a bar. Sticky
-        // occupies real space at the end of the flow, so it cannot overlap
-        // anything, and still pins to the bottom while there is more form below.
-        <div className="border-border bg-background/95 no-print sticky bottom-0 z-10 -mx-4 border-t px-4 backdrop-blur-sm">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 py-3">
-            <Button type="button" size="lg" disabled={approveDisabled || submitting} onClick={handleApprove}>
-              {submitting ? "Zatwierdzanie…" : "Zatwierdź"}
-            </Button>
-            <Button type="button" size="lg" variant="outline" disabled={saving} onClick={() => void handleSaveDraft()}>
-              {saving ? "Zapisywanie…" : "Zapisz szkic"}
-            </Button>
-            {savedAt && !saveError && <span className="text-muted-foreground text-sm">Zapisano {savedAt}</span>}
-            {approveReason && <p className="text-muted-foreground basis-full text-sm">{approveReason}</p>}
-            {submitError && <p className="text-destructive basis-full text-sm">{submitError}</p>}
-            {saveError && <p className="text-destructive basis-full text-sm">{saveError}</p>}
-          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

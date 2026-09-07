@@ -10,11 +10,10 @@
 //
 // PATIENT-SAFE INVARIANT (FR-066): `content` is returned verbatim to anon callers
 // by `get_quote_by_token`, and the RPC's column whitelist does NOT inspect fields
-// nested inside it. The patient's e-mail is therefore not part of this module at
-// all — neither the request schema nor `buildQuoteContent` has a slot for it, so
-// no caller can nest one by accident. It travels as a sibling of `content` in the
-// request body and lands in the `patient_email` column (FR-072, risk #3 in
-// context/foundation/test-plan.md).
+// nested inside it. Admin-only fields are therefore excluded from
+// `QuotePayloadSchema` and `buildQuoteContent`: the patient's e-mail and the raw
+// diagnosis note travel as siblings of `content` in write requests and land in
+// dedicated columns instead (FR-072, risk #3 in context/foundation/test-plan.md).
 
 import { z } from "zod";
 import { resolvePricelistItem } from "@/lib/pricing";
@@ -73,6 +72,17 @@ export type QuotePayload = z.infer<typeof QuotePayloadSchema>;
  * approval endpoint, which applies this schema without `.optional()`.
  */
 export const PatientEmailSchema = z.email("Nieprawidłowy adres e-mail.").max(254);
+
+/**
+ * The dentist's raw diagnosis note: admin-only and stored beside `content`, never
+ * inside it. Preserve non-empty text verbatim (including line breaks), while
+ * normalising an absent or whitespace-only value to SQL NULL on every write.
+ * The bound matches the note-prefill endpoint's request limit.
+ */
+export const DiagnosisNoteSchema = z.preprocess(
+  (value) => (typeof value === "string" && value.trim().length === 0 ? null : value),
+  z.string().max(4000).nullable().default(null),
+);
 
 /**
  * Build the patient-safe `content` tree from a parsed payload, freezing each

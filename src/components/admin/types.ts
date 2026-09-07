@@ -20,6 +20,8 @@ export interface QuoteEditorProps {
   initialPatientType?: PatientType;
   /** Admin-only recipient e-mail (FR-072); never part of `content`. */
   initialPatientEmail?: string | null;
+  /** Admin-only raw diagnosis note; stored beside `content`, never inside it. */
+  initialDiagnosisNote?: string | null;
   /**
    * Render an approved quote as it was composed, with nothing that could change
    * it (FR-053). Paired with `patientToken` so the patient link stays reachable

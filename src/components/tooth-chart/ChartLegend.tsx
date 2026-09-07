@@ -48,7 +48,7 @@ const SWATCH_SHAPE = "M12 2c5 0 8 3 8 8s-3 12-8 12-8-7-8-12 3-8 8-8Z";
 
 export function ChartLegend() {
   return (
-    <div className="border-border text-muted-foreground mt-4 border-t pt-4 font-sans text-xs">
+    <div className="chart-legend border-border text-muted-foreground mt-4 border-t pt-4 font-sans text-xs lg:mt-0 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-6">
       <h3 className="text-foreground font-medium">Jak czytać schemat</h3>
 
       {/* One definition for the whole legend — a `<defs>` inside the status loop
@@ -67,7 +67,7 @@ export function ChartLegend() {
         </defs>
       </svg>
 
-      <div className="mt-3 grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
+      <div className="mt-3 grid grid-cols-1 gap-y-4">
         <div>
           <p className="font-medium">Kolor — pilność</p>
           <ul className="mt-1.5 space-y-1.5">

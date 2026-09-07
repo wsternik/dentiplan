@@ -187,6 +187,7 @@ test("risk #8: an approved quote's chart and its written lists describe the same
   // --- The dentystka builds a quote spanning all three statuses ---
   await page.goto("/admin/quotes/new");
   await waitForIslands(page);
+  await page.getByRole("button", { name: "Dostosuj formularz ręcznie" }).click();
 
   await page.getByLabel(/Tylko do Twojej referencji/).fill(patientEmail);
 

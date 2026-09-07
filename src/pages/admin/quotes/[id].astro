@@ -28,6 +28,7 @@ const QuoteRowSchema = z.object({
   id: z.uuid(),
   patient_type: PatientTypeSchema,
   patient_email: z.string().nullable(),
+  diagnosis_note: z.string().nullable(),
   status: QuoteStatusSchema,
   token: z.string().nullable(),
   content: QuoteContentSchema,
@@ -40,7 +41,7 @@ let quote: z.infer<typeof QuoteRowSchema> | null = null;
 if (id.success && supabase) {
   const { data } = await supabase
     .from("quotes")
-    .select("id, patient_type, patient_email, status, token, content")
+    .select("id, patient_type, patient_email, diagnosis_note, status, token, content")
     .eq("id", id.data)
     .maybeSingle();
   const parsed = QuoteRowSchema.safeParse(data);
@@ -62,6 +63,7 @@ if (id.success && supabase) {
           initialContent={quote.content}
           initialPatientType={quote.patient_type}
           initialPatientEmail={quote.patient_email}
+          initialDiagnosisNote={quote.diagnosis_note}
           readOnly={quote.status === "approved"}
           patientToken={quote.token}
           client:load

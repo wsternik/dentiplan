@@ -59,12 +59,14 @@ const chartTeeth = toChartTeeth(content);
 
     <section class="tooth-chart-block space-y-4" aria-labelledby="schemat-heading">
       <h2 id="schemat-heading" class="text-xl font-medium tracking-tight">Twoje zęby na schemacie</h2>
-      <ToothChart client:load teeth={chartTeeth} mode="read-only" />
-      {
-        /* No client directive: the legend is static markup and has no behaviour,
-          so it is rendered to HTML and ships no JavaScript. */
-      }
-      <ChartLegend />
+      <div class="tooth-chart-layout lg:grid lg:grid-cols-2 lg:items-center lg:gap-6">
+        <ToothChart client:load teeth={chartTeeth} mode="read-only" />
+        {
+          /* No client directive: the legend is static markup and has no behaviour,
+            so it is rendered to HTML and ships no JavaScript. */
+        }
+        <ChartLegend />
+      </div>
     </section>
 
     {inPlan.length > 0 && <ToothGroups teeth={inPlan} />}

@@ -53,9 +53,9 @@ describe("chart marks", () => {
     }
   });
 
-  it("draws a tooth outside the quote unmarked, so an unfilled tooth says nothing", () => {
+  it("draws a tooth outside the quote white and unmarked against the chart surface", () => {
     const classes = toothClasses(chartTooth({ inQuote: false, urgency: null, status: null }));
-    expect(classes).toContain("fill-none");
+    expect(classes).toContain("fill-background");
     expect(classes).not.toContain("fill-urgency-");
   });
 
