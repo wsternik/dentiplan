@@ -196,7 +196,7 @@ type GetQuoteByTokenRow = Database["public"]["Functions"]["get_quote_by_token"][
 
 /**
  * The whitelisted shape `get_quote_by_token` returns to the public patient page
- * (FR-060/FR-066): no `patient_email`, `status`, or `token`. Derived from the
+ * (FR-060/FR-066): exactly `patient_type`, `content`, and `created_at`. Derived from the
  * generated RPC return type so it tracks the migration mechanically — a column
  * added to or removed from the RPC changes this type — with `content` narrowed
  * from `Json` to `QuoteContent` and `patient_type` to its domain union.
