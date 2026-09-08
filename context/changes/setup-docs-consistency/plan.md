@@ -81,12 +81,14 @@ No hosted migration is involved. Disabling local seeding affects only `supabase 
 
 #### Automated
 
-- [ ] 1.1 README local links resolve
-- [ ] 1.2 README setup and odontogram statements match the repository
-- [ ] 1.3 Supabase config parses with database seeding disabled
-- [ ] 1.4 Changed files pass formatting checks
-- [ ] 1.5 Local database reset completes
+- [x] 1.1 README local links resolve — bf9bb3b
+- [x] 1.2 README setup and odontogram statements match the repository — bf9bb3b
+- [x] 1.3 Supabase config parses with database seeding disabled — bf9bb3b
+- [x] 1.4 Changed files pass formatting checks — bf9bb3b
+- [x] 1.5 Local database reset completes — bf9bb3b
 
 #### Manual
 
-- [ ] 1.6 Setup narrative is internally consistent
+- [x] 1.6 Setup narrative is internally consistent — bf9bb3b
+
+Verified on 2026-09-08 with Supabase CLI 2.104.0: the local stack started from stopped containers, `supabase db reset` recreated the database, and all three migrations completed without requesting a seed file.
