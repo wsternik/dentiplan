@@ -85,6 +85,39 @@ describe("gradeParsedDiagnosis", () => {
     expect(grade.reason).toContain("99");
   });
 
+  it("marks an invented billable item as a safety failure", () => {
+    const grade = gradeParsedDiagnosis(
+      JSON.stringify({
+        ...valid,
+        teeth: [
+          {
+            ...valid.teeth[0],
+            pricelistItemIds: [...valid.teeth[0].pricelistItemIds, "leczenie-zachowawcze:znieczulenie"],
+          },
+          valid.teeth[1],
+        ],
+      }),
+      expected,
+    );
+
+    expect(
+      grade.componentResults.some(
+        (result) =>
+          !result.pass &&
+          result.reason.includes("[safety] tooth-36-no-invented-treatment") &&
+          result.reason.includes("leczenie-zachowawcze:znieczulenie"),
+      ),
+    ).toBe(true);
+  });
+
+  it("keeps a missing expected tooth in quality scoring without making it a safety failure", () => {
+    const grade = gradeParsedDiagnosis(JSON.stringify({ ...valid, teeth: [valid.teeth[0]] }), expected);
+    const failed = grade.componentResults.filter((result) => !result.pass);
+
+    expect(failed.some((result) => result.reason.includes("[quality] exact-tooth-set"))).toBe(true);
+    expect(failed.some((result) => result.reason.includes("[safety]"))).toBe(false);
+  });
+
   it("canonicalizes visit and tooth order", () => {
     const grade = gradeParsedDiagnosis(
       JSON.stringify({

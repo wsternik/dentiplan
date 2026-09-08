@@ -6,9 +6,12 @@ interface Metadata {
   preparedAt: string;
   nodeVersion: string;
   gitSha: string;
+  gitDirty: false;
   corpus: { id: string; sha256: string }[];
-  prompts: { id: string; sha256: string }[];
-  providers: { id: string; effort: string | null; maxTokens: number; maxRetries: number }[];
+  prompts: { id: string; label: string; sha256: string }[];
+  providers: { id: string; label: string; effort: string | null; maxTokens: number; maxRetries: number }[];
+  sourceFiles: { file: string; sha256: string }[];
+  providerSchemaSha256: string;
   timeoutMs: number;
   cache: boolean;
 }
@@ -50,6 +53,9 @@ export interface CellSummary {
   inputTokens: number;
   outputTokens: number;
   totalTokens: number;
+  medianInputTokens: number;
+  medianOutputTokens: number;
+  medianTotalTokens: number;
   totalCostUsd: number;
   costPerCaseUsd: number;
   medianLatencyMs: number;
@@ -86,7 +92,27 @@ function leaves(result: ComponentResult | null | undefined): ComponentResult[] {
 
 function providerId(provider: ResultRow["provider"]): string {
   if (typeof provider === "string") return provider;
-  return provider?.id ?? provider?.label ?? "unknown-provider";
+  return provider?.id ?? "";
+}
+
+function rowCaseId(row: ResultRow): string {
+  return row.vars?.caseId ?? row.testCase?.vars?.caseId ?? "";
+}
+
+function requireTelemetry(row: ResultRow, tuple: string): void {
+  const values = {
+    cost: row.cost,
+    latencyMs: row.latencyMs,
+    promptTokens: row.tokenUsage?.prompt,
+    completionTokens: row.tokenUsage?.completion,
+    totalTokens: row.tokenUsage?.total,
+  };
+  const invalid = Object.entries(values)
+    .filter(([, value]) => typeof value !== "number" || !Number.isFinite(value) || value < 0)
+    .map(([field]) => field);
+  if (invalid.length > 0) {
+    throw new Error(`${tuple} has missing or invalid telemetry: ${invalid.join(", ")}.`);
+  }
 }
 
 export function summarizeEval(document: EvalDocument, metadata: Metadata): EvalSummary {
@@ -106,9 +132,35 @@ export function summarizeEval(document: EvalDocument, metadata: Metadata): EvalS
   });
   if (errors.length > 0) throw new Error(`Promptfoo export contains ${errors.length} provider error(s).`);
 
+  const expectedTuples = new Set(
+    metadata.prompts.flatMap((prompt) =>
+      metadata.providers.flatMap((provider) =>
+        metadata.corpus.map((testCase) => `${prompt.label}\u0000${provider.id}\u0000${testCase.id}`),
+      ),
+    ),
+  );
+  const actualTuples = new Map<string, number>();
+  for (const row of rows) {
+    const prompt = row.prompt?.label ?? "";
+    const provider = providerId(row.provider);
+    const caseId = rowCaseId(row);
+    const tuple = `${prompt}\u0000${provider}\u0000${caseId}`;
+    if (!expectedTuples.has(tuple)) {
+      throw new Error(`Unexpected matrix tuple: ${JSON.stringify({ prompt, provider, caseId })}.`);
+    }
+    actualTuples.set(tuple, (actualTuples.get(tuple) ?? 0) + 1);
+    requireTelemetry(row, `${prompt}/${provider}/${caseId}`);
+    if (typeof row.success !== "boolean") throw new Error(`${prompt}/${provider}/${caseId} has no success flag.`);
+  }
+  const duplicateTuples = [...actualTuples].filter(([, count]) => count !== 1).map(([tuple]) => tuple);
+  const missingTuples = [...expectedTuples].filter((tuple) => !actualTuples.has(tuple));
+  if (duplicateTuples.length > 0 || missingTuples.length > 0) {
+    throw new Error(`Matrix tuple mismatch: ${duplicateTuples.length} duplicate(s), ${missingTuples.length} missing.`);
+  }
+
   const grouped = new Map<string, ResultRow[]>();
   for (const row of rows) {
-    const prompt = row.prompt?.label ?? "unlabelled-prompt";
+    const prompt = row.prompt?.label ?? "";
     const provider = providerId(row.provider);
     const key = `${prompt}\u0000${provider}`;
     grouped.set(key, [...(grouped.get(key) ?? []), row]);
@@ -148,6 +200,9 @@ export function summarizeEval(document: EvalDocument, metadata: Metadata): EvalS
       );
       const totalCostUsd = cellRows.reduce((sum, row) => sum + (row.cost ?? 0), 0);
       const latencies = cellRows.map((row) => row.latencyMs ?? 0);
+      const inputTokenCounts = cellRows.map((row) => row.tokenUsage?.prompt ?? 0);
+      const outputTokenCounts = cellRows.map((row) => row.tokenUsage?.completion ?? 0);
+      const totalTokenCounts = cellRows.map((row) => row.tokenUsage?.total ?? 0);
       const atomsPassed = atoms.filter((atom) => atom.pass === true).length;
 
       return {
@@ -163,6 +218,9 @@ export function summarizeEval(document: EvalDocument, metadata: Metadata): EvalS
         inputTokens,
         outputTokens,
         totalTokens,
+        medianInputTokens: percentile(inputTokenCounts, 0.5),
+        medianOutputTokens: percentile(outputTokenCounts, 0.5),
+        medianTotalTokens: percentile(totalTokenCounts, 0.5),
         totalCostUsd,
         costPerCaseUsd: totalCostUsd / cellRows.length,
         medianLatencyMs: percentile(latencies, 0.5),

@@ -6,15 +6,18 @@ const metadata = {
   preparedAt: "2026-09-08T12:00:00.000Z",
   nodeVersion: "22.14.0",
   gitSha: "abc123",
+  gitDirty: false as const,
   corpus: [
     { id: "one", sha256: "1" },
     { id: "two", sha256: "2" },
   ],
-  prompts: [{ id: "polish-production", sha256: "prompt" }],
+  prompts: [{ id: "polish-production", label: "Polish production", sha256: "prompt" }],
   providers: [
-    { id: "sonnet", effort: "medium", maxTokens: 128_000, maxRetries: 1 },
-    { id: "haiku", effort: null, maxTokens: 64_000, maxRetries: 1 },
+    { id: "sonnet", label: "Sonnet", effort: "medium", maxTokens: 128_000, maxRetries: 1 },
+    { id: "haiku", label: "Haiku", effort: null, maxTokens: 64_000, maxRetries: 1 },
   ],
+  sourceFiles: [],
+  providerSchemaSha256: "schema",
   timeoutMs: 45_000,
   cache: false,
 };
@@ -76,6 +79,9 @@ describe("summarizeEval", () => {
       inputTokens: 200,
       outputTokens: 40,
       totalTokens: 240,
+      medianInputTokens: 100,
+      medianOutputTokens: 20,
+      medianTotalTokens: 120,
       totalCostUsd: 0.04,
       costPerCaseUsd: 0.02,
       medianLatencyMs: 100,
@@ -98,6 +104,28 @@ describe("summarizeEval", () => {
       row("haiku", "two", true, 100),
     ];
     expect(() => summarizeEval({ results: { version: 3, results: rows } }, metadata)).toThrow("provider error");
+  });
+
+  it("rejects duplicate cases even when the aggregate matrix shape is correct", () => {
+    const rows = [
+      row("sonnet", "one", true, 100),
+      row("sonnet", "one", true, 100),
+      row("haiku", "one", true, 100),
+      row("haiku", "two", true, 100),
+    ];
+    expect(() => summarizeEval({ results: { version: 3, results: rows } }, metadata)).toThrow("Matrix tuple mismatch");
+  });
+
+  it("rejects missing telemetry instead of treating it as zero", () => {
+    const rows = [
+      { ...row("sonnet", "one", true, 100), cost: undefined },
+      row("sonnet", "two", true, 100),
+      row("haiku", "one", true, 100),
+      row("haiku", "two", true, 100),
+    ];
+    expect(() => summarizeEval({ results: { version: 3, results: rows } }, metadata)).toThrow(
+      "missing or invalid telemetry: cost",
+    );
   });
 
   it("counts Promptfoo's nested and flattened component copies once", () => {

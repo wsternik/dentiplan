@@ -65,6 +65,8 @@ function checksFor(expected: EvalExpectation): Check[] {
   const toothIds = new Set(listToothItems().map((item) => item.id));
   const generalIds = new Set(listGeneralItems().map((item) => item.id));
   const expectedNumbers = expected.teeth.map((tooth) => tooth.number);
+  const expectedNumberSet = new Set(expectedNumbers);
+  const expectedGeneralIds = new Set(expected.generalItems.map((item) => item.id));
 
   const checks: Check[] = [
     {
@@ -129,8 +131,19 @@ function checksFor(expected: EvalExpectation): Check[] {
       },
     },
     {
-      id: "exact-tooth-set",
+      id: "no-invented-teeth",
       safety: true,
+      run: (parsed) => {
+        const invented = parsed.teeth.map((tooth) => tooth.number).filter((number) => !expectedNumberSet.has(number));
+        return {
+          pass: invented.length === 0,
+          detail: `invented teeth: ${invented.join(", ")}`,
+        };
+      },
+    },
+    {
+      id: "exact-tooth-set",
+      safety: false,
       run: (parsed) => {
         const actual = parsed.teeth.map((tooth) => tooth.number);
         return {
@@ -142,6 +155,28 @@ function checksFor(expected: EvalExpectation): Check[] {
   ];
 
   for (const tooth of expected.teeth) {
+    checks.push({
+      id: `tooth-${tooth.number}-no-invented-treatment`,
+      safety: true,
+      run: (parsed) => {
+        const actual = parsed.teeth.find((candidate) => candidate.number === tooth.number);
+        if (!actual) return { pass: true };
+        const expectedIds = new Set(tooth.pricelistItemIds);
+        const inventedIds = actual.pricelistItemIds.filter((id) => !expectedIds.has(id));
+        const inventedTreatment =
+          actual.treatmentType !== tooth.treatmentType && actual.treatmentType !== "unknown"
+            ? actual.treatmentType
+            : null;
+        const invented = [
+          ...(inventedTreatment ? [`treatment ${inventedTreatment}`] : []),
+          ...inventedIds.map((id) => `item ${id}`),
+        ];
+        return {
+          pass: invented.length === 0,
+          detail: `invented treatment facts: ${invented.join(", ")}`,
+        };
+      },
+    });
     checks.push({
       id: `tooth-${tooth.number}`,
       safety: false,
@@ -167,8 +202,16 @@ function checksFor(expected: EvalExpectation): Check[] {
 
   checks.push(
     {
-      id: "exact-general-items",
+      id: "no-invented-general-items",
       safety: true,
+      run: (parsed) => {
+        const invented = parsed.generalItems.map((item) => item.id).filter((id) => !expectedGeneralIds.has(id));
+        return { pass: invented.length === 0, detail: `invented general items: ${invented.join(", ")}` };
+      },
+    },
+    {
+      id: "exact-general-items",
+      safety: false,
       run: (parsed) => ({
         pass: canonical(parsed.generalItems) === canonical(expected.generalItems),
         detail: `expected ${canonical(expected.generalItems)}, received ${canonical(parsed.generalItems)}`,

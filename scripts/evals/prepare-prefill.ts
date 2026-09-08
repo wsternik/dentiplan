@@ -15,6 +15,19 @@ const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, "../..");
 const casesDir = resolve(root, "evals/prefill/cases");
 const generatedDir = resolve(root, "evals/prefill/.generated");
+const sourceFiles = [
+  "evals/prefill/promptfooconfig.yaml",
+  "evals/prefill/assertions.mjs",
+  "evals/prefill/prompts/production.mjs",
+  "evals/prefill/prompts/english.mjs",
+  "scripts/evals/assertions.ts",
+  "scripts/evals/anthropic-schema.ts",
+  "scripts/evals/english-prompt.ts",
+  "scripts/evals/prepare-prefill.ts",
+  "scripts/evals/summarize-prefill.ts",
+  "src/lib/llm/prompt.ts",
+  "src/lib/llm/schema.ts",
+] as const;
 
 const ExpectedToothSchema = z.object({
   number: z.number().int(),
@@ -73,6 +86,13 @@ function main(): void {
   const englishPrompt = buildEnglishInstructions();
   const providerSchema = sanitizeAnthropicSchema(z.toJSONSchema(ParsedDiagnosisSchema));
   const gitSha = execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
+  const gitStatus = execFileSync("git", ["status", "--porcelain", "--untracked-files=all"], {
+    cwd: root,
+    encoding: "utf8",
+  }).trim();
+  if (gitStatus) {
+    throw new Error("Commit the prompt-eval harness and start from a clean worktree before a paid run.");
+  }
 
   mkdirSync(generatedDir, { recursive: true });
   writeFileSync(resolve(generatedDir, "anthropic-schema.json"), `${JSON.stringify(providerSchema, null, 2)}\n`);
@@ -84,20 +104,33 @@ function main(): void {
         preparedAt: new Date().toISOString(),
         nodeVersion: process.versions.node,
         gitSha,
+        gitDirty: false,
         corpus: cases.map(({ file, raw, parsed }) => ({ file, id: parsed.vars.caseId, sha256: sha256(raw) })),
         prompts: [
-          { id: "polish-production", sha256: sha256(productionPrompt) },
-          { id: "english-candidate", sha256: sha256(englishPrompt) },
+          { id: "polish-production", label: "Polish production", sha256: sha256(productionPrompt) },
+          { id: "english-candidate", label: "English candidate", sha256: sha256(englishPrompt) },
         ],
         providers: [
           {
             id: "anthropic:messages:claude-sonnet-5",
+            label: "Sonnet 5 · medium effort",
             effort: "medium",
             maxTokens: 128_000,
             maxRetries: 1,
           },
-          { id: "anthropic:messages:claude-haiku-4-5", effort: null, maxTokens: 64_000, maxRetries: 1 },
+          {
+            id: "anthropic:messages:claude-haiku-4-5",
+            label: "Haiku 4.5 · no effort option",
+            effort: null,
+            maxTokens: 64_000,
+            maxRetries: 1,
+          },
         ],
+        sourceFiles: sourceFiles.map((file) => ({
+          file,
+          sha256: sha256(readFileSync(resolve(root, file), "utf8")),
+        })),
+        providerSchemaSha256: sha256(JSON.stringify(providerSchema)),
         timeoutMs: 45_000,
         cache: false,
       },
