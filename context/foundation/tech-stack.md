@@ -45,6 +45,20 @@ Privacy is enforced structurally rather than by policy: `parseDiagnosis` takes a
 `string` and nothing else, so `patient_email` has no path into a prompt (FR-011,
 FR-072).
 
+**Measured 2026-09-08:** the paid, uncached Promptfoo matrix retained the Polish
+prompt with `claude-sonnet-5` at medium effort. It was the only safety-eligible
+cell (2/8 strict cases, 91/110 atoms, median 7.366 s, p95 29.529 s,
+$0.034262/case). English/Sonnet was cheaper and passed 92/110 atoms, but omitted
+the required warning for an unsupported phrase; both Haiku cells also failed
+safety atoms. The full decision and prompt hash are in `evals/README.md`.
+
+`npm run eval` is therefore a paid manual gate before any production prompt or
+default-model change. It runs eight synthetic cases against both prompt variants
+and both models, with cache disabled, and keeps raw results only under the ignored
+`evals/prefill/.generated/` directory. It is not a CI job because model output is
+non-deterministic, every matrix run costs money, and CI does not hold the provider
+key.
+
 This closes PRD Open Q #12 and Open Roadmap Question #1.
 
 ## Vendored code

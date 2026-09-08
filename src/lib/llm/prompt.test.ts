@@ -8,6 +8,9 @@
 // model guess, and the failure would otherwise surface as a warning the
 // dentystka has to read rather than as a red test.
 
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+
 import { describe, expect, it } from "vitest";
 
 import { listGeneralItems, listToothItems } from "@/lib/pricing";
@@ -27,6 +30,22 @@ function section(instructions: string, heading: string): string {
 }
 
 describe("buildInstructions", () => {
+  it("matches the prompt and default model selected by the provider evaluation", () => {
+    const report = readFileSync(new URL("../../../evals/README.md", import.meta.url), "utf8");
+    const client = readFileSync(new URL("./client.ts", import.meta.url), "utf8");
+    const recordedHash = /Production prompt SHA-256:\s*`([a-f0-9]{64})`/.exec(report)?.[1];
+    const recordedModel = /default model is `([^`]+)`/.exec(report)?.[1];
+    const configuredModel = /const DEFAULT_MODEL = "([^"]+)"/.exec(client)?.[1];
+    const liveHash = createHash("sha256").update(buildInstructions()).digest("hex");
+
+    // Changing the prompt is allowed, but only after the paid manual eval gate
+    // records a new winner. Reading the report keeps that decision in one place.
+    expect(recordedHash).toBeDefined();
+    expect(liveHash).toBe(recordedHash);
+    expect(recordedModel).toBeDefined();
+    expect(configuredModel).toBe(recordedModel);
+  });
+
   it("carries every live pricelist id, so the model never has to invent one", () => {
     const instructions = buildInstructions();
     const missing = [...listToothItems(), ...listGeneralItems()]

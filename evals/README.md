@@ -61,6 +61,18 @@ a filling and omitted the required warning. Both Haiku cells failed safety atoms
 including invented clinical content for the empty/noisy note. No safety failure
 is waived for a cheaper or faster call.
 
+### Production adoption
+
+The measured winner is active in production configuration: `buildInstructions()`
+is the single production prompt path, the default model is `claude-sonnet-5`, and
+Anthropic effort is `medium`. Production prompt SHA-256:
+`7a70760cf6711f883897c38c30476552f983f2942005e510f97c8f7bc6494266`.
+
+The prompt unit suite hashes the fully rendered production instructions and
+compares them with this report. Before changing the prompt or default model, run
+the complete uncached matrix and update the decision here; do not update the hash
+from an unevaluated prompt.
+
 The full run reproduced the broad baseline result despite ordinary provider
 variation: Polish/Sonnet again passed `unknowns-and-fdi` and `empty-noisy` with
 no safety failure, while Polish/Haiku remained ineligible. Its Polish/Sonnet
