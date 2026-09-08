@@ -99,6 +99,6 @@ PostgreSQL requires dropping the old function before recreating it because the `
 
 #### Automated
 
-- [x] 2.1 Assert exact keys in the raw anonymous RPC response.
-- [x] 2.2 Pass the focused privacy E2E against the hosted schema.
-- [x] 2.3 Pass the unchanged full E2E suite.
+- [x] 2.1 Assert exact keys in the raw anonymous RPC response. — 89b4d6f
+- [x] 2.2 Pass the focused privacy E2E against the hosted schema. — 89b4d6f
+- [x] 2.3 Pass the unchanged full E2E suite. — 89b4d6f

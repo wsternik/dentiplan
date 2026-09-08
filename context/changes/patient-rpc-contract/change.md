@@ -1,7 +1,7 @@
 ---
 change_id: patient-rpc-contract
 title: Restrict the public patient RPC contract
-status: implementing
+status: implemented
 created: 2026-09-08
 updated: 2026-09-08
 archived_at: null
