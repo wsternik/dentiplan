@@ -36,49 +36,58 @@ This rule was committed with the corpus before any candidate prompt exists:
 4. If every recorded measure ties at report precision, retain the current Polish
    prompt and Sonnet model.
 
-## Baseline — 2026-09-08
+## Complete matrix — 2026-09-08
 
-The retained run `eval-o2A-2026-09-08T15:29:43` completed the production Polish
-prompt against `claude-sonnet-5` with medium effort and
-`claude-haiku-4-5` without an effort option: 8 cases × 2 providers = 16 uncached
-calls, with no provider errors. Strict macro pass means that every deterministic
-atom for the case passed.
+The retained run `eval-ILg-2026-09-08T16:23:37` compared the production Polish
+prompt and the English-instruction candidate across `claude-sonnet-5` with
+medium effort and `claude-haiku-4-5` without an effort option: 8 cases × 2
+prompts × 2 providers = 32 uncached calls, with no provider errors. Strict
+macro pass means that every deterministic atom for the case passed.
 
-| Model configuration  | Safety eligible | Strict cases |          Atoms | Input / output tokens | Cost (USD) | Cost / case |       Median / p95 |
-| -------------------- | --------------- | -----------: | -------------: | --------------------: | ---------: | ----------: | -----------------: |
-| Sonnet 5, medium     | yes             |  2/8 (25.0%) | 92/110 (83.6%) |        49,035 / 6,682 |  $0.247335 |   $0.030917 | 7.286 s / 15.981 s |
-| Haiku 4.5, no effort | **no**          |   0/8 (0.0%) | 87/110 (79.1%) |        38,007 / 2,712 |  $0.051567 |   $0.006446 | 9.522 s / 13.473 s |
+| Prompt / model          | Safety eligible | Strict cases |          Atoms | Input / output tokens | Cost (USD) | Cost / case |       Median / p95 |
+| ----------------------- | --------------- | -----------: | -------------: | --------------------: | ---------: | ----------: | -----------------: |
+| Polish / Sonnet medium  | **yes**         |  2/8 (25.0%) | 91/110 (82.7%) |        49,035 / 8,466 |  $0.274095 |   $0.034262 | 7.366 s / 29.529 s |
+| English / Sonnet medium | **no**          |  1/8 (12.5%) | 92/110 (83.6%) |        42,899 / 6,494 |  $0.226107 |   $0.028263 | 8.597 s / 15.154 s |
+| Polish / Haiku          | **no**          |   0/8 (0.0%) | 87/110 (79.1%) |        38,007 / 2,712 |  $0.051567 |   $0.006446 | 9.536 s / 13.330 s |
+| English / Haiku         | **no**          |   0/8 (0.0%) | 88/110 (80.0%) |        32,695 / 2,456 |  $0.044975 |   $0.005622 | 8.585 s / 10.636 s |
 
-Sonnet passed `unknowns-and-fdi` and `empty-noisy`. Its other six cases failed
-quality atoms: defaulted filling/root-canal urgencies remained `unknown`, and
-`status-and-urgency` did not preserve the note-derived urgency flag. It had no
-safety-atom failure.
+### Decision
 
-Haiku failed all eight strict cases. In addition to urgency and visit-grouping
-quality mismatches, three cases failed safety atoms: it invented clinical
-content for `empty-noisy`, invented a general hygiene item in
-`status-and-urgency`, and converted the unknown `flow-injection` term into a
-filling while omitting the required warning in `unknowns-and-fdi`.
+**Keep the Polish production prompt and Sonnet 5 with medium effort.** It is the
+only safety-eligible cell, so the first ranking rule selects it before cost or
+latency can act as tie-breakers. The English/Sonnet cell was cheaper and passed
+one more atom overall, but it treated the unsupported `flow-injection` phrase as
+a filling and omitted the required warning. Both Haiku cells failed safety atoms,
+including invented clinical content for the empty/noisy note. No safety failure
+is waived for a cheaper or faster call.
 
-| Case                     | Sonnet 5 failures            | Haiku 4.5 failures                                |
-| ------------------------ | ---------------------------- | ------------------------------------------------- |
-| `catalog-grounding`      | tooth details 16, 24, 54     | tooth details 16, 24, 54                          |
-| `unknowns-and-fdi`       | —                            | tooth 17; required warning (safety)               |
-| `status-and-urgency`     | tooth 24                     | teeth 16, 24; visit groups; general item (safety) |
-| `visit-topology`         | tooth details 24, 26, 45, 46 | tooth details 45, 46; visit groups                |
-| `explicit-plan`          | tooth details 14, 15         | tooth details 14, 15                              |
-| `anaesthesia-considered` | tooth details 16, 17, 24, 25 | tooth details 16, 17, 24, 25                      |
-| `anaesthesia-explicit`   | tooth details 16, 17, 24, 25 | tooth details 16, 17, 24, 25                      |
-| `empty-noisy`            | —                            | invented clinical warning (safety)                |
+The full run reproduced the broad baseline result despite ordinary provider
+variation: Polish/Sonnet again passed `unknowns-and-fdi` and `empty-noisy` with
+no safety failure, while Polish/Haiku remained ineligible. Its Polish/Sonnet
+micro score moved from 92/110 in the baseline to 91/110 here; that variation did
+not affect eligibility, macro rank, or the selected pair.
+
+| Case                     | Polish / Sonnet              | English / Sonnet                   | Polish / Haiku                                    | English / Haiku                    |
+| ------------------------ | ---------------------------- | ---------------------------------- | ------------------------------------------------- | ---------------------------------- |
+| `catalog-grounding`      | tooth details 16, 24, 54     | tooth details 16, 24, 54           | tooth details 16, 24, 54                          | tooth details 16, 24, 54           |
+| `unknowns-and-fdi`       | —                            | tooth 17; missing warning (safety) | tooth 17; missing warning (safety)                | tooth 17; missing warning (safety) |
+| `status-and-urgency`     | tooth details 16, 24         | tooth details 16, 24               | teeth 16, 24; visit groups; general item (safety) | teeth 16, 24; visit groups         |
+| `visit-topology`         | tooth details 24, 26, 45, 46 | visit groups                       | tooth details 45, 46; visit groups                | tooth details 45, 46; visit groups |
+| `explicit-plan`          | tooth details 14, 15         | tooth details 14, 15               | tooth details 14, 15                              | tooth details 14, 15               |
+| `anaesthesia-considered` | tooth details 16, 17, 24, 25 | tooth details 16, 17, 24, 25       | tooth details 16, 17, 24, 25                      | tooth details 16, 17, 24, 25       |
+| `anaesthesia-explicit`   | tooth details 16, 17, 24, 25 | tooth details 16, 17, 24, 25       | tooth details 16, 17, 24, 25                      | tooth details 16, 17, 24, 25       |
+| `empty-noisy`            | —                            | —                                  | invented clinical warning (safety)                | invented clinical warning (safety) |
 
 ### Reproducibility record
 
-- Timestamp: `2026-09-08T15:29:43.627Z`
-- Source revision: `09bfb777bc7554b4394592bf5af8712ba87bf43a`
+- Timestamp: `2026-09-08T16:23:37.503Z`
+- Source revision: `531fd3ba9d4e076faf0af247b195a525cd29dc14`
 - Node: `22.14.0`; Promptfoo: `0.122.2`; cache: disabled; concurrency: 1
 - Timeout: 45,000 ms; retries: 1; output caps: Sonnet 128,000, Haiku 64,000
 - Production prompt SHA-256:
   `7a70760cf6711f883897c38c30476552f983f2942005e510f97c8f7bc6494266`
+- English candidate prompt SHA-256:
+  `c357094b14a7d27394c322e8dd30c3da02f0b251380be0fa81585b6c78134d82`
 - Corpus SHA-256 by checked-in file:
   - `01-catalog-grounding.json`:
     `c234573b7ecf6abd08d4cd01469e0410faa4d85f750e319820e827adb88c9b2d`
@@ -102,7 +111,7 @@ the run date: Sonnet 5 at $3 / $15 and Haiku 4.5 at $1 / $5 per million
 input/output tokens. The pricing source is Anthropic's
 [2026-05-27 list-price sheet](https://www-cdn.anthropic.com/files/4zrzovbb/website/3684c2faafb97418665782cea0001f439f74b1d2.pdf).
 
-Before the retained run, the harness rejected two shakedowns: one exposed
+Before the phase-1 baseline, the harness rejected two shakedowns: one exposed
 Promptfoo's implicit 1,024-token output cap through three truncated Sonnet
 responses, and one had five transport errors. A subsequent `--retry-errors`
 attempt also exposed a Promptfoo relative-path limitation and made no valid model
@@ -110,8 +119,9 @@ calls. Those runs are not mixed into the table. Their findings changed only the
 provider configuration and summarizer; no case oracle was changed after seeing
 model output.
 
-The baseline is not perfect, so the hard-case rule does not apply before phase 2. Existing oracles remain frozen; phase 2 compares the English candidate
-against this same corpus and selection rule.
+The phase-1 baseline was not perfect, so the hard-case rule did not apply. The
+complete matrix used the same eight corpus files and unchanged hashes; no oracle
+was altered after a model response was observed.
 
 Configuration follows the [Promptfoo Anthropic provider](https://www.promptfoo.dev/docs/providers/anthropic/),
 [JavaScript assertion](https://www.promptfoo.dev/docs/configuration/expected-outputs/javascript/),

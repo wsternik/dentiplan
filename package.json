@@ -11,7 +11,7 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "depcruise": "depcruise src --output-type err",
-    "eval": "node --import tsx --env-file-if-exists=.env scripts/evals/prepare-prefill.ts && PROMPTFOO_CONFIG_DIR=evals/prefill/.generated PROMPTFOO_DISABLE_TELEMETRY=1 PROMPTFOO_FAILED_TEST_EXIT_CODE=0 REQUEST_TIMEOUT_MS=45000 node --import tsx --env-file-if-exists=.env node_modules/promptfoo/dist/src/main.js eval --config evals/prefill/promptfooconfig.yaml --no-cache --max-concurrency 1 --no-table --output evals/prefill/.generated/baseline.json && node --import tsx scripts/evals/summarize-prefill.ts evals/prefill/.generated/baseline.json",
+    "eval": "node --import tsx --env-file-if-exists=.env scripts/evals/prepare-prefill.ts && PROMPTFOO_CONFIG_DIR=evals/prefill/.generated PROMPTFOO_DISABLE_TELEMETRY=1 PROMPTFOO_FAILED_TEST_EXIT_CODE=0 REQUEST_TIMEOUT_MS=45000 node --import tsx --env-file-if-exists=.env node_modules/promptfoo/dist/src/main.js eval --config evals/prefill/promptfooconfig.yaml --no-cache --max-concurrency 1 --no-table --output evals/prefill/.generated/matrix.json && node --import tsx scripts/evals/summarize-prefill.ts evals/prefill/.generated/matrix.json",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "validate:pricing": "tsx scripts/validate-pricing.ts",

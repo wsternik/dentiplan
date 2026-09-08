@@ -9,6 +9,7 @@ import { z } from "zod";
 import { ParsedDiagnosisSchema } from "../../src/lib/llm/schema";
 import { buildInstructions } from "../../src/lib/llm/prompt";
 import { sanitizeAnthropicSchema } from "./anthropic-schema";
+import { buildEnglishInstructions } from "./english-prompt";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, "../..");
@@ -69,6 +70,7 @@ function main(): void {
   if (new Set(ids).size !== ids.length) throw new Error("Every prompt-eval caseId must be unique.");
 
   const productionPrompt = buildInstructions();
+  const englishPrompt = buildEnglishInstructions();
   const providerSchema = sanitizeAnthropicSchema(z.toJSONSchema(ParsedDiagnosisSchema));
   const gitSha = execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
 
@@ -83,7 +85,10 @@ function main(): void {
         nodeVersion: process.versions.node,
         gitSha,
         corpus: cases.map(({ file, raw, parsed }) => ({ file, id: parsed.vars.caseId, sha256: sha256(raw) })),
-        prompts: [{ id: "polish-production", sha256: sha256(productionPrompt) }],
+        prompts: [
+          { id: "polish-production", sha256: sha256(productionPrompt) },
+          { id: "english-candidate", sha256: sha256(englishPrompt) },
+        ],
         providers: [
           {
             id: "anthropic:messages:claude-sonnet-5",
@@ -102,9 +107,7 @@ function main(): void {
   );
 
   // eslint-disable-next-line no-console -- command-line success signal
-  console.log(
-    `Prepared ${cases.length} synthetic cases and one production prompt under Node ${process.versions.node}.`,
-  );
+  console.log(`Prepared ${cases.length} synthetic cases and two prompt variants under Node ${process.versions.node}.`);
 }
 
 try {

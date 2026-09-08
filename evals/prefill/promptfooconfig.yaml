@@ -1,9 +1,11 @@
 # yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
-description: DentiPlan diagnosis-prefill baseline
+description: DentiPlan diagnosis-prefill prompt and model matrix
 
 prompts:
   - id: file://prompts/production.mjs
     label: Polish production
+  - id: file://prompts/english.mjs
+    label: English candidate
 
 providers:
   - id: anthropic:messages:claude-sonnet-5
