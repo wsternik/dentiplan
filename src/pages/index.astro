@@ -1,106 +1,80 @@
 ---
 // The front door. Anonymous: nothing here is derived from a session, and the
-// sample quote below is invented — round numbers, no real patient, no real
-// pricelist lookup.
+// sample below is invented — round numbers, no real patient, no real pricelist
+// lookup.
 //
-// The hero is the artifact rather than a headline over a gradient. What a
-// practice buys is the page its patients receive, so that is what the front page
-// shows.
+// The page states rather than sells. Three readers arrive: the dentist, who
+// wants the sign-in button where convention puts it; a stranger who trimmed a
+// `/p/<token>` link to its root and needs to know what this is and who it is
+// for; and nobody else. So there is exactly one action on the whole page, and
+// the only thing given any weight is the artifact — a diagnosis note next to the
+// page it becomes.
+//
+// There is no sign-up, on any level, and there must never be: RLS grants every
+// authenticated role full CRUD on `public.quotes`, so a new account would be a
+// dentist account. `e2e/home.spec.ts` guards this page's half of that.
 
 import Layout from "@/layouts/Layout.astro";
-import { formatAmount } from "@/lib/quote/format";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import SampleQuote from "@/components/home/SampleQuote.astro";
 
-// Invented figures, formatted by the same helper the real quote uses — so the
-// sample can never disagree with the product about how money is written. (It
-// already did once: hand-typed "2 400 zł", while Polish does not group
-// four-digit numbers and the app renders "2400 zł".)
-const sample = {
-  visits: [1200, 800, 400],
-  standardTotal: 2400,
-  anesthesiaFee: 900,
-  anesthesiaTotal: 3300,
-};
+// `buttonVariants` is a pure `cva` call, so the header's one link is rendered to
+// HTML and ships no JavaScript. The button component itself is not imported.
+const signInClass = cn(buttonVariants());
+
+const description =
+  "DentiPlan zamienia notatkę dentysty z konsultacji w plan leczenia z dwoma kosztorysami: w kilku wizytach albo w jednej sesji w narkozie. Pacjent otwiera go jednym linkiem, bez konta.";
 ---
 
 <Layout title="DentiPlan — kosztorys leczenia dla pacjenta">
-  <main class="mx-auto grid min-h-screen max-w-5xl content-center gap-12 px-5 py-12 lg:grid-cols-2 lg:gap-16">
-    <div class="max-w-prose">
-      <p class="text-muted-foreground text-sm font-medium tracking-tight">DentiPlan</p>
+  <Fragment slot="head">
+    <meta name="description" content={description} />
+  </Fragment>
 
-      <h1 class="mt-5 font-serif text-4xl leading-[1.15] font-medium tracking-tight sm:text-5xl">
-        Dwa kosztorysy obok siebie,<br class="hidden sm:inline" /> jeden link dla pacjenta.
+  <div class="flex min-h-screen flex-col">
+    {
+      /* The wordmark is a plain `<span>`: this page is the root, so linking it
+        would give the page a second link pointing at itself. */
+    }
+    <header class="border-border border-b">
+      <div class="mx-auto flex max-w-5xl items-center justify-between gap-4 px-5 py-3 sm:px-6">
+        <span class="text-base leading-none font-semibold tracking-tight">DentiPlan</span>
+        <a href="/auth/signin" class:list={signInClass}>Zaloguj się</a>
+      </div>
+    </header>
+
+    <main class="mx-auto w-full max-w-5xl grow px-5 pb-8 sm:px-6">
+      {
+        /* The wrap belongs to the browser, not to markup — a hard `<br>` here
+          stranded one word on a desktop line. `text-balance` plus a measure cap
+          does the same job at every width. */
+      }
+      <h1
+        class="mt-10 max-w-[26ch] font-serif text-[1.9375rem] leading-[1.15] font-medium tracking-tight text-balance lg:mt-12 lg:text-[2.4375rem]"
+      >
+        Notatka z konsultacji staje się planem leczenia i kosztorysem dla pacjenta.
       </h1>
 
-      <p class="text-muted-foreground mt-6 text-base leading-relaxed">
-        Wklejasz notatkę z diagnozy, sprawdzasz wypełniony formularz i zatwierdzasz. Pacjent otwiera link i widzi to
-        samo leczenie policzone na dwa sposoby: rozłożone na wizyty albo w jednej sesji w narkozie.
+      {
+        /* Full ink, not slate: this is the sentence that explains the product,
+          so it must not be the least legible thing on the page. */
+      }
+      <p class="mt-6 max-w-[60ch] text-base leading-[1.6] lg:text-[1.0625rem]">
+        DentiPlan to narzędzie gabinetu stomatologicznego. Dentystka wkleja notatkę z rozpoznania, sprawdza wypełniony
+        formularz i zatwierdza. Pacjent otwiera link i widzi to samo leczenie policzone na dwa sposoby: rozłożone na
+        wizyty albo w jednej sesji w narkozie.
       </p>
 
-      <p class="text-muted-foreground mt-4 text-sm leading-relaxed">
-        Link działa bez logowania i bez aplikacji. Kosztorys jest zamrożony w chwili zatwierdzenia, więc zmiana cennika
-        nie zmienia tego, co pacjent już zobaczył.
-      </p>
+      <SampleQuote />
+    </main>
 
-      <div class="mt-9">
-        <a
-          href="/auth/signin"
-          class="bg-primary text-primary-foreground hover:bg-primary/88 focus-visible:ring-ring inline-flex h-10 items-center rounded-md px-6 text-sm font-medium tracking-tight transition-colors focus-visible:ring-2 focus-visible:outline-none"
-        >
-          Zaloguj się
-        </a>
+    <footer class="border-border border-t">
+      <div class="mx-auto max-w-5xl px-5 py-4 sm:px-6">
+        <p class="text-muted-foreground text-xs leading-[1.5]">
+          Z DentiPlanu korzysta gabinet. Pacjent nie potrzebuje konta, wystarczy link.
+        </p>
       </div>
-    </div>
-
-    <!-- The artifact. Squared tabs with a grip edge; the recommended one is
-         marked by the weight of that edge and by saying so, not by being
-         brighter. Same device the patient page uses. -->
-    <figure class="m-0 lg:self-center">
-      <div class="grid gap-4 sm:grid-cols-2">
-        <article class="border-border border-l-border/80 bg-card rounded-md border border-l-[3px] p-4">
-          <p class="font-serif text-sm leading-snug font-medium">Leczenie w kilku wizytach</p>
-          <dl class="numeric mt-4 space-y-1.5 text-xs">
-            <div class="flex justify-between gap-3">
-              <dt class="text-muted-foreground">Wizyta 1</dt>
-              <dd class="m-0">{formatAmount(sample.visits[0])}</dd>
-            </div>
-            <div class="flex justify-between gap-3">
-              <dt class="text-muted-foreground">Wizyta 2</dt>
-              <dd class="m-0">{formatAmount(sample.visits[1])}</dd>
-            </div>
-            <div class="flex justify-between gap-3">
-              <dt class="text-muted-foreground">Wizyta 3</dt>
-              <dd class="m-0">{formatAmount(sample.visits[2])}</dd>
-            </div>
-          </dl>
-          <div class="border-border numeric mt-3 flex justify-between gap-3 border-t pt-3 text-xs font-semibold">
-            <span>Razem</span>
-            <span>{formatAmount(sample.standardTotal)}</span>
-          </div>
-        </article>
-
-        <article class="border-border border-l-primary bg-card rounded-md border border-l-[6px] p-4">
-          <p class="font-serif text-sm leading-snug font-medium">Leczenie w narkozie (jedna sesja)</p>
-          <p class="text-muted-foreground mt-1 text-[0.6875rem]">rekomendowane przez gabinet</p>
-          <dl class="numeric mt-4 space-y-1.5 text-xs">
-            <div class="flex justify-between gap-3">
-              <dt class="text-muted-foreground">Leczenie</dt>
-              <dd class="m-0">{formatAmount(sample.standardTotal)}</dd>
-            </div>
-            <div class="flex justify-between gap-3">
-              <dt class="text-muted-foreground">Narkoza</dt>
-              <dd class="m-0">{formatAmount(sample.anesthesiaFee)}</dd>
-            </div>
-          </dl>
-          <div class="border-border numeric mt-3 flex justify-between gap-3 border-t pt-3 text-xs font-semibold">
-            <span>Razem</span>
-            <span>{formatAmount(sample.anesthesiaTotal)}</span>
-          </div>
-        </article>
-      </div>
-
-      <figcaption class="text-muted-foreground mt-4 text-xs leading-relaxed">
-        Przykładowy kosztorys z wymyślonymi kwotami. Tak wygląda strona, którą otwiera pacjent.
-      </figcaption>
-    </figure>
-  </main>
+    </footer>
+  </div>
 </Layout>

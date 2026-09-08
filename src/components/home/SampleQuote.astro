@@ -1,0 +1,110 @@
+---
+// The front page's one memorable device: the note the dentist already writes,
+// next to the page her patient opens. Input and output, side by side, in the
+// product's own materials — no arrow between them, because the two panel names
+// and the two different surfaces already say which is which.
+//
+// Everything here is INVENTED. No session, no pricelist lookup, no real patient.
+// The note is deliberately messy — the trailing comma and the `(32?)` are the
+// point, since turning that into a document is what the product does.
+//
+// Amounts go through `formatAmount`, the same helper the real quote uses, so the
+// sample can never disagree with the product about how money is written. (It
+// already did once: hand-typed "2 400 zł", while Polish does not group
+// four-digit numbers and the app renders "2400 zł".)
+//
+// Titles and tab names are `<p>`, never `<h2>`/`<h3>`. This is an illustration
+// of the patient page, not the patient page: the heading names on this route
+// belong to `/p/<token>`, and a reader walking `/` by headings should not find
+// a document outline describing somebody's treatment.
+
+import { formatAmount } from "@/lib/quote/format";
+
+const sample = {
+  visits: [1200, 800, 400],
+  standardTotal: 2400,
+  anesthesiaFee: 900,
+  anesthesiaTotal: 3300,
+};
+
+const note = `Do leczenia: 17,16,15
+Kanałowe: 34,37,36, (32?)
+Kamień do usunięcia`;
+---
+
+<figure class="m-0 mt-8">
+  {
+    /* Top-aligned, not stretched. Growing the filled note panel to the document's
+      height was tried and reverted: matched heights made the two blocks compete,
+      and the document — the thing a practice is actually buying — has to be the
+      heaviest element on the page. A short note is allowed to look short. */
+  }
+  <div class="grid gap-6 lg:grid-cols-[2fr_3fr] lg:items-start">
+    <div>
+      <p class="text-muted-foreground text-[0.8125rem] leading-[1.4] font-medium">Notatka z rozpoznania</p>
+      <div class="bg-secondary mt-2 rounded-md p-5">
+        <p class="text-[0.9375rem] leading-[1.6] whitespace-pre-line">{note}</p>
+      </div>
+    </div>
+
+    <div>
+      <p class="text-muted-foreground text-[0.8125rem] leading-[1.4] font-medium">Strona pacjenta</p>
+      <div class="border-border mt-2 rounded-md border p-5">
+        <p class="font-serif text-xl leading-[1.2] font-medium tracking-tight">Twój kosztorys leczenia</p>
+        <p class="text-muted-foreground mt-1 text-xs leading-[1.4]">Plan dla osoby dorosłej</p>
+
+        {
+          /* The same squared tab with a grip edge the patient page uses: the
+            recommended option is marked by the weight of that edge and by saying
+            so, never by being brighter or bigger. */
+        }
+        <div class="mt-4 grid gap-4 sm:grid-cols-2">
+          <article class="border-border border-l-border/80 bg-card rounded-md border border-l-[3px] p-4">
+            <p class="font-serif text-sm leading-[1.3] font-medium">Leczenie w kilku wizytach</p>
+            <dl class="numeric mt-4 space-y-1.5 text-xs leading-[1.5]">
+              {
+                sample.visits.map((cost, index) => (
+                  <div class="flex justify-between gap-3">
+                    <dt class="text-muted-foreground">Wizyta {index + 1}</dt>
+                    <dd class="m-0 whitespace-nowrap">{formatAmount(cost)}</dd>
+                  </div>
+                ))
+              }
+            </dl>
+            <div
+              class="border-border numeric mt-3 flex justify-between gap-3 border-t pt-3 text-xs leading-[1.5] font-semibold"
+            >
+              <span>Razem</span>
+              <span class="whitespace-nowrap">{formatAmount(sample.standardTotal)}</span>
+            </div>
+          </article>
+
+          <article class="border-border border-l-primary bg-card rounded-md border border-l-[6px] p-4">
+            <p class="font-serif text-sm leading-[1.3] font-medium">Leczenie w narkozie (jedna sesja)</p>
+            <p class="text-muted-foreground mt-1 text-xs leading-[1.4]">rekomendowane przez gabinet</p>
+            <dl class="numeric mt-4 space-y-1.5 text-xs leading-[1.5]">
+              <div class="flex justify-between gap-3">
+                <dt class="text-muted-foreground">Leczenie</dt>
+                <dd class="m-0 whitespace-nowrap">{formatAmount(sample.standardTotal)}</dd>
+              </div>
+              <div class="flex justify-between gap-3">
+                <dt class="text-muted-foreground">Narkoza</dt>
+                <dd class="m-0 whitespace-nowrap">{formatAmount(sample.anesthesiaFee)}</dd>
+              </div>
+            </dl>
+            <div
+              class="border-border numeric mt-3 flex justify-between gap-3 border-t pt-3 text-xs leading-[1.5] font-semibold"
+            >
+              <span>Razem</span>
+              <span class="whitespace-nowrap">{formatAmount(sample.anesthesiaTotal)}</span>
+            </div>
+          </article>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <figcaption class="text-muted-foreground mt-3 text-xs leading-[1.5]">
+    Przykład z wymyślonymi kwotami. Tak wygląda strona, którą otwiera pacjent.
+  </figcaption>
+</figure>
