@@ -84,7 +84,7 @@ Requires Node.js v22.14.0 (see `.nvmrc`) and, for a local database,
 ```bash
 npm install
 cp .env.example .env        # Node tooling (tests, scripts)
-cp .env.example .dev.vars   # Cloudflare local dev — same values
+cp .dev.vars.example .dev.vars # Cloudflare local dev
 ```
 
 `ANTHROPIC_API_KEY` powers the note prefill. Leave it unset and the app runs
@@ -175,22 +175,24 @@ uncertain, dimmed and hatched for deferred — so it survives being printed in
 black and white and being read by someone who cannot separate red from green.
 
 The palette lives as tokens in `src/styles/global.css`; the reasoning behind it
-is in [`context/changes/ui-redesign/design-brief.md`](context/changes/ui-redesign/design-brief.md).
+is in
+[`context/archive/2026-09-05-ui-redesign/design-brief.md`](context/archive/2026-09-05-ui-redesign/design-brief.md).
 
 ## Roadmap status
 
 Shipped: the domain schema (F-01), the pricelist seed (F-02), the end-to-end
-quote and patient link (S-01), the admin quote list (S-03), and the note prefill
-(S-02). What is not built, and why:
+quote and patient link (S-01), the admin quote list (S-03), note prefill and
+visit planning (S-02/S-09), the SVG odontogram (S-06), patient-link QR (S-07),
+and the note-first form (S-10). What is not built, and why:
 
 |                                         | Status   | Why not yet                                                                                                                                                                                                                                         |
 | --------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **S-04** 12-month retention enforcement | proposed | The default is written down (link stops resolving, patient e-mail scrubbed), but "delete the quote or anonymise it" is a decision for the dentist and a GDPR lawyer, not for the code. It is a hard gate before real patients, not before the demo. |
 | **S-05** Auth hardening                 | ready    | Session timeout, rate limiting against credential stuffing, and no account lockout. Independent of everything else, planned but not started.                                                                                                        |
 
-Deliberately out of scope for v1 — the SVG odontogram, drag-and-drop of teeth
-between visits, sending e-mails from the app, a pricelist admin UI — with the
-reasoning for each in the roadmap's _Parked_ section:
+Deliberately out of scope for v1 — drag-and-drop of teeth between visits,
+sending e-mails from the app, and a pricelist admin UI — with the reasoning for
+each in the roadmap's _Parked_ section:
 [`context/foundation/roadmap.md`](context/foundation/roadmap.md).
 
 ## Deployment
