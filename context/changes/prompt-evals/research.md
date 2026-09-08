@@ -195,7 +195,7 @@ its score. No case may be copied or adapted from `example-doctor-input/`.
 | explicit-plan          | 14/15 assigned to visit 2, painful extraction 46 and hygiene in visit 1                      | Explicit associations survive; hygiene is a general item attached to visit 1                                          |
 | anaesthesia-considered | A multi-side plan that merely says anaesthesia is being considered                           | The standard plan remains multi-visit and side-aware; no false single-session interpretation                          |
 | anaesthesia-explicit   | The same treatment with an explicit instruction that all work happens under anaesthesia      | Exactly one proposed visit and a warning containing the anaesthesia phrase                                            |
-| empty-noisy            | Blank lines, punctuation and administrative noise with no diagnosis                          | Empty structured arrays; no invented tooth, item, urgency or visit                                                    |
+| empty-noisy            | Blank lines and punctuation with no diagnosis                                                | No tooth, item, urgency or visit; warnings may be empty or preserve noise rather than inventing treatment             |
 
 Warnings are free text, so assertions require a warning containing a stable token
 or phrase; they never demand exact prose. Catalog ids, tooth numbers, statuses,
@@ -212,7 +212,7 @@ historical test oracle rather than a reviewed gold answer. Reusing them would mi
 `npm run eval` should perform preparation and then one Promptfoo invocation from
 the repository root. It must fail before spending money when the API key is
 missing, validate all cases and the generated schema, and write raw generated
-results to an ignored directory. The checked-in `evals/prefill/README.md` records:
+results to an ignored directory. The checked-in `evals/README.md` records:
 
 - timestamp, git SHA, prompt hashes and exact provider/model configuration;
 - corpus version/case count and matrix size;
@@ -236,8 +236,9 @@ change. Otherwise Sonnet remains the conservative choice.
 ## Recommended File Shape
 
 ```text
-evals/prefill/
+evals/
   README.md                     aggregate evidence and final decision
+evals/prefill/
   promptfooconfig.yaml          matrix, provider settings, prompt labels
   cases/                        8 synthetic notes and fixed expectations
   prompts/                      production adapter + English candidate
@@ -247,6 +248,8 @@ scripts/evals/
   prepare-prefill.ts            schema generation/validation and key guard
   anthropic-schema.ts           pure unsupported-key adapter
   anthropic-schema.test.ts      adapter contract
+  summarize-prefill.ts          deterministic matrix aggregation
+  summarize-prefill.test.ts     aggregation contract
 ```
 
 The exact split between case files may be simplified during implementation, but

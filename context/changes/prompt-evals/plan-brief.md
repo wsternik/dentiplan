@@ -56,7 +56,8 @@ same evidence first.
 **In scope:** Promptfoo dependency/configuration; one root command; production
 prompt/schema reuse; Anthropic schema adapter; eight synthetic cases; deterministic
 assertions; Polish baseline and full 2×2 run; result report; winner adoption;
-prompt tests; tech-stack, README, roadmap S-08 and test-plan risk #10 updates.
+prompt tests; tech-stack, root README, `evals/README.md`, roadmap S-08 and
+test-plan risk #10 updates.
 
 **Out of scope:** patient material, `example-doctor-input/`, Promptfoo in CI,
 LLM-as-judge, review-agent evals, OpenRouter, prompt caching, UI model selection,

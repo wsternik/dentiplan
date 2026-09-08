@@ -38,7 +38,7 @@ From a clean checkout with Node 22 and `ANTHROPIC_API_KEY` configured, one
 `npm run eval` command prepares an Anthropic-compatible schema from the production
 Zod contract and runs the complete 2×2 matrix without cache. Every cell is graded
 against the same precommitted eight-note synthetic corpus. Raw generated output is
-ignored; `evals/prefill/README.md` contains enough aggregate and per-case evidence
+ignored; `evals/README.md` contains enough aggregate and per-case evidence
 to reproduce and audit the decision.
 
 The production prompt and default model match the measured winner. If no cheaper
@@ -202,7 +202,7 @@ provider supports it.
 #### 4. Eight-case corpus and deterministic scorer
 
 **Files**: `evals/prefill/cases/*`, `evals/prefill/assertions.mjs`, supporting
-unit tests under `scripts/evals/` if extraction improves testability
+unit tests under `scripts/evals/`
 
 **Intent**: Make failure conditions reviewable before any model answer exists.
 
@@ -213,20 +213,26 @@ item; anaesthesia considered; anaesthesia explicit; empty/noisy input. Each case
 contains its synthetic note and fixed atoms. The scorer validates the raw wire
 shape, rejects duplicates, checks exact domain values and canonical visit groups,
 and uses stable warning tokens rather than exact generated prose. No source may
-come from `example-doctor-input/` or an existing output fixture.
+come from `example-doctor-input/` or an existing output fixture. The empty/noisy
+case forbids invented clinical content but permits either no warning or a warning
+that preserves the noise.
 
 #### 5. Baseline evidence
 
-**File**: `evals/prefill/README.md`
+**Files**: `scripts/evals/summarize-prefill.ts`,
+`scripts/evals/summarize-prefill.test.ts`, `evals/README.md`
 
 **Intent**: Prove the harness works on the current production prompt and expose
 whether the starting corpus is too easy.
 
-**Contract**: Run Polish × both models (16 calls for eight cases), record the
-reproducibility metadata, macro/micro pass rates, per-case failures, latency,
-tokens and cost. State why native Anthropic is used directly and why the suite is
-manual rather than CI. If both cells pass every atom, add and document one harder
-synthetic case before phase 2 without weakening existing oracles.
+**Contract**: A deterministic summarizer parses Promptfoo's JSON export, rejects
+an unexpected matrix shape, and emits aggregate plus per-case data into the
+ignored generated directory. Run Polish × both models (16 calls for eight cases)
+and use that summary to record reproducibility metadata, macro/micro pass rates,
+per-case failures, latency, tokens and cost in `evals/README.md`. State why native
+Anthropic is used directly and why the suite is manual rather than CI. If both
+cells pass every atom, add and document one harder synthetic case before phase 2
+without weakening existing oracles.
 
 ### Success Criteria
 
@@ -291,7 +297,7 @@ case. Store generated details only under the ignored results directory.
 
 #### 3. Decision report
 
-**File**: `evals/prefill/README.md`
+**File**: `evals/README.md`
 
 **Intent**: Turn raw outputs into an auditable production choice.
 
@@ -355,8 +361,7 @@ recorded in the report.
 
 #### 2. Technical decision and operating instructions
 
-**Files**: `context/foundation/tech-stack.md`, `README.md`,
-`evals/prefill/README.md`
+**Files**: `context/foundation/tech-stack.md`, `README.md`, `evals/README.md`
 
 **Intent**: Make the measured decision and the paid manual gate discoverable.
 
@@ -484,27 +489,29 @@ for an existing override before claiming that the new default is live.
 
 #### Automated
 
-- [ ] 1.1 Schema sanitizer unit tests pass
-- [ ] 1.2 Preparation and Promptfoo configuration validate offline
-- [ ] 1.3 Repository unit, lint, type and build gates pass without a src diff
+- [ ] 1.1 Schema sanitizer unit tests prove recursive sanitization without touching the network
+- [ ] 1.2 Local preparation and configuration validation load the real prompt, schema and every case under Node 22
+- [ ] 1.3 Repository unit, lint, type and build gates pass
+- [ ] 1.4 Diff checks pass and phase 1 has no src changes
 
 #### Manual
 
-- [ ] 1.4 Uncached Polish baseline and evidence report reconcile
-- [ ] 1.5 Synthetic corpus and pre-call oracles pass provenance review
+- [ ] 1.5 Uncached Polish baseline and README evidence reconcile with generated results
+- [ ] 1.6 Synthetic corpus and pre-call oracles pass provenance review
 
 ### Phase 2: English candidate and complete matrix
 
 #### Automated
 
-- [ ] 2.1 Full two-prompt, two-provider configuration validates
+- [ ] 2.1 Configuration validation sees two prompts, two providers and every frozen case
 - [ ] 2.2 Deterministic scorer edge-case tests pass
-- [ ] 2.3 Repository unit, lint, type and build gates pass without a src diff
+- [ ] 2.3 Repository unit, lint, type and build gates pass
+- [ ] 2.4 Diff checks pass and phase 2 has no src changes
 
 #### Manual
 
-- [ ] 2.4 Uncached full matrix and decision report reconcile
-- [ ] 2.5 Winner satisfies the quality-first ranking rule
+- [ ] 2.5 Uncached full matrix and README decision report reconcile with generated results
+- [ ] 2.6 Winner satisfies the quality-first ranking rule without waiving a safety failure
 
 ### Phase 3: Adopt and document the measured winner
 
