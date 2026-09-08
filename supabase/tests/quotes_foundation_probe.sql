@@ -77,9 +77,9 @@ begin
 end $$;
 reset role;
 
--- (b4) Structural: the RPC return signature must whitelist ONLY patient-safe
---      columns — never patient_email, status, or token. Checked against the
---      catalog so it holds regardless of stored data.
+-- (b4) Structural: the RPC return signature must whitelist EXACTLY the three
+--      patient-safe columns consumed by the public page. Checked against the
+--      catalog so any future top-level addition fails this probe.
 do $$
 declare
   sig text;
@@ -92,10 +92,10 @@ begin
   if sig is null then
     raise exception 'FAIL (b4): get_quote_by_token not found in public schema';
   end if;
-  if sig ilike '%patient_email%' or sig ilike '%status%' or sig ilike '%token%' then
-    raise exception 'FAIL (b4): RPC return signature leaks an admin-only field: %', sig;
+  if sig <> 'TABLE(patient_type text, content jsonb, created_at timestamp with time zone)' then
+    raise exception 'FAIL (b4): unexpected RPC return signature: %', sig;
   end if;
-  raise notice 'PASS (b4): RPC return signature whitelists only patient-safe columns -> %', sig;
+  raise notice 'PASS (b4): RPC return signature is the exact patient-safe whitelist -> %', sig;
 end $$;
 
 -- ===========================================================================

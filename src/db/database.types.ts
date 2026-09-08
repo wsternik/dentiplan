@@ -85,7 +85,6 @@ export type Database = {
         Returns: {
           content: Json
           created_at: string
-          id: string
           patient_type: string
         }[]
       }

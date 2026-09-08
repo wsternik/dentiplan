@@ -31,7 +31,7 @@ Introduced by `context/changes/quotes-data-foundation/` (migration
 
 ### Database — security objects
 
-- `public.get_quote_by_token(p_token text)` — `SECURITY DEFINER`, `stable`, `set search_path = ''`; the single anon-callable patient read path. Returns `table (id uuid, patient_type text, content jsonb, created_at timestamptz)` for an **approved** token only, 0 rows otherwise (FR-060). Executable by `anon, authenticated`. Do not change the return column list without re-checking the patient-safe whitelist.
+- `public.get_quote_by_token(p_token text)` — `SECURITY DEFINER`, `stable`, `set search_path = ''`; the single anon-callable patient read path. Returns exactly `table (patient_type text, content jsonb, created_at timestamptz)` for an **approved** token only, 0 rows otherwise (FR-060). Executable by `anon, authenticated`. Any return-column change requires a migration, regenerated types, and exact-whitelist probe and HTTP assertions.
 - `public.prevent_approved_update()` — trigger function; raises when `OLD.status = 'approved'`.
 - `quotes_immutable` — `before update on public.quotes for each row` trigger enforcing FR-053 (approved rows are byte-for-byte immutable). Guards UPDATE only; DELETE is left to the owner for S-04 retention.
 
@@ -46,7 +46,7 @@ Introduced by `context/changes/quotes-data-foundation/` (migration
 - `ToothEntry`, `Visit`, `GeneralItem`, `QuoteTotals` (+ their `*Schema`) — `content` tree members.
 - `QuoteContent` / `QuoteContentSchema` — the full `content` jsonb contract; single source of truth for S-01/S-02 validation (FR-012).
 - `Quote` — row-level type; generated row with `content`/`status`/`patient_type` narrowed to the domain types.
-- `PatientView` — the whitelisted shape `get_quote_by_token` returns (mirrors the RPC column list).
+- `PatientView` — the exact three-field shape `get_quote_by_token` returns (mirrors the RPC column list).
 - `Database` — re-exported from `src/db/database.types.ts` (regenerate with `supabase gen types --linked --lang typescript > src/db/database.types.ts`).
 
 ---
