@@ -517,12 +517,12 @@ for an existing override before claiming that the new default is live.
 
 #### Automated
 
-- [x] 3.1 Production prompt hash and default model match the winner
-- [x] 3.2 Selected prompt and model configuration tests pass
-- [x] 3.3 Full repository verification passes under Node 22
-- [x] 3.4 S-08, risk 10, README and report documentation are consistent
+- [x] 3.1 Production prompt hash and default model match the winner — a65dafe
+- [x] 3.2 Selected prompt and model configuration tests pass — a65dafe
+- [x] 3.3 Full repository verification passes under Node 22 — a65dafe
+- [x] 3.4 S-08, risk 10, README and report documentation are consistent — a65dafe
 
 #### Manual
 
-- [x] 3.5 Production has one prompt path matching the measured cell
-- [x] 3.6 Final report is reproducible from its public repository instructions
+- [x] 3.5 Production has one prompt path matching the measured cell — a65dafe
+- [x] 3.6 Final report is reproducible from its public repository instructions — a65dafe
