@@ -1,7 +1,7 @@
 ---
 change_id: prompt-evals
 title: Prompt evals
-status: preparing
+status: planned
 created: 2026-09-08
 updated: 2026-09-08
 archived_at: null
