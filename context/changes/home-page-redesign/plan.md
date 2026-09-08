@@ -450,11 +450,31 @@ node_modules/.vite`; warm `/`, `/auth/signin`, `/admin` with `curl` once if
 
 ## Progress
 
-| Phase | Commit | Notes                                                                         |
-| ----- | ------ | ----------------------------------------------------------------------------- |
-| p1    |        | scrollHeight at 1280×800: ; 1440×900: ; 390×844 horizontal overflow: none / … |
-| p2    |        |                                                                               |
+| Phase | Commit    | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| ----- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| p1    | `f085866` | Content height (wrapper measured with `min-height` released, so the `min-h-screen` floor does not mask it) 783px at both 1280×800 and 1440×900 — fits, footer at the bottom, no vertical scroll. 390×844: 1225px, `scrollWidth` 390 (no horizontal overflow); 320×800: 1365px, `scrollWidth` 320. `h1` two lines at ≥1024px, three at 390px, one rect, no orphan. One focusable element on the page; first `Tab` lands on `Zaloguj się`, ring visible on enamel. 900×900: panels stacked (tops 331 / 493), tabs side by side (both tops 601) — the 640–1023px band behaves as drawn. |
+| p2    | `TBD`     | `e2e/home.spec.ts` green; fails as intended when the sign-in link is duplicated (count 2) and when it is removed (count 0), restored after both. Full `npm run test:e2e`: see below.                                                                                                                                                                                                                                                                                                                                                                                                 |
 
 Departures from the Design section, with reasons:
 
-- (none yet)
+- **The "Zakres leczenia" `<dl>` is not in the document panel.** With it, the
+  page measured 991px at 1280×800 against an 800px budget. The Responsive
+  section's own ladder is rhythm first, then this block, and both were needed:
+  trimming rhythm (header `py-4`→`py-3`, `h1` `lg:mt-16`→`lg:mt-12`, figure
+  `mt-12`→`mt-8`, panels `p-6`→`p-5`, `mt-5`→`mt-4`, caption `mt-4`→`mt-3`,
+  `pb-16`→`pb-8`, footer `py-5`→`py-4`) reached 907px, and dropping the block
+  reached 783px. It was independently the weakest thing on the render — three
+  12px rows whose labels and numerals sat at opposite ends of ~500px of dead
+  space — so the design pass's "remove one thing" and the height ladder pointed
+  at the same element. Cost: the note's `(32?)` no longer has a visible
+  counterpart in the document panel.
+- **Panel heights: top-aligned, as specified — but only after trying the
+  alternative.** Growing the note panel to the document's height (as the ASCII
+  drawing shows it) was built and reverted: matched heights made the filled
+  `--secondary` block compete with the outlined document, and "the document panel
+  is the visually heaviest element" is a success criterion. Recorded in a comment
+  in `SampleQuote.astro` so it is not re-tried blind.
+- **Type sizes off the Tailwind scale** are written as rem arbitraries
+  (`text-[1.9375rem]` = 31px, `text-[2.4375rem]` = 39px, `text-[1.0625rem]` =
+  17px, `text-[0.9375rem]` = 15px, `text-[0.8125rem]` = 13px). The Type table
+  gives sizes the default scale does not carry.
