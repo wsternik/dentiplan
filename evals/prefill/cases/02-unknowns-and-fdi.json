@@ -1,0 +1,33 @@
+[
+  {
+    "description": "unknowns-and-fdi — bare teeth, unsupported phrase, and invalid FDI",
+    "vars": {
+      "caseId": "unknowns-and-fdi",
+      "note": "Do leczenia: 17, 16. Flow-injection na 17. Ekstrakcja zęba 99.",
+      "expected": {
+        "teeth": [
+          {
+            "number": 16,
+            "treatmentType": "unknown",
+            "urgency": "unknown",
+            "urgencyFromNote": false,
+            "status": "in-plan",
+            "pricelistItemIds": []
+          },
+          {
+            "number": 17,
+            "treatmentType": "unknown",
+            "urgency": "unknown",
+            "urgencyFromNote": false,
+            "status": "in-plan",
+            "pricelistItemIds": []
+          }
+        ],
+        "generalItems": [],
+        "visitGroups": [[16, 17]],
+        "warningTokens": ["flow-injection", "99"],
+        "forbiddenWarningTokens": []
+      }
+    }
+  }
+]

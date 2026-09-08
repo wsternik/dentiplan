@@ -1,0 +1,57 @@
+[
+  {
+    "description": "visit-topology — side-aware grouping and root-canal weight",
+    "vars": {
+      "caseId": "visit-topology",
+      "note": "Kanałowe po lewej: 24, 26, 27; ząb 27 boli. Wypełnienia po prawej: 45 i 46.",
+      "expected": {
+        "teeth": [
+          {
+            "number": 24,
+            "treatmentType": "root-canal",
+            "urgency": "moderate",
+            "urgencyFromNote": false,
+            "status": "in-plan",
+            "pricelistItemIds": ["leczenie-kanalowe:leczenie-kanalowe-przedtrzonowca"]
+          },
+          {
+            "number": 26,
+            "treatmentType": "root-canal",
+            "urgency": "moderate",
+            "urgencyFromNote": false,
+            "status": "in-plan",
+            "pricelistItemIds": ["leczenie-kanalowe:leczenie-kanalowe-trzonowca"]
+          },
+          {
+            "number": 27,
+            "treatmentType": "root-canal",
+            "urgency": "urgent",
+            "urgencyFromNote": true,
+            "status": "in-plan",
+            "pricelistItemIds": ["leczenie-kanalowe:leczenie-kanalowe-trzonowca"]
+          },
+          {
+            "number": 45,
+            "treatmentType": "filling",
+            "urgency": "moderate",
+            "urgencyFromNote": false,
+            "status": "in-plan",
+            "pricelistItemIds": ["leczenie-zachowawcze:wypelnienie-male-duze"]
+          },
+          {
+            "number": 46,
+            "treatmentType": "filling",
+            "urgency": "moderate",
+            "urgencyFromNote": false,
+            "status": "in-plan",
+            "pricelistItemIds": ["leczenie-zachowawcze:wypelnienie-male-duze"]
+          }
+        ],
+        "generalItems": [],
+        "visitGroups": [[26, 27], [24], [45, 46]],
+        "warningTokens": [],
+        "forbiddenWarningTokens": []
+      }
+    }
+  }
+]

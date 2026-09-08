@@ -46,3 +46,6 @@ example-doctor-input/
 playwright/.auth/
 test-results/
 playwright-report/
+
+# paid prompt-eval outputs and disposable provider schema
+evals/prefill/.generated/

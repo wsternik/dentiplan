@@ -1,0 +1,41 @@
+[
+  {
+    "description": "explicit-plan — explicit visits plus a visit-bound general item",
+    "vars": {
+      "caseId": "explicit-plan",
+      "note": "Wizyta 1: ekstrakcja 46, bo boli, oraz higienizacja. Wizyta 2: wypełnienia 14 i 15.",
+      "expected": {
+        "teeth": [
+          {
+            "number": 14,
+            "treatmentType": "filling",
+            "urgency": "moderate",
+            "urgencyFromNote": false,
+            "status": "in-plan",
+            "pricelistItemIds": ["leczenie-zachowawcze:wypelnienie-male-duze"]
+          },
+          {
+            "number": 15,
+            "treatmentType": "filling",
+            "urgency": "moderate",
+            "urgencyFromNote": false,
+            "status": "in-plan",
+            "pricelistItemIds": ["leczenie-zachowawcze:wypelnienie-male-duze"]
+          },
+          {
+            "number": 46,
+            "treatmentType": "extraction",
+            "urgency": "urgent",
+            "urgencyFromNote": true,
+            "status": "in-plan",
+            "pricelistItemIds": ["chirurgia-stomatologiczna:ekstrakcja-zeba"]
+          }
+        ],
+        "generalItems": [{ "id": "profilaktyka:higienizacja", "visitNumber": 1 }],
+        "visitGroups": [[46], [14, 15]],
+        "warningTokens": [],
+        "forbiddenWarningTokens": []
+      }
+    }
+  }
+]

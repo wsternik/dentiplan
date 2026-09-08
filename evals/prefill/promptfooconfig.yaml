@@ -1,0 +1,41 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+description: DentiPlan diagnosis-prefill baseline
+
+prompts:
+  - id: file://prompts/production.mjs
+    label: Polish production
+
+providers:
+  - id: anthropic:messages:claude-sonnet-5
+    label: Sonnet 5 · medium effort
+    config:
+      effort: medium
+      max_tokens: 128000
+      maxRetries: 1
+      stream: true
+      output_format:
+        type: json_schema
+        schema: file://.generated/anthropic-schema.json
+  - id: anthropic:messages:claude-haiku-4-5
+    label: Haiku 4.5 · no effort option
+    config:
+      max_tokens: 64000
+      maxRetries: 1
+      stream: true
+      output_format:
+        type: json_schema
+        schema: file://.generated/anthropic-schema.json
+
+evaluateOptions:
+  cache: false
+  maxConcurrency: 1
+  timeoutMs: 45000
+
+defaultTest:
+  assert:
+    - type: javascript
+      value: file://assertions.mjs
+      metric: deterministic-atoms
+
+tests:
+  - file://cases/*.json

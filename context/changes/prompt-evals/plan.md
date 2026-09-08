@@ -489,15 +489,15 @@ for an existing override before claiming that the new default is live.
 
 #### Automated
 
-- [ ] 1.1 Schema sanitizer unit tests prove recursive sanitization without touching the network
-- [ ] 1.2 Local preparation and configuration validation load the real prompt, schema and every case under Node 22
-- [ ] 1.3 Repository unit, lint, type and build gates pass
-- [ ] 1.4 Diff checks pass and phase 1 has no src changes
+- [x] 1.1 Schema sanitizer unit tests prove recursive sanitization without touching the network
+- [x] 1.2 Local preparation and configuration validation load the real prompt, schema and every case under Node 22
+- [x] 1.3 Repository unit, lint, type and build gates pass
+- [x] 1.4 Diff checks pass and phase 1 has no src changes
 
 #### Manual
 
-- [ ] 1.5 Uncached Polish baseline and README evidence reconcile with generated results
-- [ ] 1.6 Synthetic corpus and pre-call oracles pass provenance review
+- [x] 1.5 Uncached Polish baseline and README evidence reconcile with generated results
+- [x] 1.6 Synthetic corpus and pre-call oracles pass provenance review
 
 ### Phase 2: English candidate and complete matrix
 

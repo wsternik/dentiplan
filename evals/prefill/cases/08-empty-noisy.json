@@ -1,0 +1,17 @@
+[
+  {
+    "description": "empty-noisy — punctuation must not become clinical content",
+    "vars": {
+      "caseId": "empty-noisy",
+      "note": "... — ??? ;;;",
+      "expected": {
+        "teeth": [],
+        "generalItems": [],
+        "visitGroups": [],
+        "warningTokens": [],
+        "forbiddenWarningTokens": [],
+        "warningPolicy": { "type": "empty-or-token", "token": "?" }
+      }
+    }
+  }
+]
