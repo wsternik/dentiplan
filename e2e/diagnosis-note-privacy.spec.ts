@@ -12,6 +12,10 @@ import { expect, test } from "@playwright/test";
 
 import { patientUrlFromQr, waitForIslands } from "./support/app";
 
+function isUnknownArray(value: unknown): value is unknown[] {
+  return Array.isArray(value);
+}
+
 test("risk #13: a persisted diagnosis note stays in the admin panel and out of patient responses", async ({
   page,
   browser,
@@ -103,7 +107,17 @@ test("risk #13: a persisted diagnosis note stays in the admin panel and out of p
     expect(rpcBody).not.toContain(diagnosisNote);
     expect(rpcBody).not.toContain(`E2E-NOTATKA-POUFNA-${stamp}`);
     expect(rpcBody).not.toContain("diagnosis_note");
-    expect(JSON.parse(rpcBody)).toHaveLength(1);
+    const rpcPayload: unknown = JSON.parse(rpcBody);
+    expect(isUnknownArray(rpcPayload)).toBe(true);
+    if (!isUnknownArray(rpcPayload) || rpcPayload.length !== 1) {
+      throw new Error("Expected the patient RPC to return exactly one row");
+    }
+
+    const [rpcRow] = rpcPayload;
+    if (typeof rpcRow !== "object" || rpcRow === null) {
+      throw new Error("Expected the patient RPC row to be an object");
+    }
+    expect(Object.keys(rpcRow).sort()).toEqual(["content", "created_at", "patient_type"]);
   } finally {
     await anonymous.close();
   }

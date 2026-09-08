@@ -91,14 +91,14 @@ PostgreSQL requires dropping the old function before recreating it because the `
 
 #### Automated
 
-- [x] 1.1 Apply the forward migration and confirm hosted migration parity.
-- [x] 1.2 Regenerate types and verify the exact three-field RPC contract across code, probe, and registry.
-- [x] 1.3 Pass unit, lint, typecheck, and production build checks.
+- [x] 1.1 Apply the forward migration and confirm hosted migration parity. — d4c4e27
+- [x] 1.2 Regenerate types and verify the exact three-field RPC contract across code, probe, and registry. — d4c4e27
+- [x] 1.3 Pass unit, lint, typecheck, and production build checks. — d4c4e27
 
 ### Phase 2: Enforce the caller-visible response
 
 #### Automated
 
-- [ ] 2.1 Assert exact keys in the raw anonymous RPC response.
-- [ ] 2.2 Pass the focused privacy E2E against the hosted schema.
-- [ ] 2.3 Pass the unchanged full E2E suite.
+- [x] 2.1 Assert exact keys in the raw anonymous RPC response.
+- [x] 2.2 Pass the focused privacy E2E against the hosted schema.
+- [x] 2.3 Pass the unchanged full E2E suite.
