@@ -503,15 +503,15 @@ for an existing override before claiming that the new default is live.
 
 #### Automated
 
-- [x] 2.1 Configuration validation sees two prompts, two providers and every frozen case
-- [x] 2.2 Deterministic scorer edge-case tests pass
-- [x] 2.3 Repository unit, lint, type and build gates pass
-- [x] 2.4 Diff checks pass and phase 2 has no src changes
+- [x] 2.1 Configuration validation sees two prompts, two providers and every frozen case — b205288
+- [x] 2.2 Deterministic scorer edge-case tests pass — b205288
+- [x] 2.3 Repository unit, lint, type and build gates pass — b205288
+- [x] 2.4 Diff checks pass and phase 2 has no src changes — b205288
 
 #### Manual
 
-- [x] 2.5 Uncached full matrix and README decision report reconcile with generated results
-- [x] 2.6 Winner satisfies the quality-first ranking rule without waiving a safety failure
+- [x] 2.5 Uncached full matrix and README decision report reconcile with generated results — b205288
+- [x] 2.6 Winner satisfies the quality-first ranking rule without waiving a safety failure — b205288
 
 ### Phase 3: Adopt and document the measured winner
 
