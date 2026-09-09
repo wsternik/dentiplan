@@ -1,0 +1,120 @@
+---
+import { formatAmount } from "@/lib/quote/format";
+
+// This is an illustration, not a product fixture: the amounts are invented and
+// never leave this component. They still use the production formatter so a
+// marketing sample cannot teach a different money format than the patient page.
+const sample = {
+  standardTotal: 2400,
+  anesthesiaTotal: 3900,
+};
+---
+
+<figure
+  class="relative m-0 min-h-[30.75rem] min-w-0 overflow-hidden sm:min-h-[33.125rem]"
+  aria-labelledby="example-plan-caption"
+>
+  <figcaption id="example-plan-caption" class="sr-only">
+    Ilustracja przykładowa: wymyślona notatka z diagnozy zmienia się w plan leczenia z dwoma kosztorysami. Dane i kwoty
+    są wymyślone.
+  </figcaption>
+
+  <div aria-hidden="true" class="absolute inset-5 -z-20 rotate-[-7deg] rounded-[48%_48%_23%_40%] bg-[#eee8f0]"></div>
+  <div
+    aria-hidden="true"
+    class="border-border absolute inset-x-3 top-7 bottom-5 -z-10 rotate-[-19deg] rounded-[50%] border"
+  >
+  </div>
+
+  <div aria-hidden="true" class="absolute inset-0">
+    <article
+      class="bg-background absolute top-3 left-1 w-[14.875rem] -rotate-[5deg] rounded-lg border p-5 shadow-[0_12px_25px_rgba(54,36,57,0.04)] sm:w-66"
+    >
+      <div class="text-muted-foreground flex justify-between text-[0.5625rem] tracking-[0.12em]">
+        <span>TWOJA NOTATKA</span><span>↗</span>
+      </div>
+      <p class="font-editorial text-muted-foreground mt-3 text-base leading-7 italic">
+        16, 26 — do odbudowy<br />36 — <mark class="bg-[#f7d9bb] text-inherit">leczenie kanałowe</mark><br
+        />Higienizacja.
+      </p>
+    </article>
+
+    <svg
+      class="text-brand absolute top-6 right-2 h-24 w-16 rotate-[8deg] sm:right-7 sm:w-20"
+      viewBox="0 0 90 100"
+      fill="none"
+    >
+      <path d="M8 12C58 4 70 38 51 79M35 66L51 82L71 72"></path>
+    </svg>
+
+    <article
+      class="bg-card absolute top-32 right-0 left-4 rotate-[2deg] overflow-hidden rounded-xl border shadow-[0_20px_50px_rgba(55,36,62,0.08)] sm:left-10"
+    >
+      <div class="flex items-center justify-between gap-3 border-b px-4 py-4 sm:px-5">
+        <div class="text-xs font-bold tracking-[-0.03em]">DentiPlan <span class="text-brand">✳</span></div>
+        <span class="rounded-full bg-[#eff6ef] px-2 py-1 text-[0.5rem] text-[#537a63]"
+          >✓ Zatwierdzony przez lekarza</span
+        >
+      </div>
+      <div class="p-4 sm:p-5">
+        <p class="text-muted-foreground m-0 text-[0.5rem] tracking-[0.14em]">TWÓJ PLAN LECZENIA</p>
+        <h2 class="mt-2 text-[1.375rem] leading-tight font-semibold tracking-[-0.04em] sm:text-2xl">
+          Wiesz, co przed Tobą.
+        </h2>
+        <p class="text-muted-foreground mt-1 text-[0.625rem]">Zakres leczenia i koszty w jednym miejscu.</p>
+
+        <div class="my-4 flex justify-center gap-1 sm:my-5 sm:gap-1.5">
+          {
+            Array.from({ length: 8 }, (_, index) => (
+              <span
+                class:list={[
+                  "block h-7 w-5 rounded-[0.45rem_0.45rem_0.6rem_0.6rem] border sm:h-[1.875rem] sm:w-6",
+                  [1, 2, 5].includes(index) ? "border-[#da8e77] bg-[#efb9a8]" : "bg-background",
+                ]}
+              />
+            ))
+          }
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div class="bg-background rounded-md border p-3">
+            <p class="text-muted-foreground m-0 text-[0.4375rem] tracking-[0.08em]">WARIANT 01 · KILKA WIZYT</p>
+            <p class="mt-2 text-[0.625rem] font-semibold sm:text-xs">Leczenie standardowe</p>
+            <p class="numeric mt-3 text-xl font-semibold tracking-[-0.04em] sm:text-2xl">
+              {formatAmount(sample.standardTotal)}
+            </p>
+            <p class="text-muted-foreground mt-1 text-[0.4375rem]">Łączny koszt szacunkowy</p>
+          </div>
+          <div class="rounded-md border border-[#ecd5c9] bg-[#f8ece6] p-3">
+            <p class="text-muted-foreground m-0 text-[0.4375rem] tracking-[0.08em]">WARIANT 02 · JEDNA SESJA</p>
+            <p class="mt-2 text-[0.625rem] font-semibold sm:text-xs">Leczenie w narkozie</p>
+            <p class="numeric mt-3 text-xl font-semibold tracking-[-0.04em] sm:text-2xl">
+              {formatAmount(sample.anesthesiaTotal)}
+            </p>
+            <p class="text-muted-foreground mt-1 text-[0.4375rem]">Łącznie ze znieczuleniem ogólnym</p>
+          </div>
+        </div>
+        <p class="text-muted-foreground mt-3 text-[0.4375rem]">
+          Przykładowe dane i kwoty. Kosztorys ma charakter szacunkowy.
+        </p>
+      </div>
+    </article>
+
+    <div
+      class="bg-primary text-primary-foreground absolute bottom-4 left-0 flex -rotate-[3deg] items-center gap-2 rounded-lg px-4 py-3 text-[0.625rem] shadow-lg sm:text-[0.6875rem]"
+    >
+      <span class="text-xl text-[#f4ae96]">↗</span> Jeden link. Cały plan. Wszystko jasne.
+      <span class="text-[#f4ae96]">✓</span>
+    </div>
+    <span class="text-brand absolute right-1 bottom-0 text-5xl font-light sm:-right-1 sm:bottom-3 sm:text-7xl">✳</span>
+  </div>
+</figure>
+
+<style>
+  svg path {
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+</style>
