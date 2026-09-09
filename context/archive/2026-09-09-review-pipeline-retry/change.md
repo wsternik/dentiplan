@@ -1,9 +1,10 @@
 ---
 change_id: review-pipeline-retry
 title: Make the manual re-review real and test the review helpers
-status: in-progress
+status: archived
 created: 2026-09-09
 updated: 2026-09-09
+archived_at: 2026-09-09T05:45:00Z
 ---
 
 ## Notes
