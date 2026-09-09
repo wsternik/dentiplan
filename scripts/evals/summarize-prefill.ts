@@ -9,7 +9,17 @@ interface Metadata {
   gitDirty: false;
   corpus: { id: string; sha256: string }[];
   prompts: { id: string; label: string; sha256: string }[];
-  providers: { id: string; label: string; effort: string | null; maxTokens: number; maxRetries: number }[];
+  providers: {
+    id: string;
+    label: string;
+    effort: string | null;
+    maxTokens: number;
+    maxRetries: number;
+    inputUsdPerMillion?: number;
+    outputUsdPerMillion?: number;
+  }[];
+  pricingAsOf?: string;
+  pricingSource?: string;
   sourceFiles: { file: string; sha256: string }[];
   providerSchemaSha256: string;
   timeoutMs: number;
@@ -33,7 +43,7 @@ interface ResultRow {
   vars?: { caseId?: string };
   testCase?: { vars?: { caseId?: string } };
   gradingResult?: ComponentResult | null;
-  response?: { error?: string };
+  response?: { error?: string; tokenUsage?: { prompt?: number; completion?: number; total?: number } };
 }
 
 interface EvalDocument {
@@ -68,8 +78,22 @@ export interface EvalSummary {
   evaluatedAt: string;
   prepared: Metadata;
   callCount: number;
+  pricing: {
+    asOf: string;
+    source: string;
+    providers: Record<string, { inputUsdPerMillion: number; outputUsdPerMillion: number }>;
+  };
   cells: CellSummary[];
 }
+
+const STANDARD_PRICING = {
+  asOf: "2026-09-09",
+  source: "https://platform.claude.com/docs/en/about-claude/pricing",
+} as const;
+const STANDARD_PROVIDER_PRICING = new Map([
+  ["anthropic:messages:claude-sonnet-5", { inputUsdPerMillion: 2, outputUsdPerMillion: 10 }],
+  ["anthropic:messages:claude-haiku-4-5", { inputUsdPerMillion: 1, outputUsdPerMillion: 5 }],
+]);
 
 function percentile(values: number[], fraction: number): number {
   if (values.length === 0) return 0;
@@ -99,13 +123,16 @@ function rowCaseId(row: ResultRow): string {
   return row.vars?.caseId ?? row.testCase?.vars?.caseId ?? "";
 }
 
+function rowTokenUsage(row: ResultRow): NonNullable<ResultRow["tokenUsage"]> {
+  return row.tokenUsage ?? row.response?.tokenUsage ?? {};
+}
+
 function requireTelemetry(row: ResultRow, tuple: string): void {
   const values = {
-    cost: row.cost,
     latencyMs: row.latencyMs,
-    promptTokens: row.tokenUsage?.prompt,
-    completionTokens: row.tokenUsage?.completion,
-    totalTokens: row.tokenUsage?.total,
+    promptTokens: rowTokenUsage(row).prompt,
+    completionTokens: rowTokenUsage(row).completion,
+    totalTokens: rowTokenUsage(row).total,
   };
   const invalid = Object.entries(values)
     .filter(([, value]) => typeof value !== "number" || !Number.isFinite(value) || value < 0)
@@ -191,18 +218,26 @@ export function summarizeEval(document: EvalDocument, metadata: Metadata): EvalS
         if (!caseId) throw new Error("A failed result row has no caseId.");
         return [{ caseId, reasons }];
       });
-      const inputTokens = cellRows.reduce((sum, row) => sum + (row.tokenUsage?.prompt ?? 0), 0);
-      const outputTokens = cellRows.reduce((sum, row) => sum + (row.tokenUsage?.completion ?? 0), 0);
+      const providerMetadata = metadata.providers.find((candidate) => candidate.id === provider);
+      if (!providerMetadata) throw new Error(`${prompt}/${provider} has no provider metadata.`);
+      const fallbackPricing = STANDARD_PROVIDER_PRICING.get(provider);
+      const inputUsdPerMillion = providerMetadata.inputUsdPerMillion ?? fallbackPricing?.inputUsdPerMillion;
+      const outputUsdPerMillion = providerMetadata.outputUsdPerMillion ?? fallbackPricing?.outputUsdPerMillion;
+      if (inputUsdPerMillion === undefined || outputUsdPerMillion === undefined) {
+        throw new Error(`${prompt}/${provider} has no explicit pricing metadata.`);
+      }
+      const inputTokens = cellRows.reduce((sum, row) => sum + (rowTokenUsage(row).prompt ?? 0), 0);
+      const outputTokens = cellRows.reduce((sum, row) => sum + (rowTokenUsage(row).completion ?? 0), 0);
       const totalTokens = cellRows.reduce(
         (sum, row) =>
-          sum + (row.tokenUsage?.total ?? (row.tokenUsage?.prompt ?? 0) + (row.tokenUsage?.completion ?? 0)),
+          sum + (rowTokenUsage(row).total ?? (rowTokenUsage(row).prompt ?? 0) + (rowTokenUsage(row).completion ?? 0)),
         0,
       );
-      const totalCostUsd = cellRows.reduce((sum, row) => sum + (row.cost ?? 0), 0);
+      const totalCostUsd = (inputTokens * inputUsdPerMillion + outputTokens * outputUsdPerMillion) / 1_000_000;
       const latencies = cellRows.map((row) => row.latencyMs ?? 0);
-      const inputTokenCounts = cellRows.map((row) => row.tokenUsage?.prompt ?? 0);
-      const outputTokenCounts = cellRows.map((row) => row.tokenUsage?.completion ?? 0);
-      const totalTokenCounts = cellRows.map((row) => row.tokenUsage?.total ?? 0);
+      const inputTokenCounts = cellRows.map((row) => rowTokenUsage(row).prompt ?? 0);
+      const outputTokenCounts = cellRows.map((row) => rowTokenUsage(row).completion ?? 0);
+      const totalTokenCounts = cellRows.map((row) => rowTokenUsage(row).total ?? 0);
       const atomsPassed = atoms.filter((atom) => atom.pass === true).length;
 
       return {
@@ -235,6 +270,21 @@ export function summarizeEval(document: EvalDocument, metadata: Metadata): EvalS
     evaluatedAt: document.results.timestamp ?? new Date(0).toISOString(),
     prepared: metadata,
     callCount: rows.length,
+    pricing: {
+      asOf: metadata.pricingAsOf ?? STANDARD_PRICING.asOf,
+      source: metadata.pricingSource ?? STANDARD_PRICING.source,
+      providers: Object.fromEntries(
+        metadata.providers.map((provider) => {
+          const fallback = STANDARD_PROVIDER_PRICING.get(provider.id);
+          const inputUsdPerMillion = provider.inputUsdPerMillion ?? fallback?.inputUsdPerMillion;
+          const outputUsdPerMillion = provider.outputUsdPerMillion ?? fallback?.outputUsdPerMillion;
+          if (inputUsdPerMillion === undefined || outputUsdPerMillion === undefined) {
+            throw new Error(`${provider.id} has no explicit pricing metadata.`);
+          }
+          return [provider.id, { inputUsdPerMillion, outputUsdPerMillion }];
+        }),
+      ),
+    },
     cells,
   };
 }

@@ -118,6 +118,8 @@ function main(): void {
             thinking: "adaptive",
             maxTokens: 128_000,
             maxRetries: 1,
+            inputUsdPerMillion: 2,
+            outputUsdPerMillion: 10,
           },
           {
             id: "anthropic:messages:claude-haiku-4-5",
@@ -126,8 +128,12 @@ function main(): void {
             thinking: null,
             maxTokens: 64_000,
             maxRetries: 1,
+            inputUsdPerMillion: 1,
+            outputUsdPerMillion: 5,
           },
         ],
+        pricingAsOf: "2026-09-09",
+        pricingSource: "https://platform.claude.com/docs/en/about-claude/pricing",
         sourceFiles: sourceFiles.map((file) => ({
           file,
           sha256: sha256(readFileSync(resolve(root, file), "utf8")),

@@ -13,9 +13,27 @@ const metadata = {
   ],
   prompts: [{ id: "polish-production", label: "Polish production", sha256: "prompt" }],
   providers: [
-    { id: "sonnet", label: "Sonnet", effort: "medium", maxTokens: 128_000, maxRetries: 1 },
-    { id: "haiku", label: "Haiku", effort: null, maxTokens: 64_000, maxRetries: 1 },
+    {
+      id: "sonnet",
+      label: "Sonnet",
+      effort: "medium",
+      maxTokens: 128_000,
+      maxRetries: 1,
+      inputUsdPerMillion: 2,
+      outputUsdPerMillion: 10,
+    },
+    {
+      id: "haiku",
+      label: "Haiku",
+      effort: null,
+      maxTokens: 64_000,
+      maxRetries: 1,
+      inputUsdPerMillion: 1,
+      outputUsdPerMillion: 5,
+    },
   ],
+  pricingAsOf: "2026-09-09",
+  pricingSource: "https://platform.claude.com/docs/en/about-claude/pricing",
   sourceFiles: [],
   providerSchemaSha256: "schema",
   timeoutMs: 45_000,
@@ -82,8 +100,8 @@ describe("summarizeEval", () => {
       medianInputTokens: 100,
       medianOutputTokens: 20,
       medianTotalTokens: 120,
-      totalCostUsd: 0.04,
-      costPerCaseUsd: 0.02,
+      totalCostUsd: 0.0008,
+      costPerCaseUsd: 0.0004,
       medianLatencyMs: 100,
       p95LatencyMs: 300,
     });
@@ -116,16 +134,29 @@ describe("summarizeEval", () => {
     expect(() => summarizeEval({ results: { version: 3, results: rows } }, metadata)).toThrow("Matrix tuple mismatch");
   });
 
-  it("rejects missing telemetry instead of treating it as zero", () => {
+  it("rejects missing token telemetry instead of treating it as zero", () => {
     const rows = [
-      { ...row("sonnet", "one", true, 100), cost: undefined },
+      { ...row("sonnet", "one", true, 100), tokenUsage: undefined },
       row("sonnet", "two", true, 100),
       row("haiku", "one", true, 100),
       row("haiku", "two", true, 100),
     ];
     expect(() => summarizeEval({ results: { version: 3, results: rows } }, metadata)).toThrow(
-      "missing or invalid telemetry: cost",
+      "missing or invalid telemetry: promptTokens, completionTokens, totalTokens",
     );
+  });
+
+  it("reads token telemetry from Promptfoo 0.120 response objects", () => {
+    const nested = row("sonnet", "one", true, 100);
+    const tokenUsage = nested.tokenUsage;
+    const rows = [
+      { ...nested, tokenUsage: undefined, response: { tokenUsage } },
+      row("sonnet", "two", true, 100),
+      row("haiku", "one", true, 100),
+      row("haiku", "two", true, 100),
+    ];
+
+    expect(summarizeEval({ results: { version: 3, results: rows } }, metadata).callCount).toBe(4);
   });
 
   it("counts Promptfoo's nested and flattened component copies once", () => {
