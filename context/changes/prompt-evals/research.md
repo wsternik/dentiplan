@@ -13,10 +13,10 @@ last_updated_by: Codex
 
 # Research: production-faithful prompt evaluations
 
-**Date**: 2026-09-08T14:49:25+02:00  
-**Researcher**: Codex  
-**Git Commit**: `d39eb7c0a561d0f424ec02089a0e24a2a5a9ed71`  
-**Branch**: `feat/prompt-evals`  
+**Date**: 2026-09-08T14:49:25+02:00
+**Researcher**: Codex
+**Git Commit**: `d39eb7c0a561d0f424ec02089a0e24a2a5a9ed71`
+**Branch**: `feat/prompt-evals`
 **Repository**: wsternik/dentiplan
 
 ## Research Question

@@ -1,6 +1,6 @@
 # Prompt evals — plan brief
 
-> Full plan: `context/changes/prompt-evals/plan.md`  
+> Full plan: `context/changes/prompt-evals/plan.md`
 > Research: `context/changes/prompt-evals/research.md`
 
 ## What & Why
