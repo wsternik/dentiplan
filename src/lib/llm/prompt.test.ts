@@ -8,6 +8,9 @@
 // model guess, and the failure would otherwise surface as a warning the
 // dentystka has to read rather than as a red test.
 
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+
 import { describe, expect, it } from "vitest";
 
 import { listGeneralItems, listToothItems } from "@/lib/pricing";
@@ -27,6 +30,22 @@ function section(instructions: string, heading: string): string {
 }
 
 describe("buildInstructions", () => {
+  it("matches the prompt and default model selected by the provider evaluation", () => {
+    const report = readFileSync(new URL("../../../evals/README.md", import.meta.url), "utf8");
+    const client = readFileSync(new URL("./client.ts", import.meta.url), "utf8");
+    const recordedHash = /Production prompt SHA-256:\s*`([a-f0-9]{64})`/.exec(report)?.[1];
+    const recordedModel = /default model is `([^`]+)`/.exec(report)?.[1];
+    const configuredModel = /const DEFAULT_MODEL = "([^"]+)"/.exec(client)?.[1];
+    const liveHash = createHash("sha256").update(buildInstructions()).digest("hex");
+
+    // Changing the prompt is allowed, but only after the paid manual eval gate
+    // records a new winner. Reading the report keeps that decision in one place.
+    expect(recordedHash).toBeDefined();
+    expect(liveHash).toBe(recordedHash);
+    expect(recordedModel).toBeDefined();
+    expect(configuredModel).toBe(recordedModel);
+  });
+
   it("carries every live pricelist id, so the model never has to invent one", () => {
     const instructions = buildInstructions();
     const missing = [...listToothItems(), ...listGeneralItems()]
@@ -57,19 +76,20 @@ describe("buildInstructions", () => {
   // phrasings that used to stand here did neither — it passed as long as
   // *something* was written nearby, and it turned red on a rule she had improved.
   it("keeps the rules section, with `warnings` as the escape hatch", () => {
-    const rules = section(buildInstructions(), "Zasady");
+    const rules = section(buildInstructions(), "Rules");
 
     // FR-012: what the model cannot place is named, never guessed at. Unlike her
     // wording, `warnings` is a wire-contract token — asserting it freezes nothing.
     expect(rules).not.toEqual("");
     expect(rules).toContain("warnings");
+    expect(rules).toContain("Do not choose the closest catalog item");
   });
 
   it("keeps a section for each thing the model is asked to propose", () => {
     const instructions = buildInstructions();
 
-    expect(section(instructions, "Grupowanie wizyt")).not.toEqual("");
-    expect(section(instructions, "Pilność")).not.toEqual("");
+    expect(section(instructions, "Visit grouping")).not.toEqual("");
+    expect(section(instructions, "Urgency")).not.toEqual("");
   });
 
   it("explains both fields the model fills in on its own", () => {
@@ -87,7 +107,7 @@ describe("buildInstructions", () => {
     // FR-041–FR-044 computes that variant from the in-plan teeth. A model that
     // imitates it by collapsing the plan to one visit produces a split that looks
     // deliberate and is not (plan: "What We're NOT Doing").
-    expect(section(buildInstructions(), "Narkoza")).not.toEqual("");
+    expect(section(buildInstructions(), "General anaesthesia")).not.toEqual("");
   });
 
   it("states the same visit ceiling the mapper enforces", () => {
@@ -95,7 +115,7 @@ describe("buildInstructions", () => {
     // for a different number, every run of the larger one would warn — the
     // instruction and the check have to be one constant, not two numerals that
     // agree today.
-    const grouping = section(buildInstructions(), "Grupowanie wizyt");
+    const grouping = section(buildInstructions(), "Visit grouping");
     const ceiling = new RegExp(`(?<!\\d)${MAX_PROPOSED_VISITS}(?!\\d)`);
 
     expect(grouping).toMatch(ceiling);

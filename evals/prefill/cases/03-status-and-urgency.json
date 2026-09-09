@@ -1,0 +1,57 @@
+[
+  {
+    "description": "status-and-urgency — pain, negation, uncertainty, and deferred work",
+    "vars": {
+      "caseId": "status-and-urgency",
+      "note": "36 boli od tygodnia — kanałowe. 24: usunięcie próchnicy, nie boli. 16 kanałowe, bez bólu. (32?) do oceny. 48 poza obecnym planem.",
+      "expected": {
+        "teeth": [
+          {
+            "number": 16,
+            "treatmentType": "root-canal",
+            "urgency": "moderate",
+            "urgencyFromNote": false,
+            "status": "in-plan",
+            "pricelistItemIds": ["leczenie-kanalowe:leczenie-kanalowe-trzonowca"]
+          },
+          {
+            "number": 24,
+            "treatmentType": "caries-removal",
+            "urgency": "moderate",
+            "urgencyFromNote": true,
+            "status": "in-plan",
+            "pricelistItemIds": []
+          },
+          {
+            "number": 32,
+            "treatmentType": "unknown",
+            "urgency": "unknown",
+            "urgencyFromNote": false,
+            "status": "uncertain",
+            "pricelistItemIds": []
+          },
+          {
+            "number": 36,
+            "treatmentType": "root-canal",
+            "urgency": "urgent",
+            "urgencyFromNote": true,
+            "status": "in-plan",
+            "pricelistItemIds": ["leczenie-kanalowe:leczenie-kanalowe-trzonowca"]
+          },
+          {
+            "number": 48,
+            "treatmentType": "unknown",
+            "urgency": "unknown",
+            "urgencyFromNote": false,
+            "status": "out-of-current-plan",
+            "pricelistItemIds": []
+          }
+        ],
+        "generalItems": [],
+        "visitGroups": [[24, 36], [16]],
+        "warningTokens": [],
+        "forbiddenWarningTokens": []
+      }
+    }
+  }
+]

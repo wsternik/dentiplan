@@ -1,0 +1,41 @@
+[
+  {
+    "description": "catalog-grounding — endodontics, adult and milk fillings, and OPG",
+    "vars": {
+      "caseId": "catalog-grounding",
+      "note": "Wizyta 1: kanałowe 16, wypełnienie mleczaka 54 i pantomogram. Wizyta 2: kanałowe 24.",
+      "expected": {
+        "teeth": [
+          {
+            "number": 16,
+            "treatmentType": "root-canal",
+            "urgency": "moderate",
+            "urgencyFromNote": false,
+            "status": "in-plan",
+            "pricelistItemIds": ["leczenie-kanalowe:leczenie-kanalowe-trzonowca"]
+          },
+          {
+            "number": 24,
+            "treatmentType": "root-canal",
+            "urgency": "moderate",
+            "urgencyFromNote": false,
+            "status": "in-plan",
+            "pricelistItemIds": ["leczenie-kanalowe:leczenie-kanalowe-przedtrzonowca"]
+          },
+          {
+            "number": 54,
+            "treatmentType": "filling",
+            "urgency": "moderate",
+            "urgencyFromNote": false,
+            "status": "in-plan",
+            "pricelistItemIds": ["stomatologia-dziecieca:wypelnienie-w-zebie-mlecznym"]
+          }
+        ],
+        "generalItems": [{ "id": "profilaktyka:rtg-pantomogram", "visitNumber": 1 }],
+        "visitGroups": [[16, 54], [24]],
+        "warningTokens": [],
+        "forbiddenWarningTokens": []
+      }
+    }
+  }
+]

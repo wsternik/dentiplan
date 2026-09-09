@@ -1,0 +1,51 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+description: DentiPlan diagnosis-prefill prompt and model matrix
+
+prompts:
+  - id: file://prompts/production.mjs
+    label: English production
+  - id: file://prompts/polish.mjs
+    label: Polish baseline
+
+providers:
+  - id: anthropic:messages:claude-sonnet-5
+    label: Sonnet 5 · medium effort
+    config:
+      max_tokens: 128000
+      maxRetries: 1
+      stream: true
+      # Promptfoo 0.120 defaults temperature to 0 for unknown model ids. Sonnet
+      # 5 rejects that deprecated parameter, so an explicit adaptive-thinking
+      # config both matches production and makes the provider omit temperature.
+      thinking:
+        type: adaptive
+      showThinking: false
+      extra_body:
+        output_config:
+          effort: medium
+      output_format:
+        type: json_schema
+        schema: file://.generated/anthropic-schema.json
+  - id: anthropic:messages:claude-haiku-4-5
+    label: Haiku 4.5 · no effort option
+    config:
+      max_tokens: 64000
+      maxRetries: 1
+      stream: true
+      output_format:
+        type: json_schema
+        schema: file://.generated/anthropic-schema.json
+
+evaluateOptions:
+  cache: false
+  maxConcurrency: 1
+  timeoutMs: 45000
+
+defaultTest:
+  assert:
+    - type: javascript
+      value: file://assertions.mjs
+      metric: deterministic-atoms
+
+tests:
+  - file://cases/*.json

@@ -130,6 +130,15 @@ Each spec name states the risk from that plan it covers.
 Other checks: `npm run lint`, `npx astro check`, `npm run depcruise`,
 `npm run validate:pricing`.
 
+Before changing the diagnosis-prefill prompt or its default model, run the paid
+manual regression gate with `npm run eval` under Node 22 and
+`ANTHROPIC_API_KEY` configured. It compares the English production prompt and
+Polish baseline across Sonnet and Haiku on eight synthetic cases; volatile prompts and model
+responses stay in the ignored `evals/prefill/.generated/` directory. The gate is
+deliberately outside CI because provider output is non-deterministic and each run
+costs money. The current measured decision is recorded in
+[`evals/README.md`](evals/README.md).
+
 ## Layout
 
 ```
@@ -182,8 +191,9 @@ is in
 
 Shipped: the domain schema (F-01), the pricelist seed (F-02), the end-to-end
 quote and patient link (S-01), the admin quote list (S-03), note prefill and
-visit planning (S-02/S-09), the SVG odontogram (S-06), patient-link QR (S-07),
-and the note-first form (S-10). What is not built, and why:
+visit planning (S-02/S-09), its prompt/model evaluation gate (S-08), the SVG
+odontogram (S-06), patient-link QR (S-07), and the note-first form (S-10). What
+is not built, and why:
 
 |                                         | Status   | Why not yet                                                                                                                                                                                                                                         |
 | --------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

@@ -3,7 +3,7 @@ project: DentiPlan
 version: 1
 status: draft
 created: 2026-05-25
-updated: 2026-09-07
+updated: 2026-09-08
 prd_version: 1
 main_goal: low-complexity
 top_blocker: decisions
@@ -38,16 +38,17 @@ DentiPlan przekształca półustrukturyzowany wpis diagnozy dentystki (np. `Do l
 | S-04 | rodo-retention-enforcement        | link `/p/<token>` po 12 miesiącach od utworzenia zwraca "Link nieaktywny lub nieprawidłowy", e-mail pacjenta jest usuwany z rekordu                               | S-01          | NFR: Data retention & ochrona danych osobowych                                                                                                                                                                                                                                               | proposed |
 | S-05 | auth-hardening                    | dentystka ma chronioną sesję (timeout 8h, ochrona przed credential stuffingiem, brak account lockout po 3 pomyłkach)                                              | —             | NFR: Privacy & security                                                                                                                                                                                                                                                                      | ready    |
 | S-09 | visit-planning-prefill            | dentystka wkleja diagnozę i dostaje gotową propozycję podziału na wizyty i pilności — z nazwami wizyt od systemu i listą ostrzeżeń mówiącą, co model dopowiedział | S-02          | FR-011, FR-012, FR-014, FR-015, FR-032, FR-033                                                                                                                                                                                                                                               | done     |
+| S-08 | prompt-evals                      | zmiany promptu lub modelu są poprzedzone powtarzalną oceną odczytu syntetycznych notatek, a produkcja używa zmierzonego zwycięzcy                                 | S-02, S-09    | FR-011, FR-012, FR-014, FR-015                                                                                                                                                                                                                                                               | done     |
 
 ## Streams
 
 Navigation aid — groups items that share a Prerequisites chain. Canonical ordering still lives in the dependency graph below; this table is the proposed reading order across parallel tracks.
 
-| Stream | Theme                | Chain                                               | Note                                                                                           |
-| ------ | -------------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| A      | Wzdłuż gwiazdy       | `F-01` → `S-01` → `S-02` / `S-03` / `S-04` / `S-07` | Główny ciąg do north star i jego rozszerzeń; późniejsze slice'y są względem siebie równoległe. |
-| B      | Konfiguracja cennika | `F-02` → dołącza do Stream A na `S-01`              | Niezależna decyzja seedu cennika; gotowa równolegle do `F-01`.                                 |
-| C      | Twardnienie auth     | `S-05`                                              | Hardening bazowego scaffoldu — niezależny od reszty, można robić w dowolnym momencie.          |
+| Stream | Theme                | Chain                                                                | Note                                                                                           |
+| ------ | -------------------- | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| A      | Wzdłuż gwiazdy       | `F-01` → `S-01` → `S-02` → `S-09` → `S-08`; `S-03` / `S-04` / `S-07` | Główny ciąg do north star i jego rozszerzeń; późniejsze slice'y są względem siebie równoległe. |
+| B      | Konfiguracja cennika | `F-02` → dołącza do Stream A na `S-01`                               | Niezależna decyzja seedu cennika; gotowa równolegle do `F-01`.                                 |
+| C      | Twardnienie auth     | `S-05`                                                               | Hardening bazowego scaffoldu — niezależny od reszty, można robić w dowolnym momencie.          |
 
 ## Baseline
 
@@ -176,6 +177,18 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Risk:** Podział, który przychodzi kompletny i pewny siebie, bywa zatwierdzany bez czytania — a zatwierdzony kosztorys jest niezmienny, więc korekta to nowy link. Odpowiedź: kod, nie prompt — system numeruje i nazywa wizyty, a każda wartość bez pokrycia w notatce jest nazwana w ostrzeżeniu. Nowe ryzyko #11 w `test-plan.md`, pokryte testami jednostkowymi na nagranych odpowiedziach modelu (bez płatnego wywołania w suicie).
 - **Status:** done — zamyka drugą połowę FR-011 („proponowany podział na wizyty"), z której S-02 dowiozło tylko pierwszą.
 
+### S-08: Powtarzalna ocena promptu prefillu
+
+- **Outcome:** przed zmianą promptu lub domyślnego modelu dentystka ma powtarzalny, płatny na żądanie test tego, jak dostawca odczytuje osiem syntetycznych notatek: surowa odpowiedź jest oceniana deterministycznie pod kątem zębów, cennika, statusów, pilności, ostrzeżeń i grup wizyt, a produkcja używa zwycięzcy pełnej macierzy.
+- **Change ID:** prompt-evals
+- **PRD refs:** FR-011, FR-012, FR-014, FR-015
+- **Prerequisites:** S-02, S-09
+- **Parallel with:** S-03, S-04, S-05
+- **Blockers:** —
+- **Unknowns:** —
+- **Risk:** Zielone testy mapowania nie mówią, czy zmieniony prompt lub model nadal poprawnie czyta notatkę. `npm run eval` porównuje niecache'owaną macierz na zamrożonym korpusie przed zmianą produkcji; nie działa w CI, bo odpowiedzi dostawcy są niedeterministyczne, wywołania kosztują, a CI nie przechowuje klucza.
+- **Status:** done — zrealizowane 2026-09-09 jako `prompt-evals`; zmierzony zwycięzca to angielskie instrukcje z polskim katalogiem i notatką, `claude-sonnet-5` oraz `effort: medium`. Nowe ryzyko #10 w `test-plan.md` jest chronione ręczną bramką Promptfoo opisaną w `evals/README.md`.
+
 ### S-06: Tooth chart on the patient page and in the editor
 
 - **Outcome:** pacjent widzi nad listą pogrupowaną rysunek swojego łuku zębowego: każdy ząb z kosztorysu wypełniony kolorem pilności i obrysowany zgodnie ze statusem, reszta ust narysowana bez wypełnienia. Najechanie, sfokusowanie albo dotknięcie zęba nazywa go po polsku, podaje zabieg i jego udział w planie podstawowym. Wydrukowany schemat zachowuje rozróżnialność statusów bez koloru. W edytorze ten sam rysunek jest wyborem zębów: kliknięcie zęba spoza planu dodaje go, kliknięcie zęba z planu przenosi do jego wiersza. Lista pogrupowana (FR-061) zostaje jako warstwa dostępności i druku.
@@ -261,6 +274,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 ## Done
 
+- **S-08: przed zmianą promptu lub domyślnego modelu surowy odczyt syntetycznych notatek przechodzi deterministyczną, płatną na żądanie macierz Promptfoo, a produkcja używa zmierzonego zwycięzcy** — Delivered 2026-09-08 as `prompt-evals`. Lesson: zielone testy mapowania nie mierzą jakości ani bezpieczeństwa odpowiedzi dostawcy; ta bramka pozostaje ręczna, bo wywołania są płatne i niedeterministyczne.
 - **S-10: dentystka rozpoczyna nowy kosztorys od wklejenia notatki diagnozy, a szczegółowy formularz otwiera tylko do ręcznej korekty. Notatka zapisuje się przy szkicu i zatwierdzonym kosztorysie, jest czytelna wyłącznie w uwierzytelnionym panelu i nigdy nie trafia do `content`, anonimowego RPC ani strony pacjenta. Podczas wypełniania z notatki formularz wyraźnie pokazuje stan pracy i nie pozwala go edytować, zachowując przewijanie strony.** — Archived 2026-09-07 → `context/archive/2026-09-07-quote-form-polish/`. Lesson: —.
 - **S-07: dentystka pokazuje pacjentowi QR do zatwierdzonego kosztorysu w panelu, a wydruk zawiera QR i czytelny adres tej samej wersji online** — Delivered 2026-09-07 as `patient-link-qr`. Lesson: medium drukowe trzeba weryfikować także w wymiarach papieru, nie tylko przez emulację `print`.
 - **S-06: pacjent widzi nad listą pogrupowaną rysunek swojego łuku zębowego — każdy ząb z kosztorysu wypełniony kolorem pilności i obrysowany zgodnie ze statusem, tooltip po najechaniu/dotknięciu, a w edytorze ten sam rysunek jest wyborem zębów** — Archived 2026-09-06 → `context/archive/2026-09-06-tooth-chart-visualization/`. Lesson: —.

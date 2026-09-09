@@ -1,0 +1,49 @@
+[
+  {
+    "description": "anaesthesia-explicit — explicit all-under-anaesthesia instruction",
+    "vars": {
+      "caseId": "anaesthesia-explicit",
+      "note": "Wszystko w narkozie: wypełnienia 16, 17, 24 i 25.",
+      "expected": {
+        "teeth": [
+          {
+            "number": 16,
+            "treatmentType": "filling",
+            "urgency": "moderate",
+            "urgencyFromNote": false,
+            "status": "in-plan",
+            "pricelistItemIds": ["leczenie-zachowawcze:wypelnienie-male-duze"]
+          },
+          {
+            "number": 17,
+            "treatmentType": "filling",
+            "urgency": "moderate",
+            "urgencyFromNote": false,
+            "status": "in-plan",
+            "pricelistItemIds": ["leczenie-zachowawcze:wypelnienie-male-duze"]
+          },
+          {
+            "number": 24,
+            "treatmentType": "filling",
+            "urgency": "moderate",
+            "urgencyFromNote": false,
+            "status": "in-plan",
+            "pricelistItemIds": ["leczenie-zachowawcze:wypelnienie-male-duze"]
+          },
+          {
+            "number": 25,
+            "treatmentType": "filling",
+            "urgency": "moderate",
+            "urgencyFromNote": false,
+            "status": "in-plan",
+            "pricelistItemIds": ["leczenie-zachowawcze:wypelnienie-male-duze"]
+          }
+        ],
+        "generalItems": [],
+        "visitGroups": [[16, 17, 24, 25]],
+        "warningTokens": ["narkoz"],
+        "forbiddenWarningTokens": []
+      }
+    }
+  }
+]
