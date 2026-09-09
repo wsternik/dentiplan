@@ -1,10 +1,10 @@
 ---
 change_id: prompt-evals
 title: Prompt evals
-status: impl_reviewed
+status: archived
 created: 2026-09-08
 updated: 2026-09-09
-archived_at: null
+archived_at: 2026-09-09T04:17:24Z
 ---
 
 ## Notes

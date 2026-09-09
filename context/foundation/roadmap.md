@@ -3,7 +3,7 @@ project: DentiPlan
 version: 1
 status: draft
 created: 2026-05-25
-updated: 2026-09-08
+updated: 2026-09-09
 prd_version: 1
 main_goal: low-complexity
 top_blocker: decisions
@@ -274,6 +274,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 ## Done
 
+- **S-08: przed zmianą promptu lub domyślnego modelu dentystka ma powtarzalny, płatny na żądanie test tego, jak dostawca odczytuje osiem syntetycznych notatek: surowa odpowiedź jest oceniana deterministycznie pod kątem zębów, cennika, statusów, pilności, ostrzeżeń i grup wizyt, a produkcja używa zwycięzcy pełnej macierzy.** — Archived 2026-09-09 → `context/archive/2026-09-08-prompt-evals/`. Lesson: —.
 - **S-08: przed zmianą promptu lub domyślnego modelu surowy odczyt syntetycznych notatek przechodzi deterministyczną, płatną na żądanie macierz Promptfoo, a produkcja używa zmierzonego zwycięzcy** — Delivered 2026-09-08 as `prompt-evals`. Lesson: zielone testy mapowania nie mierzą jakości ani bezpieczeństwa odpowiedzi dostawcy; ta bramka pozostaje ręczna, bo wywołania są płatne i niedeterministyczne.
 - **S-10: dentystka rozpoczyna nowy kosztorys od wklejenia notatki diagnozy, a szczegółowy formularz otwiera tylko do ręcznej korekty. Notatka zapisuje się przy szkicu i zatwierdzonym kosztorysie, jest czytelna wyłącznie w uwierzytelnionym panelu i nigdy nie trafia do `content`, anonimowego RPC ani strony pacjenta. Podczas wypełniania z notatki formularz wyraźnie pokazuje stan pracy i nie pozwala go edytować, zachowując przewijanie strony.** — Archived 2026-09-07 → `context/archive/2026-09-07-quote-form-polish/`. Lesson: —.
 - **S-07: dentystka pokazuje pacjentowi QR do zatwierdzonego kosztorysu w panelu, a wydruk zawiera QR i czytelny adres tej samej wersji online** — Delivered 2026-09-07 as `patient-link-qr`. Lesson: medium drukowe trzeba weryfikować także w wymiarach papieru, nie tylko przez emulację `print`.
