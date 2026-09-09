@@ -64,74 +64,95 @@ const shortId = (id: string) => id.slice(0, 8);
 <Layout title="Kosztorysy">
   <Topbar />
 
-  <main class="mx-auto max-w-5xl px-4 py-8">
-    <div class="border-border mb-6 flex flex-wrap items-baseline justify-between gap-4 border-b pb-4">
+  <main class="shell-workspace py-8 sm:py-12">
+    <div class="border-border mb-7 flex flex-wrap items-end justify-between gap-5 border-b pb-6 sm:mb-9">
       <div>
-        <h1 class="font-serif text-2xl font-medium tracking-tight">Kosztorysy</h1>
-        <p class="text-muted-foreground mt-1 text-sm">Najnowsze na górze. Szkice otwierają się do edycji.</p>
+        <span class="bg-brand mb-3 block h-1 w-10 rounded-full" aria-hidden="true"></span>
+        <h1 class="font-editorial text-3xl font-medium tracking-[-0.035em] sm:text-4xl">Kosztorysy</h1>
+        <p class="text-muted-foreground mt-2 text-sm leading-relaxed">
+          Najnowsze na górze. Szkice otwierają się do edycji.
+        </p>
       </div>
       <a
         href="/admin/quotes/new"
-        class="bg-primary text-primary-foreground hover:bg-primary/88 focus-visible:ring-ring inline-flex h-9 shrink-0 items-center rounded-md px-4 text-sm font-medium tracking-tight transition-colors focus-visible:ring-2 focus-visible:outline-none"
+        class="bg-primary text-primary-foreground hover:bg-primary/88 focus-visible:ring-ring inline-flex h-10 shrink-0 items-center rounded-full px-5 text-sm font-semibold tracking-tight transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
       >
         Nowy kosztorys
       </a>
     </div>
 
-    {loadError && <p class="text-destructive text-sm">Nie udało się wczytać listy kosztorysów.</p>}
+    {
+      loadError && (
+        <div role="alert" class="border-destructive/30 bg-card rounded-2xl border p-6 sm:p-8">
+          <span class="bg-destructive mb-4 block size-2 rounded-full" aria-hidden="true" />
+          <p class="font-editorial text-destructive text-xl font-medium sm:text-2xl">
+            Nie udało się wczytać listy kosztorysów.
+          </p>
+        </div>
+      )
+    }
 
     {
       !loadError && quotes.length === 0 && (
-        <p class="text-muted-foreground max-w-prose text-sm leading-relaxed">
-          Nie masz jeszcze żadnych kosztorysów. Zacznij od „Nowy kosztorys” — wklej notatkę z diagnozy, sprawdź
-          formularz i zatwierdź.
-        </p>
+        <div class="border-border bg-card rounded-2xl border p-6 sm:p-9">
+          <span class="bg-brand mb-4 block h-1 w-8 rounded-full" aria-hidden="true" />
+          <p class="font-editorial text-xl font-medium tracking-[-0.025em] sm:text-2xl">Brak kosztorysów</p>
+          <p class="text-muted-foreground mt-2 max-w-prose text-sm leading-relaxed">
+            Nie masz jeszcze żadnych kosztorysów. Zacznij od „Nowy kosztorys” — wklej notatkę z diagnozy, sprawdź
+            formularz i zatwierdź.
+          </p>
+        </div>
       )
     }
 
     {
       quotes.length > 0 && (
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm">
-            <thead>
-              <tr class="border-border text-muted-foreground border-b">
-                <th class="py-2 pr-4 font-medium">Identyfikator</th>
-                <th class="py-2 pr-4 font-medium">E-mail odbiorcy</th>
-                <th class="py-2 pr-4 font-medium">Utworzono</th>
-                <th class="py-2 pr-4 font-medium">Status</th>
-                <th class="py-2 font-medium" />
-              </tr>
-            </thead>
-            <tbody>
-              {quotes.map((quote) => (
-                <tr class="border-border hover:bg-secondary/60 border-b transition-colors last:border-b-0">
-                  {/* Monospace here is earned: this is eight hex characters a
+        <div class="border-border bg-card overflow-hidden rounded-2xl border shadow-[0_18px_50px_-42px_color-mix(in_oklch,var(--foreground)_38%,transparent)]">
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[44rem] text-left text-sm">
+              <thead class="bg-secondary/55">
+                <tr class="border-border text-muted-foreground border-b">
+                  <th class="px-4 py-3 font-semibold">Identyfikator</th>
+                  <th class="px-4 py-3 font-semibold">E-mail odbiorcy</th>
+                  <th class="px-4 py-3 font-semibold">Utworzono</th>
+                  <th class="px-4 py-3 font-semibold">Status</th>
+                  <th class="px-4 py-3 font-semibold" />
+                </tr>
+              </thead>
+              <tbody>
+                {quotes.map((quote) => (
+                  <tr class="border-border hover:bg-secondary/35 border-b transition-colors last:border-b-0">
+                    {/* Monospace here is earned: this is eight hex characters a
                       human compares by eye against a link or another row. */}
-                  <td class="py-2.5 pr-4 font-mono">
-                    <a href={`/admin/quotes/${quote.id}`} class="underline underline-offset-4">
-                      {shortId(quote.id)}
-                    </a>
-                  </td>
-                  <td class="py-2.5 pr-4">{quote.patient_email ?? <span class="text-muted-foreground">—</span>}</td>
-                  <td class="numeric text-muted-foreground py-2.5 pr-4 whitespace-nowrap">
-                    {formatDate(quote.created_at)}
-                  </td>
-                  <td class="py-2.5 pr-4">
-                    {/* The draft is the row that still wants something from
+                    <td class="px-4 py-3 font-mono">
+                      <a
+                        href={`/admin/quotes/${quote.id}`}
+                        class="decoration-brand-ink/55 hover:decoration-brand-ink underline decoration-2 underline-offset-4 transition-colors"
+                      >
+                        {shortId(quote.id)}
+                      </a>
+                    </td>
+                    <td class="px-4 py-3">{quote.patient_email ?? <span class="text-muted-foreground">—</span>}</td>
+                    <td class="numeric text-muted-foreground px-4 py-3 whitespace-nowrap">
+                      {formatDate(quote.created_at)}
+                    </td>
+                    <td class="px-4 py-3">
+                      {/* The draft is the row that still wants something from
                         her, so it carries the weight; an approved quote is
                         finished and can be quiet. Most rows are approved, and a
                         column of solid pills would say nothing. */}
-                    <Badge variant={quote.status === "approved" ? "outline" : "default"}>
-                      {quote.status === "approved" ? "Zatwierdzony" : "Szkic"}
-                    </Badge>
-                  </td>
-                  <td class="py-2.5 text-right">
-                    {quote.status === "draft" && <DeleteQuoteButton id={quote.id} client:load />}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                      <Badge variant={quote.status === "approved" ? "outline" : "default"}>
+                        {quote.status === "approved" ? "Zatwierdzony" : "Szkic"}
+                      </Badge>
+                    </td>
+                    <td class="px-4 py-3 text-right">
+                      {quote.status === "draft" && <DeleteQuoteButton id={quote.id} client:load />}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )
     }
