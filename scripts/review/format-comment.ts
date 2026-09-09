@@ -6,6 +6,9 @@
 //
 //   npm run review -- --diff d.patch | npx tsx scripts/review/format-comment.ts
 
+import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
 import { CRITERION_KEYS, REVIEW_SCHEMA, type CriterionKey, type Review } from "./schema.ts";
 
 const CRITERION_LABELS: Record<CriterionKey, string> = {
@@ -24,7 +27,7 @@ const VERDICT_BADGE = {
 
 const SEVERITY_BADGE = { blocker: "🛑 blocker", major: "⚠️ major", minor: "· minor" } as const;
 
-function render(review: Review): string {
+export function render(review: Review): string {
   const scores = CRITERION_KEYS.map((key) => `| ${CRITERION_LABELS[key]} | ${review[key].toString()}/10 |`).join("\n");
 
   const findings =
@@ -66,9 +69,15 @@ async function readStdin(): Promise<string> {
   return Buffer.concat(chunks).toString("utf8");
 }
 
-const parsed = REVIEW_SCHEMA.safeParse(JSON.parse(await readStdin()));
-if (!parsed.success) {
-  console.error(`Not a valid review object: ${parsed.error.message}`);
-  process.exit(1);
+async function main(): Promise<void> {
+  const parsed = REVIEW_SCHEMA.safeParse(JSON.parse(await readStdin()));
+  if (!parsed.success) {
+    console.error(`Not a valid review object: ${parsed.error.message}`);
+    process.exit(1);
+  }
+  console.log(render(parsed.data));
 }
-console.log(render(parsed.data));
+
+// Same entry-point guard as the agent: importing this module must not sit
+// waiting on stdin.
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) await main();

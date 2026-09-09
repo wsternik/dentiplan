@@ -13,6 +13,8 @@
 // single generateText call with a structured output is the whole harness.
 
 import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { generateText, Output } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
 import { CRITERION_KEYS, REVIEW_SCHEMA, buildSystemPrompt, type Review } from "./schema.ts";
@@ -27,7 +29,7 @@ const MODEL = process.env.REVIEW_MODEL ?? "claude-sonnet-5";
 // A large diff costs tokens and buys nothing: past a point the model is
 // skimming, and the verdict gets vaguer rather than sharper. Callers should
 // narrow the diff by path first; this is the backstop for when they don't.
-const MAX_DIFF_CHARS = 120_000;
+export const MAX_DIFF_CHARS = 120_000;
 
 async function readStdin(): Promise<string> {
   const chunks: Buffer[] = [];
@@ -48,7 +50,7 @@ async function readDiff(): Promise<string> {
   return readStdin();
 }
 
-function truncate(diff: string): { diff: string; truncated: boolean } {
+export function truncate(diff: string): { diff: string; truncated: boolean } {
   if (diff.length <= MAX_DIFF_CHARS) return { diff, truncated: false };
   return {
     diff: `${diff.slice(0, MAX_DIFF_CHARS)}\n\n[diff truncated at ${MAX_DIFF_CHARS} characters]`,
@@ -60,7 +62,7 @@ function truncate(diff: string): { diff: string; truncated: boolean } {
 // schema — Anthropic's structured output rejects minimum/maximum on a number —
 // so an out-of-range or fractional score would otherwise pass validation and
 // land in the PR comment. Clamp on the way out.
-function clampScores(review: Review): Review {
+export function clampScores(review: Review): Review {
   const clamped = { ...review };
   for (const key of CRITERION_KEYS) {
     clamped[key] = Math.min(10, Math.max(1, Math.round(review[key])));
@@ -85,9 +87,15 @@ export async function review(rawDiff: string): Promise<Review> {
   return clampScores(output);
 }
 
-const diff = await readDiff();
-if (diff.trim().length === 0) {
-  console.error("Empty diff — nothing to review.");
-  process.exit(0);
+async function main(): Promise<void> {
+  const diff = await readDiff();
+  if (diff.trim().length === 0) {
+    console.error("Empty diff — nothing to review.");
+    process.exit(0);
+  }
+  console.log(JSON.stringify(await review(diff), null, 2));
 }
-console.log(JSON.stringify(await review(diff), null, 2));
+
+// Only the CLI invocation runs the agent; an import gets the helpers and
+// nothing else, which is what makes the pure ones testable without a model.
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) await main();

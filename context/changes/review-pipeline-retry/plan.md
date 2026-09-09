@@ -108,13 +108,15 @@ None. The trigger keeps its name; only its inputs change, so anyone who used the
 
 #### Automated
 
-- [ ] 1.1 Helpers exported and CLIs guarded by an entry-point check
-- [ ] 1.2 Helper tests pass
-- [ ] 1.3 Lint passes
+- [x] 1.1 Helpers exported and CLIs guarded by an entry-point check
+- [x] 1.2 Helper tests pass
+- [x] 1.3 Lint passes
 
 #### Manual
 
-- [ ] 1.4 Both CLIs still run as before
+- [x] 1.4 Both CLIs still run as before
+
+`npx vitest run scripts/review` → 2 files, 15 tests passing; `npm run lint` clean. `npx tsx scripts/review/format-comment.ts < review.json` still renders the comment from stdin, and `npm run review -- --diff <empty file>` still exits 0 with "Empty diff — nothing to review." — the guard runs the CLI exactly when the file is the entry point.
 
 ### Phase 2: Make the manual re-review real
 
