@@ -34,4 +34,8 @@ test("a failed prefill leaves the form as it was", async ({ page }) => {
     "aria-expanded",
     "false",
   );
+  // The focus restore is one effect shared by both branches, and this is the
+  // branch where losing it hurts more: nothing appeared, so a keyboard user
+  // dropped on `<body>` has no landmark telling her where the attempt went.
+  await expect(page.getByRole("button", { name: "Wypełnij z notatki" })).toBeFocused();
 });

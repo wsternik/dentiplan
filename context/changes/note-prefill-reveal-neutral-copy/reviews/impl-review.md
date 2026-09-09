@@ -75,3 +75,17 @@ remove, not a state worth reproducing on a technicality.
 Two real defects (the surviving name, the silent-and-unfocused reveal) and four contract nits,
 all closed. Nothing from "What We're NOT Doing" crept in: the component diff moves no scroll,
 adds no trigger on note input, re-collapses nothing, and no existing spec was edited.
+
+## Pipeline review (PR #19, advisory)
+
+APPROVED, three minor findings, one read.
+
+**Taken — the failure branch never asserted the focus restore.** `restoreFocusAfterPrefill` is
+set unconditionally, so the effect runs on both branches, and the branch where losing focus
+hurts more is the one where nothing appeared. `e2e/quote-prefill-failure.spec.ts` now asserts it
+too.
+
+**Not taken — "split the pricing.json reformat and the README wording into their own PR"** (two
+of the three findings). The agent reads the diff, not the plan: the prose pass is not scope
+creep riding along, it is the second of this change's two stated halves. The `pricing.json`
+diff is the pre-commit formatter, already triaged above.
