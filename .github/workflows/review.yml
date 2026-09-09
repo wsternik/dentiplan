@@ -4,32 +4,97 @@
 # check: the verdict is advisory, and a model's opinion should never be the
 # thing that stops a merge. It fails only when the agent itself fails, which is
 # a signal about the pipeline rather than about the code under review.
+#
+# It also runs on demand — for a transient provider error, or after editing the
+# prompt — and then it needs to be told which pull request to look at. A
+# dispatch has no event payload to read that from: it checks out a branch, so
+# without the input below the diff would be empty and there would be no pull
+# request to comment on.
 name: AI review
 
 on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      pull_request:
+        description: "Number of the pull request to review again"
+        required: true
+        type: string
 
 permissions:
   contents: read
   pull-requests: write
 
-# A new push supersedes the review of the previous one; no point paying for both.
+# A new push supersedes the review of the previous one; no point paying for
+# both. A manual re-run of the same pull request supersedes its predecessor for
+# the same reason, so both events key the group off the pull request number.
 concurrency:
-  group: ai-review-${{ github.event.pull_request.number || github.ref }}
+  group: ai-review-${{ github.event.pull_request.number || inputs.pull_request }}
   cancel-in-progress: true
 
 jobs:
   review:
     runs-on: ubuntu-latest
     # A pull request from a fork gets no secrets, so the agent could not run.
+    # The dispatch path has the opposite problem — it runs in the base
+    # repository, with the secrets — so it repeats the check on the resolved
+    # pull request rather than trusting the trigger.
     if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
     steps:
+      # One place decides what is under review, so the diff and the comment can
+      # never point at two different things.
+      - name: Resolve the pull request under review
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_NUMBER: ${{ github.event.pull_request.number }}
+          EVENT_BASE: ${{ github.event.pull_request.base.ref }}
+          EVENT_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          INPUT_NUMBER: ${{ inputs.pull_request }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            number="$EVENT_NUMBER"
+            base="$EVENT_BASE"
+            head_sha="$EVENT_HEAD_SHA"
+          else
+            # --repo is explicit even though GH_REPO would cover it: the
+            # property that matters here is that the number is looked up in
+            # this repository, and it should be readable at the call site.
+            pr=$(gh pr view "$INPUT_NUMBER" --repo "$GH_REPO" --json number,baseRefName,headRefOid,isCrossRepository)
+            if [ "$(jq -r '.isCrossRepository' <<<"$pr")" != "false" ]; then
+              echo "::error::Pull request #$INPUT_NUMBER comes from a fork, and a fork's code must not run with this repository's secrets."
+              exit 1
+            fi
+            number=$(jq -r '.number' <<<"$pr")
+            base=$(jq -r '.baseRefName' <<<"$pr")
+            head_sha=$(jq -r '.headRefOid' <<<"$pr")
+          fi
+          {
+            echo "number=$number"
+            echo "base=$base"
+            echo "head_sha=$head_sha"
+          } >> "$GITHUB_OUTPUT"
+          echo "Reviewing pull request #$number at $head_sha against origin/$base."
+
       - uses: actions/checkout@v4
         with:
+          # The head of the pull request, not the ref the run was started from:
+          # on a dispatch those are different, and only the former has the
+          # change on it.
+          ref: ${{ steps.pr.outputs.head_sha }}
           # The agent diffs against the merge base, which shallow clones do not have.
           fetch-depth: 0
+
+      # Checking out a SHA leaves no branch behind it, so the base the diff
+      # needs is fetched by name.
+      - name: Fetch the base branch
+        env:
+          BASE: ${{ steps.pr.outputs.base }}
+        run: git fetch --no-tags origin "+refs/heads/$BASE:refs/remotes/origin/$BASE"
 
       - uses: actions/setup-node@v4
         with:
@@ -44,13 +109,15 @@ jobs:
       # judgement whose five criteria are all about code.
       - name: Collect the diff
         id: diff
+        env:
+          BASE: ${{ steps.pr.outputs.base }}
         run: |
-          git diff "origin/${{ github.base_ref || 'main' }}...HEAD" -- . \
+          git diff "origin/$BASE...HEAD" -- . \
             ':(exclude)context/**' \
             ':(exclude)package-lock.json' > review.diff
           BYTES=$(wc -c < review.diff | tr -d ' ')
           echo "bytes=$BYTES" >> "$GITHUB_OUTPUT"
-          echo "Diff is $BYTES bytes over $(git diff --name-only "origin/${{ github.base_ref || 'main' }}...HEAD" -- . ':(exclude)context/**' ':(exclude)package-lock.json' | wc -l) files."
+          echo "Diff is $BYTES bytes over $(git diff --name-only "origin/$BASE...HEAD" -- . ':(exclude)context/**' ':(exclude)package-lock.json' | wc -l) files."
 
       - name: Run the review agent
         if: steps.diff.outputs.bytes != '0'
@@ -59,12 +126,13 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
       - name: Comment on the pull request
-        if: steps.diff.outputs.bytes != '0' && github.event_name == 'pull_request'
-        run: |
-          npx tsx scripts/review/format-comment.ts < review.json > comment.md
-          gh pr comment "${{ github.event.pull_request.number }}" --body-file comment.md
+        if: steps.diff.outputs.bytes != '0'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NUMBER: ${{ steps.pr.outputs.number }}
+        run: |
+          npx tsx scripts/review/format-comment.ts < review.json > comment.md
+          gh pr comment "$NUMBER" --body-file comment.md
 
       - name: Say so when there was nothing to review
         if: steps.diff.outputs.bytes == '0'
