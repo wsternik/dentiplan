@@ -402,6 +402,12 @@ export default function QuoteEditor({
       }
       const result = (await res.json()) as PrefillResult;
       setParseWarnings(applyPrefill(result));
+      // The whole answer lands inside `#quote-details`, which the note-first
+      // route keeps collapsed. Leaving it closed means the prefill finishes and
+      // nothing on screen moves, so she has to guess that the result is one
+      // click away. Only the success branch opens it: a failed prefill has
+      // nothing to show, and FR-013 keeps it from changing anything.
+      setManualFormOpen(true);
     } catch {
       setParseError("Nie udało się przetworzyć notatki — wypełnij formularz ręcznie.");
     } finally {

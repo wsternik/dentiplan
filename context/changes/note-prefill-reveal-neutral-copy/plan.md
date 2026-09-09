@@ -208,15 +208,22 @@ or status change.
 
 #### Automated
 
-- [ ] 1.1 Lint and type check pass
-- [ ] 1.2 Unit suite green
-- [ ] 1.3 Production build succeeds
-- [ ] 1.4 E2E suite green with existing specs unedited
+- [x] 1.1 Lint and type check pass
+- [x] 1.2 Unit suite green
+- [x] 1.3 Production build succeeds
+- [x] 1.4 E2E suite green with existing specs unedited
 
 #### Manual
 
 - [ ] 1.5 Real prefill leaves the form open, no scroll jump
 - [ ] 1.6 Failed prefill leaves the form collapsed with the error shown
+
+`npm run lint` clean; `npx astro check` 0 errors over 134 files; `npm run test` 167/167 in 22
+files; `npm run build` complete. `npm run test:e2e` 11/11 — the suite's 9 existing specs
+unedited (`git diff --stat` touches only the new `e2e/quote-prefill-reveal.spec.ts`), plus the
+two new cases. The warnings list is a `role="group"`, not a region: the spec's first run said
+so, and the locator was corrected rather than the assertion dropped. 1.5/1.6 are the same two
+behaviours against the live model instead of a stubbed route — left for the human pass.
 
 ### Phase 2: Neutral clinic copy
 
