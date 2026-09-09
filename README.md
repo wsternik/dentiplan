@@ -72,7 +72,7 @@ neither guessable nor enumerable.
 - [React](https://react.dev/) 19 — islands, only where the page is interactive
 - [TypeScript](https://www.typescriptlang.org/) 5, [Zod](https://zod.dev/) 4 for validation
 - [Tailwind CSS](https://tailwindcss.com/) 4 + [shadcn/ui](https://ui.shadcn.com/) ("new-york"), re-themed through tokens
-- [Literata](https://fonts.google.com/specimen/Literata) and [Archivo](https://fonts.google.com/specimen/Archivo) as variable fonts from npm, bundled — no font CDN
+- [Manrope](https://fonts.google.com/specimen/Manrope) and [Fraunces](https://fonts.google.com/specimen/Fraunces) as variable fonts from npm, bundled — no font CDN
 - [Supabase](https://supabase.com/) — Postgres with RLS, cookie-based auth via `@supabase/ssr`
 - [Cloudflare Workers](https://workers.cloudflare.com/) — deployment target (`workerd` locally too)
 
@@ -171,11 +171,18 @@ Design and analysis documents live under `context/`:
 
 ## How it looks
 
-The patient page is the one that matters: someone reads it on a phone shortly
-after leaving the chair, deciding between several appointments and one session
-under anesthesia. So it is built as a document rather than an app — a reading
-serif, a single measured column, and the two options laid side by side as the
-first thing on the page.
+The public home explains the two-path comparison before it asks the dentist to
+sign in. It is a static Astro page: no session data, remote font request, or
+client-side decoration is needed to render it. The same visual system carries
+through sign-in, the workspace, and the patient document: Manrope for readable
+working copy, Fraunces for editorial hierarchy, warm paper-like surfaces, and
+one restrained ink colour for actions.
+
+The patient page is the document that matters: someone reads it on a phone
+shortly after leaving the chair, deciding between several appointments and one
+session under anesthesia. Its content remains measured and printable; the two
+options stay comparable at printable A4 width, not merely in a screen-sized
+print preview.
 
 Colour in this interface means something clinical. Navigation, buttons and the
 "recommended" marker are ink; the only saturated hues in the system are the
@@ -183,17 +190,18 @@ urgency marks on a tooth. Plan status is drawn rather than coloured — dashed f
 uncertain, dimmed and hatched for deferred — so it survives being printed in
 black and white and being read by someone who cannot separate red from green.
 
-The palette lives as tokens in `src/styles/global.css`; the reasoning behind it
-is in
-[`context/archive/2026-09-05-ui-redesign/design-brief.md`](context/archive/2026-09-05-ui-redesign/design-brief.md).
+The palette and typography live as tokens in `src/styles/global.css`. Colour
+never carries a clinical distinction alone: status also has a border or label,
+and print keeps an explicit text, border, or glyph fallback when browsers omit
+background graphics.
 
 ## Roadmap status
 
 Shipped: the domain schema (F-01), the pricelist seed (F-02), the end-to-end
 quote and patient link (S-01), the admin quote list (S-03), note prefill and
 visit planning (S-02/S-09), its prompt/model evaluation gate (S-08), the SVG
-odontogram (S-06), patient-link QR (S-07), and the note-first form (S-10). What
-is not built, and why:
+odontogram (S-06), patient-link QR (S-07), the note-first form (S-10), and the
+shared visual system with its production home. What is not built, and why:
 
 |                                         | Status   | Why not yet                                                                                                                                                                                                                                         |
 | --------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

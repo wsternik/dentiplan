@@ -113,10 +113,9 @@
   --radius-lg: calc(var(--radius) + 2px);
   --radius-xl: calc(var(--radius) + 6px);
 
-  /* Manrope is the working and reading face. `font-serif` intentionally aliases
-     it while surfaces migrate; Fraunces is opt-in through `font-editorial`. */
+  /* Manrope carries interface and reading copy; Fraunces is reserved for
+     editorial hierarchy through `font-editorial`. */
   --font-sans: "Manrope Variable", Manrope, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-serif: "Manrope Variable", Manrope, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-editorial: "Fraunces Variable", Fraunces, Georgia, "Times New Roman", serif;
 
   --color-background: var(--background);
