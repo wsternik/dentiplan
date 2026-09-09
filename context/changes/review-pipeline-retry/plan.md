@@ -122,9 +122,11 @@ None. The trigger keeps its name; only its inputs change, so anyone who used the
 
 #### Automated
 
-- [ ] 2.1 Dispatch input declared and required
-- [ ] 2.2 Pull request resolved once for both events, forks refused
-- [ ] 2.3 Diff and comment follow the resolved pull request
+- [x] 2.1 Dispatch input declared and required
+- [x] 2.2 Pull request resolved once for both events, forks refused
+- [x] 2.3 Diff and comment follow the resolved pull request
+
+The workflow parses as YAML. The resolve step's script was run locally against a stubbed `gh` in all three shapes: a `pull_request` event takes number, base and head SHA from the payload; a dispatch on a same-repository pull request resolves them from `gh pr view`, including a base branch other than `main`; a dispatch on a fork pull request exits 1 with the error and writes no outputs. No step gates on `github.event_name == 'pull_request'` any more, and no step assumes `main`.
 
 #### Manual
 
