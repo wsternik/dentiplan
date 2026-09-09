@@ -129,6 +129,17 @@ export default function QuoteEditor({
   const [parsing, setParsing] = useState(false);
   const [parseError, setParseError] = useState<string | null>(null);
   const [parseWarnings, setParseWarnings] = useState<string[]>([]);
+  // What the prefill did, for the live region. The overlay announces that the
+  // form is being filled; without this, the announcement it ends on is silence —
+  // and the reveal below is a purely visual event, so a screen-reader user would
+  // be told neither that the model answered nor that a form opened around her.
+  const [parseStatus, setParseStatus] = useState<string | null>(null);
+  // `inert` on the busy wrapper blurs whatever was focused, so the prefill
+  // button loses focus the moment it is clicked. Restoring it matters more now
+  // that the form opens: otherwise the keyboard path to the freshly revealed
+  // fields starts at the top of the document.
+  const prefillButtonRef = useRef<HTMLButtonElement>(null);
+  const restoreFocusAfterPrefill = useRef(false);
   const generalCounter = useRef(highestGeneralIndex(initialContent?.generalItems ?? []));
   // Write lock for the two server-writing actions. A ref, because the `saving` /
   // `submitting` state flags are read through a closure: a second click in the
@@ -174,7 +185,16 @@ export default function QuoteEditor({
       ? "Zatwierdzanie kosztorysu."
       : saving
         ? "Zapisywanie szkicu."
-        : "";
+        : (parseStatus ?? "");
+
+  // The wrapper is only interactive again after the render that clears
+  // `parsing`, so the focus call belongs here rather than in `handlePrefill`'s
+  // `finally`: an `inert` ancestor rejects it.
+  useEffect(() => {
+    if (parsing || !restoreFocusAfterPrefill.current) return;
+    restoreFocusAfterPrefill.current = false;
+    prefillButtonRef.current?.focus();
+  }, [parsing]);
 
   const totals = useMemo(() => computeQuoteTotals({ teeth, visits, generalItems }), [teeth, visits, generalItems]);
   const readOnlyPatientPath = patientToken ? `/p/${patientToken}` : null;
@@ -374,20 +394,22 @@ export default function QuoteEditor({
   //
   // `rawText` is the only thing sent to the model, and it never enters
   // `treePayload()` or patient-visible `content`.
-  function applyPrefill(result: PrefillResult): string[] {
+  function applyPrefill(result: PrefillResult) {
     const merged = mergePrefill(treeRef.current, result, generalCounter.current);
     generalCounter.current = merged.generalIdSeed;
     setTeeth(merged.teeth);
     setVisits(merged.visits);
     setGeneralItems(merged.generalItems);
-    return merged.warnings;
+    return merged;
   }
 
   async function handlePrefill() {
     if (inFlight.current) return;
     inFlight.current = true;
+    restoreFocusAfterPrefill.current = true;
     setParsing(true);
     setParseError(null);
+    setParseStatus(null);
     try {
       const res = await fetch("/api/admin/quotes/parse", {
         method: "POST",
@@ -401,7 +423,15 @@ export default function QuoteEditor({
         return;
       }
       const result = (await res.json()) as PrefillResult;
-      setParseWarnings(applyPrefill(result));
+      const merged = applyPrefill(result);
+      setParseWarnings(merged.warnings);
+      setParseStatus(`Wypełniono formularz z notatki. Formularz jest otwarty, liczba zębów: ${merged.teeth.length}.`);
+      // The whole answer lands inside `#quote-details`, which the note-first
+      // route keeps collapsed. Leaving it closed means the prefill finishes and
+      // nothing on screen moves, so she has to guess that the result is one
+      // click away. Only the success branch opens it: a failed prefill has
+      // nothing to show, and FR-013 keeps it from changing anything.
+      setManualFormOpen(true);
     } catch {
       setParseError("Nie udało się przetworzyć notatki — wypełnij formularz ręcznie.");
     } finally {
@@ -515,6 +545,7 @@ export default function QuoteEditor({
             <Button
               type="button"
               variant="outline"
+              ref={prefillButtonRef}
               disabled={operationBusy || rawText.trim().length === 0}
               onClick={() => void handlePrefill()}
             >

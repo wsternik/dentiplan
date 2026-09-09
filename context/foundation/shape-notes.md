@@ -8,7 +8,7 @@ checkpoint:
   phases_completed: [1, 2, 3, 4, 5, 6, 7]
   gray_areas_resolved:
     - topic: "persona scope"
-      decision: "Tylko Dentina — 1 gabinet, 1 dentystka. Brak multi-tenant w MVP."
+      decision: "Tylko 1 gabinet, 1 dentystka. Brak multi-tenant w MVP."
     - topic: "insight (dlaczego jeszcze nie istnieje)"
       decision: "Nisza dwuwariantowych planów (standardowy vs. narkoza) + LLM jako enabler parsowania chaotycznego wpisu diagnozy."
     - topic: "inne persony"
@@ -32,24 +32,24 @@ checkpoint:
 timeline_budget:
   mvp_weeks: 3
   hard_deadline: null
-  after_hours_only: false  # część dnia + after-hours mix
+  after_hours_only: false # część dnia + after-hours mix
 product_type: web-app
 target_scale:
-  users: small        # 1 dentystka-operator
-  qps: low            # ~kilka kosztorysów dziennie w szczycie
-  data_volume: small  # ~kilkadziesiąt kosztorysów rocznie, każdy < 100 KB
+  users: small # 1 dentystka-operator
+  qps: low # ~kilka kosztorysów dziennie w szczycie
+  data_volume: small # ~kilkadziesiąt kosztorysów rocznie, każdy < 100 KB
 ---
 
 # DentiPlan — shape-notes
 
-> Źródło: pełny dokument konceptualny dostarczony przez użytkownika 2026-05-24 (Aplikacja: plan leczenia i szacunkowy kosztorys — Dentina).
+> Źródło: pełny dokument konceptualny dostarczony przez użytkownika 2026-05-24 (Aplikacja: plan leczenia i szacunkowy kosztorys).
 > Skill: `/10x-shape` (greenfield). Następny krok łańcucha: `/10x-prd`.
 
 ---
 
 ## Vision & Problem Statement
 
-Dentystka prowadząca gabinet Dentina (Kołobrzeg) po pierwszej wizycie konsultacyjnej (pantomogram + badanie) wpisuje rozpoznanie do swojego istniejącego systemu dokumentacji medycznej w formie półustrukturyzowanego tekstu (np. `Do leczenia: 17,16,15... Kanałowe: 34,37,36, (32?) Kamień do usunięcia`). Aby przedstawić pacjentowi propozycję leczenia z kosztorysem, musi ten surowy wpis ręcznie przekształcić: zidentyfikować każdy ząb, dobrać pozycje cennikowe, policzyć sumy osobno dla wariantu standardowego (kilka wizyt) i wariantu w narkozie (jedna sesja pod opieką anestezjologa — preferowanego przez gabinet), opisać scenariusze warunkowe i zaprezentować to w czytelnej formie. Koszt dzisiejszy: kilka–kilkanaście minut ręcznej pracy per pacjent, brak spójnej prezentacji porównawczej, ryzyko błędów rachunkowych.
+Dentystka prowadząca jednoosobowy gabinet stomatologiczny po pierwszej wizycie konsultacyjnej (pantomogram + badanie) wpisuje rozpoznanie do swojego istniejącego systemu dokumentacji medycznej w formie półustrukturyzowanego tekstu (np. `Do leczenia: 17,16,15... Kanałowe: 34,37,36, (32?) Kamień do usunięcia`). Aby przedstawić pacjentowi propozycję leczenia z kosztorysem, musi ten surowy wpis ręcznie przekształcić: zidentyfikować każdy ząb, dobrać pozycje cennikowe, policzyć sumy osobno dla wariantu standardowego (kilka wizyt) i wariantu w narkozie (jedna sesja pod opieką anestezjologa — preferowanego przez gabinet), opisać scenariusze warunkowe i zaprezentować to w czytelnej formie. Koszt dzisiejszy: kilka–kilkanaście minut ręcznej pracy per pacjent, brak spójnej prezentacji porównawczej, ryzyko błędów rachunkowych.
 
 Insight, który czyni ten produkt możliwym dopiero teraz: standardowe polskie systemy gabinetowe (Estomed, Dentiplus itp.) celują w dokumentację medyczną, nie w prezentację dla pacjenta — porównanie dwuwariantowych planów (standard vs. narkoza) jest niszą. Drugi insight: parsowanie chaotycznego wpisu typu `(32?)` lub `Kanałowe: 34,37,36,` regułkami było wcześniej niewykonalne; LLM domyka tę lukę bez konieczności narzucania dentystce sztywnego formatu wprowadzania. Aplikacja nie podejmuje decyzji medycznych — tylko strukturyzuje i prezentuje to, co dentystka już zdiagnozowała.
 
@@ -57,7 +57,7 @@ Insight, który czyni ten produkt możliwym dopiero teraz: standardowe polskie s
 
 ## User & Persona
 
-**Primary persona — Dentystka (Dentina, Kołobrzeg)**
+**Primary persona — Dentystka (jednoosobowy gabinet stomatologiczny)**
 
 Pojedyncza osoba prowadząca gabinet. Robi diagnostykę (pantomogram, badanie kliniczne), wprowadza rozpoznanie do istniejącego systemu dokumentacji medycznej. Po konsultacji potrzebuje szybko (kilka minut, nie kilkanaście) przygotować dla pacjenta czytelny plan leczenia z dwoma wariantami kosztowymi i wysłać go linkiem. Pracuje z gabinetu (desktop/laptop), ale może też dokończyć kosztorys w domu. Zna swój cennik na pamięć dla typowych pozycji; pamięta dwuwariantową logikę narkozową; nie chce uczyć się obsługi skomplikowanego narzędzia.
 
@@ -271,7 +271,7 @@ Pacjent encounters this rule jako stronę pod unikalnym, nieenumerowalnym linkie
 
 ### Funkcjonalne non-goals (rzeczy, których aplikacja nie umie i nie będzie umiała w v1)
 
-- **Multi-tenant SaaS.** DentiPlan v1 obsługuje wyłącznie 1 gabinet (Dentina). Brak izolacji danych między gabinetami, brak onboardingu, brak billingu. *Powód:* zawęża wszystko (auth, model danych, deployment) na korzyść trzytygodniowego MVP. Drugi gabinet = osobna instancja.
+- **Multi-tenant SaaS.** DentiPlan v1 obsługuje wyłącznie 1 gabinet. Brak izolacji danych między gabinetami, brak onboardingu, brak billingu. _Powód:_ zawęża wszystko (auth, model danych, deployment) na korzyść trzytygodniowego MVP. Drugi gabinet = osobna instancja.
 - **Aplikacja natywna mobilna / desktop.** Wyłącznie web (responsywny). Brak React Native, Electron, instalowalnego PWA.
 - **Integracja z systemami dokumentacji medycznej** (Estomed, Dentiplus, NFZ, prosperEDM itp.). Tekst diagnozy wkleja się ręcznie z dowolnego źródła. Brak API, brak importu bazy pacjentów.
 - **Płatności online / billing pacjenta.** Pacjent nie płaci przez aplikację. Brak integracji ze Stripe / Tpay / Przelewy24. Płatność dzieje się offline w gabinecie.
@@ -303,14 +303,14 @@ Pacjent encounters this rule jako stronę pod unikalnym, nieenumerowalnym linkie
 
 > Z sekcji 10 dokumentu seed. Część została **domknięta w fazach 3–6** (oznaczona `[ROZSTRZYGNIĘTE]`); reszta przechodzi do PRD i ostatecznie do gestii dentystki lub prawnika.
 
-1. **Wygaśnięcie linku dla pacjenta — niezależnie od retencji 12 mies.** Czy token ma osobne TTL (np. 30 dni) czy żyje tyle ile kosztorys (12 mies.)? *Decyzja default w v1 (Phase 5 NFR): token żyje tyle ile kosztorys (12 mies.).* Pozostawione jako Open Question dla dentystki — czy domyślne 12 mies. jest OK, czy chce krótsze TTL z możliwością przedłużenia. Owner: dentystka. Nie blokujący implementacji.
+1. **Wygaśnięcie linku dla pacjenta — niezależnie od retencji 12 mies.** Czy token ma osobne TTL (np. 30 dni) czy żyje tyle ile kosztorys (12 mies.)? _Decyzja default w v1 (Phase 5 NFR): token żyje tyle ile kosztorys (12 mies.)._ Pozostawione jako Open Question dla dentystki — czy domyślne 12 mies. jest OK, czy chce krótsze TTL z możliwością przedłużenia. Owner: dentystka. Nie blokujący implementacji.
 2. **[ROZSTRZYGNIĘTE — Phase 4]** Edytowalność po wysłaniu = **read-only**, zmiana = nowy kosztorys, nowy token. FR-053.
-3. **Zamrożenie cennika.** *Decyzja:* snapshot pełnego cennika w rekord kosztorysu przy zatwierdzeniu (FR-050). *Pozostaje otwarte:* gdzie trzymamy źródłowy cennik w v1 — Phase 3 zdecydowała "seed JSON w repo" (cut UI cennika do v2). Jeśli to nieakceptowalne dla dentystki, wracamy do FR i dodajemy minimalne UI edycji cennika do v1. Owner: dentystka.
-4. **[ROZSTRZYGNIĘTE — Phase 4]** Znieczulenie miejscowe w planie narkozowym = **auto-skip** pozycji oznaczonych `local-anesthesia` w cenniku. FR-041. *Pozostawiamy do potwierdzenia stomatologicznego, czy to założenie jest medycznie zawsze prawdziwe.* Owner: dentystka.
+3. **Zamrożenie cennika.** _Decyzja:_ snapshot pełnego cennika w rekord kosztorysu przy zatwierdzeniu (FR-050). _Pozostaje otwarte:_ gdzie trzymamy źródłowy cennik w v1 — Phase 3 zdecydowała "seed JSON w repo" (cut UI cennika do v2). Jeśli to nieakceptowalne dla dentystki, wracamy do FR i dodajemy minimalne UI edycji cennika do v1. Owner: dentystka.
+4. **[ROZSTRZYGNIĘTE — Phase 4]** Znieczulenie miejscowe w planie narkozowym = **auto-skip** pozycji oznaczonych `local-anesthesia` w cenniku. FR-041. _Pozostawiamy do potwierdzenia stomatologicznego, czy to założenie jest medycznie zawsze prawdziwe._ Owner: dentystka.
 5. **[ROZSTRZYGNIĘTE — Phase 4]** Walidacja LLM = ręczna akceptacja **zawsze** wymagana (FR-013), schema walidowana (FR-012). Konkretny schemat JSON Open Question dla implementacji.
 6. **[ROZSTRZYGNIĘTE — Phase 4]** Strona pacjenta w v1 = **wyłącznie informacyjna**. Bez CTA. CTA na v2.
-7. **Uzębienie mieszane u dzieci.** Wizualizacja i wycena przy jednoczesnych zębach mlecznych (51–85) i stałych (11–48) w jednym kosztorysie. Reguła kosztu narkozy bazuje na "co najmniej jeden stały" → 2000 PLN baza. Wizualizacja w v1 to lista pogrupowana (FR-061) — uzębienie mieszane wymaga dwóch grup górnych i dwóch grup dolnych w sekcji, jasno oznaczonych. *Pozostaje:* czy w UI formularza i na stronie pacjenta dodajemy jakąś inną sygnalizację typu uzębienia mieszanego (np. ikonka, badge). Owner: dentystka. Nie blokujący.
-8. **Nazwa statusu "poza bieżącym planem".** Kandydaci: *Do rozważenia później*, *Odroczone*, *Poza bieżącym planem*, *Do obserwacji*. "Do obserwacji" ma znaczenie kliniczne — może mylić. Default v1: **"Odroczone"**. Owner: dentystka. Nie blokujący — łatwa zmiana stringów UI.
+7. **Uzębienie mieszane u dzieci.** Wizualizacja i wycena przy jednoczesnych zębach mlecznych (51–85) i stałych (11–48) w jednym kosztorysie. Reguła kosztu narkozy bazuje na "co najmniej jeden stały" → 2000 PLN baza. Wizualizacja w v1 to lista pogrupowana (FR-061) — uzębienie mieszane wymaga dwóch grup górnych i dwóch grup dolnych w sekcji, jasno oznaczonych. _Pozostaje:_ czy w UI formularza i na stronie pacjenta dodajemy jakąś inną sygnalizację typu uzębienia mieszanego (np. ikonka, badge). Owner: dentystka. Nie blokujący.
+8. **Nazwa statusu "poza bieżącym planem".** Kandydaci: _Do rozważenia później_, _Odroczone_, _Poza bieżącym planem_, _Do obserwacji_. "Do obserwacji" ma znaczenie kliniczne — może mylić. Default v1: **"Odroczone"**. Owner: dentystka. Nie blokujący — łatwa zmiana stringów UI.
 9. **Retencja danych pacjenta i podstawa prawna (RODO).** Default v1: 12 miesięcy od `dataUtworzenia`, e-mail usuwany razem z kosztorysem, kosztorys usuwany lub anonimizowany (do dopytania prawnika). Podstawa prawna: realnie zgoda pacjenta wyrażona przy konsultacji (umowna). Wzmianka w polityce prywatności gabinetu. Owner: dentystka + prawnik RODO. Niewymagane przed startem implementacji, ale **wymagane przed udostępnieniem aplikacji prawdziwym pacjentom**.
 10. **[ROZSTRZYGNIĘTE — Phase 3]** Wysyłka e-maili **odsunięta na v2**. v1 = ręczna kopia linku przez dentystkę. Dostawca, szablon, domena nadawcy — decyzja przy v2.
 11. **Timeout sesji dentystki.** Po jakim czasie nieaktywności wylogować. Default v1: 8h (typowy dzień pracy w gabinecie). Owner: dentystka. Nie blokujący.

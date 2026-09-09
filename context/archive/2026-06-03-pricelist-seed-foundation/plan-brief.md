@@ -4,7 +4,7 @@
 
 ## What & Why
 
-Define the Dentina clinic pricelist as a typed, Zod-validated TypeScript seed bundled into the app, built from the real `pricing.json` / `pricing-narkoza.json` exports the dentystka supplied. It's the single source the S-01 quote flow reads from to assign items per-tooth, as general items, sum ranges, auto-skip locally-anesthetic items in the narkoza plan, and compute the anesthesia fee. No DB table, no UI — repo-config only.
+Define the clinic pricelist as a typed, Zod-validated TypeScript seed bundled into the app, built from the real `pricing.json` / `pricing-narkoza.json` exports the dentystka supplied. It's the single source the S-01 quote flow reads from to assign items per-tooth, as general items, sum ranges, auto-skip locally-anesthetic items in the narkoza plan, and compute the anesthesia fee. No DB table, no UI — repo-config only.
 
 ## Starting Point
 
@@ -16,14 +16,14 @@ F-01 (done) created `public.quotes` and already defines the snapshot value-types
 
 ## Key Decisions Made
 
-| Decision | Choice | Why (1 sentence) | Source |
-| --- | --- | --- | --- |
-| Source format | TS module + Zod | Zero-cost on Workers (bundled), type-safe, matches the Zod-first `types.ts` pattern | Plan |
-| Item context | Hard context flags | Explicit `validForTooth` / `validForGeneral` gate where each item appears | Plan |
-| Seed data | Real exports supplied | Dentystka provided `pricing.json` + `pricing-narkoza.json` — unblocks S-01 end-to-end | Plan |
-| Price types | Extend `PriceValueSchema` | Add `modifier`/`from` so surcharges (+500/+100) survive into the snapshot & patient page | Plan |
-| Annotations | Inline in the seed module | `localAnesthesia`/context flags authored once onto each item; single auditable source | Plan |
-| Scope | Seed + schema + resolver + fee schedule | S-01 gets one authoritative place for the snapshot mapping and the fee constants | Plan |
+| Decision      | Choice                                  | Why (1 sentence)                                                                         | Source |
+| ------------- | --------------------------------------- | ---------------------------------------------------------------------------------------- | ------ |
+| Source format | TS module + Zod                         | Zero-cost on Workers (bundled), type-safe, matches the Zod-first `types.ts` pattern      | Plan   |
+| Item context  | Hard context flags                      | Explicit `validForTooth` / `validForGeneral` gate where each item appears                | Plan   |
+| Seed data     | Real exports supplied                   | Dentystka provided `pricing.json` + `pricing-narkoza.json` — unblocks S-01 end-to-end    | Plan   |
+| Price types   | Extend `PriceValueSchema`               | Add `modifier`/`from` so surcharges (+500/+100) survive into the snapshot & patient page | Plan   |
+| Annotations   | Inline in the seed module               | `localAnesthesia`/context flags authored once onto each item; single auditable source    | Plan   |
+| Scope         | Seed + schema + resolver + fee schedule | S-01 gets one authoritative place for the snapshot mapping and the fee constants         | Plan   |
 
 ## Scope
 
@@ -37,11 +37,11 @@ Three thin phases. **P1** extends `PriceValueSchema` in `src/types.ts` and defin
 
 ## Phases at a Glance
 
-| Phase | What it delivers | Key risk |
-| --- | --- | --- |
-| 1. Price-type extension + source schema | Extended `PriceValueSchema`; source + fee-schedule Zod schema | `modifier` variant ripples into S-01's sum logic |
-| 2. Seed + annotations + validation | Bundled annotated seed; `validate:pricing` gate | Silently unannotated item — mitigated by completeness guard |
-| 3. Resolver + API + docs | Snapshot resolver, lookups, fee export, README | Resolver price mapping must match the extended union exactly |
+| Phase                                   | What it delivers                                              | Key risk                                                     |
+| --------------------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------ |
+| 1. Price-type extension + source schema | Extended `PriceValueSchema`; source + fee-schedule Zod schema | `modifier` variant ripples into S-01's sum logic             |
+| 2. Seed + annotations + validation      | Bundled annotated seed; `validate:pricing` gate               | Silently unannotated item — mitigated by completeness guard  |
+| 3. Resolver + API + docs                | Snapshot resolver, lookups, fee export, README                | Resolver price mapping must match the extended union exactly |
 
 **Prerequisites:** none (parallel with F-01/S-05; F-01 already done). Real price data already supplied.
 **Estimated effort:** ~1 session across 3 small phases.

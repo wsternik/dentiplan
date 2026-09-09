@@ -1,5 +1,5 @@
 {
-  "$comment": "Structured export of all Dentina pricing. Source of truth: FALLBACK_PRICING in src/lib/pricing.ts (mirrors the Supabase pricing_categories + pricing_items tables that /cennik/ renders at build time). Prices are orientacyjne (indicative); final quote is set at the consultation. Private clinic — no NFZ. Currency: PLN. price_type semantics: fixed = single price (price_min); range = price_min–price_max; from = starting price (od price_min); modifier = surcharge added to another procedure (+price_min).",
+  "$comment": "Structured export of the clinic's full pricing. Source of truth: FALLBACK_PRICING in src/lib/pricing.ts (mirrors the Supabase pricing_categories + pricing_items tables that /cennik/ renders at build time). Prices are orientacyjne (indicative); final quote is set at the consultation. Private clinic — no NFZ. Currency: PLN. price_type semantics: fixed = single price (price_min); range = price_min–price_max; from = starting price (od price_min); modifier = surcharge added to another procedure (+price_min).",
   "currency": "PLN",
   "isIndicative": true,
   "nfz": false,
@@ -10,94 +10,392 @@
       "name": "Profilaktyka",
       "slug": "profilaktyka",
       "items": [
-        { "name": "Higienizacja", "price_type": "range", "price_min": 400, "price_max": 450, "note": null, "display": "400–450 zł" },
-        { "name": "Higienizacja + piaskowanie", "price_type": "fixed", "price_min": 500, "price_max": null, "note": null, "display": "500 zł" },
-        { "name": "Lakierowanie", "price_type": "fixed", "price_min": 200, "price_max": null, "note": null, "display": "200 zł" },
-        { "name": "RTG – Pantomogram", "price_type": "fixed", "price_min": 150, "price_max": null, "note": null, "display": "150 zł" }
+        {
+          "name": "Higienizacja",
+          "price_type": "range",
+          "price_min": 400,
+          "price_max": 450,
+          "note": null,
+          "display": "400–450 zł"
+        },
+        {
+          "name": "Higienizacja + piaskowanie",
+          "price_type": "fixed",
+          "price_min": 500,
+          "price_max": null,
+          "note": null,
+          "display": "500 zł"
+        },
+        {
+          "name": "Lakierowanie",
+          "price_type": "fixed",
+          "price_min": 200,
+          "price_max": null,
+          "note": null,
+          "display": "200 zł"
+        },
+        {
+          "name": "RTG – Pantomogram",
+          "price_type": "fixed",
+          "price_min": 150,
+          "price_max": null,
+          "note": null,
+          "display": "150 zł"
+        }
       ]
     },
     {
       "name": "Leczenie zachowawcze",
       "slug": "leczenie-zachowawcze",
       "items": [
-        { "name": "Konsultacja, badanie jamy ustnej", "price_type": "range", "price_min": 100, "price_max": 200, "note": null, "display": "100–200 zł" },
-        { "name": "Znieczulenie", "price_type": "fixed", "price_min": 50, "price_max": null, "note": null, "display": "50 zł" },
-        { "name": "Wypełnienie małe/duże", "price_type": "range", "price_min": 450, "price_max": 500, "note": null, "display": "450–500 zł" },
-        { "name": "Odbudowa po leczeniu kanałowym", "price_type": "fixed", "price_min": 600, "price_max": null, "note": null, "display": "600 zł" },
-        { "name": "Licówka kompozytowa", "price_type": "fixed", "price_min": 800, "price_max": null, "note": null, "display": "800 zł" },
-        { "name": "Opatrunek leczniczy", "price_type": "fixed", "price_min": 400, "price_max": null, "note": null, "display": "400 zł" }
+        {
+          "name": "Konsultacja, badanie jamy ustnej",
+          "price_type": "range",
+          "price_min": 100,
+          "price_max": 200,
+          "note": null,
+          "display": "100–200 zł"
+        },
+        {
+          "name": "Znieczulenie",
+          "price_type": "fixed",
+          "price_min": 50,
+          "price_max": null,
+          "note": null,
+          "display": "50 zł"
+        },
+        {
+          "name": "Wypełnienie małe/duże",
+          "price_type": "range",
+          "price_min": 450,
+          "price_max": 500,
+          "note": null,
+          "display": "450–500 zł"
+        },
+        {
+          "name": "Odbudowa po leczeniu kanałowym",
+          "price_type": "fixed",
+          "price_min": 600,
+          "price_max": null,
+          "note": null,
+          "display": "600 zł"
+        },
+        {
+          "name": "Licówka kompozytowa",
+          "price_type": "fixed",
+          "price_min": 800,
+          "price_max": null,
+          "note": null,
+          "display": "800 zł"
+        },
+        {
+          "name": "Opatrunek leczniczy",
+          "price_type": "fixed",
+          "price_min": 400,
+          "price_max": null,
+          "note": null,
+          "display": "400 zł"
+        }
       ]
     },
     {
       "name": "Leczenie kanałowe",
       "slug": "leczenie-kanalowe",
       "items": [
-        { "name": "Leczenie kanałowe siekacza, kła", "price_type": "fixed", "price_min": 600, "price_max": null, "note": null, "display": "600 zł" },
-        { "name": "Leczenie kanałowe przedtrzonowca", "price_type": "fixed", "price_min": 800, "price_max": null, "note": null, "display": "800 zł" },
-        { "name": "Leczenie kanałowe trzonowca", "price_type": "fixed", "price_min": 1200, "price_max": null, "note": null, "display": "1 200 zł" },
-        { "name": "Ponowne leczenie kanałowe (kwota doliczana do zabiegu)", "price_type": "modifier", "price_min": 500, "price_max": null, "note": "kwota doliczana do zabiegu leczenia kanałowego", "display": "+500 zł" },
-        { "name": "Odbudowa po leczeniu kanałowym", "price_type": "fixed", "price_min": 600, "price_max": null, "note": null, "display": "600 zł" },
-        { "name": "Odbudowa ze wzmocnieniem", "price_type": "fixed", "price_min": 800, "price_max": null, "note": null, "display": "800 zł" }
+        {
+          "name": "Leczenie kanałowe siekacza, kła",
+          "price_type": "fixed",
+          "price_min": 600,
+          "price_max": null,
+          "note": null,
+          "display": "600 zł"
+        },
+        {
+          "name": "Leczenie kanałowe przedtrzonowca",
+          "price_type": "fixed",
+          "price_min": 800,
+          "price_max": null,
+          "note": null,
+          "display": "800 zł"
+        },
+        {
+          "name": "Leczenie kanałowe trzonowca",
+          "price_type": "fixed",
+          "price_min": 1200,
+          "price_max": null,
+          "note": null,
+          "display": "1 200 zł"
+        },
+        {
+          "name": "Ponowne leczenie kanałowe (kwota doliczana do zabiegu)",
+          "price_type": "modifier",
+          "price_min": 500,
+          "price_max": null,
+          "note": "kwota doliczana do zabiegu leczenia kanałowego",
+          "display": "+500 zł"
+        },
+        {
+          "name": "Odbudowa po leczeniu kanałowym",
+          "price_type": "fixed",
+          "price_min": 600,
+          "price_max": null,
+          "note": null,
+          "display": "600 zł"
+        },
+        {
+          "name": "Odbudowa ze wzmocnieniem",
+          "price_type": "fixed",
+          "price_min": 800,
+          "price_max": null,
+          "note": null,
+          "display": "800 zł"
+        }
       ]
     },
     {
       "name": "Protetyka",
       "slug": "protetyka",
       "items": [
-        { "name": "Korona metalowo-porcelanowa", "price_type": "fixed", "price_min": 2000, "price_max": null, "note": null, "display": "2 000 zł" },
-        { "name": "Korona pełnoceramiczna (bez podbudowy metalowej)", "price_type": "fixed", "price_min": 2500, "price_max": null, "note": null, "display": "2 500 zł" },
-        { "name": "Proteza akrylowa", "price_type": "fixed", "price_min": 2000, "price_max": null, "note": null, "display": "2 000 zł" },
-        { "name": "Proteza szkieletowa", "price_type": "fixed", "price_min": 4000, "price_max": null, "note": null, "display": "4 000 zł" },
-        { "name": "Proteza „kombinowana\" (zawierająca elementy różnych protez)", "price_type": "fixed", "price_min": 5000, "price_max": null, "note": null, "display": "5 000 zł" },
-        { "name": "Naprawa protezy", "price_type": "fixed", "price_min": 500, "price_max": null, "note": null, "display": "500 zł" }
+        {
+          "name": "Korona metalowo-porcelanowa",
+          "price_type": "fixed",
+          "price_min": 2000,
+          "price_max": null,
+          "note": null,
+          "display": "2 000 zł"
+        },
+        {
+          "name": "Korona pełnoceramiczna (bez podbudowy metalowej)",
+          "price_type": "fixed",
+          "price_min": 2500,
+          "price_max": null,
+          "note": null,
+          "display": "2 500 zł"
+        },
+        {
+          "name": "Proteza akrylowa",
+          "price_type": "fixed",
+          "price_min": 2000,
+          "price_max": null,
+          "note": null,
+          "display": "2 000 zł"
+        },
+        {
+          "name": "Proteza szkieletowa",
+          "price_type": "fixed",
+          "price_min": 4000,
+          "price_max": null,
+          "note": null,
+          "display": "4 000 zł"
+        },
+        {
+          "name": "Proteza „kombinowana\" (zawierająca elementy różnych protez)",
+          "price_type": "fixed",
+          "price_min": 5000,
+          "price_max": null,
+          "note": null,
+          "display": "5 000 zł"
+        },
+        {
+          "name": "Naprawa protezy",
+          "price_type": "fixed",
+          "price_min": 500,
+          "price_max": null,
+          "note": null,
+          "display": "500 zł"
+        }
       ]
     },
     {
       "name": "Wybielanie zębów",
       "slug": "wybielanie-zebow",
       "items": [
-        { "name": "Nakładkowe", "price_type": "fixed", "price_min": 1000, "price_max": null, "note": null, "display": "1 000 zł" },
-        { "name": "Gabinetowe", "price_type": "fixed", "price_min": 2000, "price_max": null, "note": null, "display": "2 000 zł" }
+        {
+          "name": "Nakładkowe",
+          "price_type": "fixed",
+          "price_min": 1000,
+          "price_max": null,
+          "note": null,
+          "display": "1 000 zł"
+        },
+        {
+          "name": "Gabinetowe",
+          "price_type": "fixed",
+          "price_min": 2000,
+          "price_max": null,
+          "note": null,
+          "display": "2 000 zł"
+        }
       ]
     },
     {
       "name": "Stomatologia dziecięca",
       "slug": "stomatologia-dziecieca",
       "items": [
-        { "name": "Wizyta adaptacyjna", "price_type": "fixed", "price_min": 200, "price_max": null, "note": null, "display": "200 zł" },
-        { "name": "Wypełnienie w zębie mlecznym", "price_type": "fixed", "price_min": 350, "price_max": null, "note": "dostępne wypełnienia kolorowe oraz „białe\"", "display": "350 zł" },
-        { "name": "Opatrunek", "price_type": "fixed", "price_min": 350, "price_max": null, "note": null, "display": "350 zł" },
-        { "name": "Ekstrakcja zęba mlecznego", "price_type": "fixed", "price_min": 300, "price_max": null, "note": null, "display": "300 zł" },
-        { "name": "Leczenie amputacyjne — I wizyta", "price_type": "fixed", "price_min": 350, "price_max": null, "note": null, "display": "350 zł" },
-        { "name": "Leczenie amputacyjne — II wizyta", "price_type": "fixed", "price_min": 350, "price_max": null, "note": null, "display": "350 zł" },
-        { "name": "Poszerzone lakowanie", "price_type": "fixed", "price_min": 400, "price_max": null, "note": null, "display": "400 zł" },
-        { "name": "Impregnacja — I wizyta", "price_type": "fixed", "price_min": 300, "price_max": null, "note": null, "display": "300 zł" },
-        { "name": "Impregnacja — II wizyta", "price_type": "fixed", "price_min": 100, "price_max": null, "note": null, "display": "100 zł" },
-        { "name": "Impregnacja — III wizyta", "price_type": "fixed", "price_min": 100, "price_max": null, "note": null, "display": "100 zł" }
+        {
+          "name": "Wizyta adaptacyjna",
+          "price_type": "fixed",
+          "price_min": 200,
+          "price_max": null,
+          "note": null,
+          "display": "200 zł"
+        },
+        {
+          "name": "Wypełnienie w zębie mlecznym",
+          "price_type": "fixed",
+          "price_min": 350,
+          "price_max": null,
+          "note": "dostępne wypełnienia kolorowe oraz „białe\"",
+          "display": "350 zł"
+        },
+        {
+          "name": "Opatrunek",
+          "price_type": "fixed",
+          "price_min": 350,
+          "price_max": null,
+          "note": null,
+          "display": "350 zł"
+        },
+        {
+          "name": "Ekstrakcja zęba mlecznego",
+          "price_type": "fixed",
+          "price_min": 300,
+          "price_max": null,
+          "note": null,
+          "display": "300 zł"
+        },
+        {
+          "name": "Leczenie amputacyjne — I wizyta",
+          "price_type": "fixed",
+          "price_min": 350,
+          "price_max": null,
+          "note": null,
+          "display": "350 zł"
+        },
+        {
+          "name": "Leczenie amputacyjne — II wizyta",
+          "price_type": "fixed",
+          "price_min": 350,
+          "price_max": null,
+          "note": null,
+          "display": "350 zł"
+        },
+        {
+          "name": "Poszerzone lakowanie",
+          "price_type": "fixed",
+          "price_min": 400,
+          "price_max": null,
+          "note": null,
+          "display": "400 zł"
+        },
+        {
+          "name": "Impregnacja — I wizyta",
+          "price_type": "fixed",
+          "price_min": 300,
+          "price_max": null,
+          "note": null,
+          "display": "300 zł"
+        },
+        {
+          "name": "Impregnacja — II wizyta",
+          "price_type": "fixed",
+          "price_min": 100,
+          "price_max": null,
+          "note": null,
+          "display": "100 zł"
+        },
+        {
+          "name": "Impregnacja — III wizyta",
+          "price_type": "fixed",
+          "price_min": 100,
+          "price_max": null,
+          "note": null,
+          "display": "100 zł"
+        }
       ]
     },
     {
       "name": "Chirurgia stomatologiczna",
       "slug": "chirurgia-stomatologiczna",
       "items": [
-        { "name": "Ekstrakcja zęba", "price_type": "range", "price_min": 400, "price_max": 600, "note": null, "display": "400–600 zł" },
-        { "name": "Nacięcie ropnia", "price_type": "fixed", "price_min": 350, "price_max": null, "note": null, "display": "350 zł" },
-        { "name": "Szycie", "price_type": "modifier", "price_min": 100, "price_max": null, "note": "kwota doliczana do zabiegu", "display": "+100 zł" }
+        {
+          "name": "Ekstrakcja zęba",
+          "price_type": "range",
+          "price_min": 400,
+          "price_max": 600,
+          "note": null,
+          "display": "400–600 zł"
+        },
+        {
+          "name": "Nacięcie ropnia",
+          "price_type": "fixed",
+          "price_min": 350,
+          "price_max": null,
+          "note": null,
+          "display": "350 zł"
+        },
+        {
+          "name": "Szycie",
+          "price_type": "modifier",
+          "price_min": 100,
+          "price_max": null,
+          "note": "kwota doliczana do zabiegu",
+          "display": "+100 zł"
+        }
       ]
     },
     {
       "name": "Leczenie w narkozie",
       "slug": "leczenie-w-narkozie",
       "items": [
-        { "name": "Znieczulenie dożylne — dzieci (same zęby mleczne)", "price_type": "fixed", "price_min": 1400, "price_max": null, "note": "do 5 zębów", "display": "1 400 zł" },
-        { "name": "Znieczulenie dożylne — dorośli oraz dzieci z zębami stałymi", "price_type": "fixed", "price_min": 2000, "price_max": null, "note": "do 5 zębów", "display": "2 000 zł" },
-        { "name": "Każdy dodatkowy ząb powyżej 5", "price_type": "modifier", "price_min": 100, "price_max": null, "note": null, "display": "+100 zł" }
+        {
+          "name": "Znieczulenie dożylne — dzieci (same zęby mleczne)",
+          "price_type": "fixed",
+          "price_min": 1400,
+          "price_max": null,
+          "note": "do 5 zębów",
+          "display": "1 400 zł"
+        },
+        {
+          "name": "Znieczulenie dożylne — dorośli oraz dzieci z zębami stałymi",
+          "price_type": "fixed",
+          "price_min": 2000,
+          "price_max": null,
+          "note": "do 5 zębów",
+          "display": "2 000 zł"
+        },
+        {
+          "name": "Każdy dodatkowy ząb powyżej 5",
+          "price_type": "modifier",
+          "price_min": 100,
+          "price_max": null,
+          "note": null,
+          "display": "+100 zł"
+        }
       ]
     }
   ],
   "modifiers": [
-    { "category": "leczenie-kanalowe", "name": "Ponowne leczenie kanałowe (kwota doliczana do zabiegu)", "amount": 500, "display": "+500 zł", "appliesTo": "Leczenie kanałowe (re-treatment)" },
-    { "category": "chirurgia-stomatologiczna", "name": "Szycie", "amount": 100, "display": "+100 zł", "appliesTo": "Zabieg chirurgiczny" },
-    { "category": "leczenie-w-narkozie", "name": "Każdy dodatkowy ząb powyżej 5", "amount": 100, "display": "+100 zł", "appliesTo": "Znieczulenie ogólne (powyżej 5 zębów w jednej sesji)" }
+    {
+      "category": "leczenie-kanalowe",
+      "name": "Ponowne leczenie kanałowe (kwota doliczana do zabiegu)",
+      "amount": 500,
+      "display": "+500 zł",
+      "appliesTo": "Leczenie kanałowe (re-treatment)"
+    },
+    {
+      "category": "chirurgia-stomatologiczna",
+      "name": "Szycie",
+      "amount": 100,
+      "display": "+100 zł",
+      "appliesTo": "Zabieg chirurgiczny"
+    },
+    {
+      "category": "leczenie-w-narkozie",
+      "name": "Każdy dodatkowy ząb powyżej 5",
+      "amount": 100,
+      "display": "+100 zł",
+      "appliesTo": "Znieczulenie ogólne (powyżej 5 zębów w jednej sesji)"
+    }
   ]
 }

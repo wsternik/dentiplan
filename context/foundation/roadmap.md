@@ -81,7 +81,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 ### F-02: Cennik gabinetu jako seed w repo
 
-- **Outcome:** (foundation) pełny cennik Dentiny (nazwa pozycji, cena punktowa lub `cenaMin`–`cenaMax`, flaga `local-anesthesia` per pozycja) zdefiniowany jako JSON w repozytorium, ładowany przy budowaniu/deploy; UI edycji cennika świadomie odroczone na v2.
+- **Outcome:** (foundation) pełny cennik gabinetu (nazwa pozycji, cena punktowa lub `cenaMin`–`cenaMax`, flaga `local-anesthesia` per pozycja) zdefiniowany jako JSON w repozytorium, ładowany przy budowaniu/deploy; UI edycji cennika świadomie odroczone na v2.
 - **Change ID:** pricelist-seed-foundation
 - **PRD refs:** FR-025 (pozycje cennikowe per ząb), FR-026 (widełki sumują się jako widełki), FR-029 (pozycje ogólne), FR-041 (auto-skip pozycji `local-anesthesia` w planie narkozowym)
 - **Unlocks:** S-01 (cały rachunek standardowy i narkozowy referuje pozycje z tego cennika)
@@ -250,7 +250,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 - ~~**Graficzna wizualizacja SVG łuków zębowych z hover-sync**~~ — **unparked 2026-09-06**, przeniesione do `### S-06` powyżej. Odroczenie było wyceną, nie decyzją produktową: rysunek okazał się czystą funkcją z danych obecnych w rekordzie od S-01, a geometria — jednym plikiem danych z biblioteki MIT. Lista pogrupowana (FR-061) zostaje jako warstwa dostępności i druku.
 
-- **Multi-tenant SaaS dla wielu gabinetów** — Why parked: PRD §Non-Goals; v1 obsługuje wyłącznie Dentinę. Drugi gabinet = osobna instancja.
+- **Multi-tenant SaaS dla wielu gabinetów** — Why parked: PRD §Non-Goals; v1 obsługuje wyłącznie jeden gabinet. Drugi gabinet = osobna instancja.
 - **Natywne aplikacje mobilne / desktop** — Why parked: PRD §Non-Goals; tylko web responsywny.
 - **Integracja z systemami dokumentacji medycznej (Estomed, Dentiplus, NFZ)** — Why parked: PRD §Non-Goals; tekst diagnozy wkleja się ręcznie.
 - **Płatności online / billing pacjenta** — Why parked: PRD §Non-Goals; płatność dzieje się offline w gabinecie.
