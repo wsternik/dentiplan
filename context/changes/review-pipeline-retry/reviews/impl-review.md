@@ -36,3 +36,16 @@ The workflow reviewed this change on pull request #18: APPROVED, two minor findi
 2. **The entry-point guard is duplicated in two files** (fit with this codebase). Declined, as the finding itself suggests. One line in two CLIs is cheaper to read than a module whose only job is to hide it; the finding is worth revisiting when a third script needs the pattern.
 
 Re-verified after the fix: `npm test` → 22 files, 166 tests passing; `npm run lint` clean.
+
+## Third pass — and the last one this change pays for
+
+APPROVED again, three minor findings, "mergeable as-is". Two were taken:
+
+1. **`gh pr view` relied on `GH_REPO` implicitly.** Now `--repo "$GH_REPO"` at the call site, so the property that matters — the number is resolved in this repository — is readable where it is used. The test asserts the flag is there, and `set -u` made the point immediately: the first run without `GH_REPO` in the test environment failed loudly.
+2. **The suite skipped itself when `jq` was missing, silently.** It now skips only outside CI. `jq` is preinstalled on GitHub's runners, so its absence there means the runner changed, which is a failure worth seeing; a developer machine without it still skips a suite about a shell script it cannot run.
+
+The third — extraction anchored on string markers in the workflow is fragile — is answered rather than declined outright. Moving the script into its own file, as the finding suggests, is not available: the resolve step runs _before_ `actions/checkout`, so there is no working tree to hold it, and checking out twice to make room for one file costs more than it buys. Instead the extraction now has its own assertion: if the anchors ever drift, the first failure says the script could not be extracted, rather than the fork check failing for no visible reason.
+
+Re-verified: `npm test` → 22 files, 167 tests passing; `npm run lint` clean.
+
+No fourth pass. The change has had one local review round and the pipeline's own comment read twice over; another round would be paid for out of the same budget that funds the work.

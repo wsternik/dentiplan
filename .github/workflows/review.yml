@@ -61,7 +61,10 @@ jobs:
             base="$EVENT_BASE"
             head_sha="$EVENT_HEAD_SHA"
           else
-            pr=$(gh pr view "$INPUT_NUMBER" --json number,baseRefName,headRefOid,isCrossRepository)
+            # --repo is explicit even though GH_REPO would cover it: the
+            # property that matters here is that the number is looked up in
+            # this repository, and it should be readable at the call site.
+            pr=$(gh pr view "$INPUT_NUMBER" --repo "$GH_REPO" --json number,baseRefName,headRefOid,isCrossRepository)
             if [ "$(jq -r '.isCrossRepository' <<<"$pr")" != "false" ]; then
               echo "::error::Pull request #$INPUT_NUMBER comes from a fork, and a fork's code must not run with this repository's secrets."
               exit 1

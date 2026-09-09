@@ -29,6 +29,10 @@ function resolveStepScript(): string {
     .join("\n");
 }
 
+// jq is preinstalled on GitHub's runners, so its absence in CI means the
+// runner changed under us — that is worth a failure, not a silent skip. A
+// developer machine without jq skips instead of failing a suite about a shell
+// script it cannot run.
 const hasJq = (() => {
   try {
     execFileSync("which", ["jq"], { stdio: "ignore" });
@@ -53,6 +57,8 @@ function runStep(env: Record<string, string>, ghPayload: string): Run {
 
   writeFileSync(script, resolveStepScript());
   writeFileSync(outputs, "");
+  // The stub ignores its arguments; what the step passes to gh is asserted by
+  // reading the workflow, not by the stub.
   writeFileSync(stub, `#!/bin/bash\ncat <<'JSON'\n${ghPayload}\nJSON\n`);
   chmodSync(stub, 0o755);
 
@@ -61,6 +67,7 @@ function runStep(env: Record<string, string>, ghPayload: string): Run {
     env: {
       PATH: `${dir}:${process.env.PATH ?? ""}`,
       GITHUB_OUTPUT: outputs,
+      GH_REPO: "wsternik/dentiplan",
       EVENT_NUMBER: "",
       EVENT_BASE: "",
       EVENT_HEAD_SHA: "",
@@ -75,7 +82,18 @@ function runStep(env: Record<string, string>, ghPayload: string): Run {
 const sameRepo = '{"number":18,"baseRefName":"release/1.x","headRefOid":"cafebabe","isCrossRepository":false}';
 const fork = '{"number":77,"baseRefName":"main","headRefOid":"deadbeef","isCrossRepository":true}';
 
-describe.skipIf(!hasJq)("the resolve step of the AI review workflow", () => {
+describe.skipIf(!hasJq && !process.env.CI)("the resolve step of the AI review workflow", () => {
+  // Extraction anchors on the step's id and on the step that follows it. If a
+  // future edit moves either, this fails first and says so, rather than
+  // leaving the fork check silently untested behind a mystery failure.
+  it("extracts the step's script out of the workflow", () => {
+    const script = resolveStepScript();
+
+    expect(script).toContain("set -euo pipefail");
+    expect(script).toContain("isCrossRepository");
+    expect(script).toContain("GITHUB_OUTPUT");
+  });
+
   it("takes the pull request from the event payload on an automatic run", () => {
     const { outputs } = runStep(
       { EVENT_NAME: "pull_request", EVENT_NUMBER: "12", EVENT_BASE: "main", EVENT_HEAD_SHA: "abc123" },
@@ -97,6 +115,7 @@ describe.skipIf(!hasJq)("the resolve step of the AI review workflow", () => {
     expect(outputs).toContain("base=release/1.x");
     expect(outputs).toContain("head_sha=cafebabe");
     expect(stdout).toContain("#18");
+    expect(workflow).toContain('gh pr view "$INPUT_NUMBER" --repo "$GH_REPO"');
   });
 
   it("refuses a dispatch on a fork's pull request instead of running with secrets", () => {
