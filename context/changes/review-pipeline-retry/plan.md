@@ -131,3 +131,5 @@ The workflow parses as YAML. The resolve step's script was run locally against a
 #### Manual
 
 - [ ] 2.4 A dispatch against this change's pull request comments on it
+
+Blocked until merge, and not by accident: `workflow_dispatch` reads its inputs from the workflow file on the default branch, so the `pull_request` input does not exist for a dispatcher until this change is on `main`. What the pull request does prove is the shared body — the automatic review of #18 ran through the new resolve step, checked out the resolved head, and commented (APPROVED, two minor findings, both answered in `reviews/impl-review.md`).

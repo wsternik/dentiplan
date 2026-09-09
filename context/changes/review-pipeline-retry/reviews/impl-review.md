@@ -27,3 +27,12 @@ No critical or high findings.
 - The workflow parses as YAML; the resolve step's script was executed locally against a stubbed `gh` for a `pull_request` event, a same-repository dispatch with a non-`main` base, and a fork dispatch (exit 1, no outputs written).
 - `npx tsx scripts/review/format-comment.ts < review.json` renders the comment; `npm run review -- --diff <empty>` exits 0 with "Empty diff — nothing to review."
 - The dispatch path itself only exists on GitHub; it is exercised by dispatching this workflow against this change's own pull request.
+
+## Second pass — the pipeline's own review of this pull request
+
+The workflow reviewed this change on pull request #18: APPROVED, two minor findings.
+
+1. **The fork guard ships without a test** (tests proportional to risk). Accepted and fixed. `scripts/review/resolve-pr.test.ts` extracts the resolve step's script out of `.github/workflows/review.yml` and runs it against a stubbed `gh` in three shapes: event payload, dispatch on a same-repository pull request with a non-`main` base, and dispatch on a fork. Extracting rather than copying is what makes the test bind: replacing the `isCrossRepository` comparison with `if false` in the workflow turns the third case red, which was verified before the fix was committed.
+2. **The entry-point guard is duplicated in two files** (fit with this codebase). Declined, as the finding itself suggests. One line in two CLIs is cheaper to read than a module whose only job is to hide it; the finding is worth revisiting when a third script needs the pattern.
+
+Re-verified after the fix: `npm test` → 22 files, 166 tests passing; `npm run lint` clean.
