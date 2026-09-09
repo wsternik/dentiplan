@@ -26,7 +26,7 @@ const buttonVariants = cva(
       },
       shape: {
         standard: "",
-        pill: "rounded-full py-1 pr-1 pl-5 has-[>svg]:pr-1 has-[>svg]:pl-5 [&>[data-slot=button-icon]]:ml-1",
+        pill: "rounded-full px-5 py-1",
       },
     },
     defaultVariants: {
