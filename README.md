@@ -14,7 +14,7 @@ retains the Claude Code entry point and toolkit-managed instructions.
 ## The problem
 
 After the first consultation (panoramic X-ray plus clinical examination), the
-dentist running the Dentina practice in Kołobrzeg records the diagnosis in her
+dentist running the practice records the diagnosis in her
 existing medical-records system as semi-structured text — something like
 `Do leczenia: 17,16,15... Kanałowe: 34,37,36, (32?) Kamień do usunięcia`. To put
 a proposal in front of the patient she then has to rework that note by hand:

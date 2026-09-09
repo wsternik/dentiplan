@@ -23,7 +23,7 @@ timeline_budget:
 
 ## Vision & Problem Statement
 
-Dentystka prowadząca gabinet Dentina (Kołobrzeg) po pierwszej wizycie konsultacyjnej (pantomogram + badanie kliniczne) wpisuje rozpoznanie do swojego istniejącego systemu dokumentacji medycznej w formie półustrukturyzowanego tekstu (np. `Do leczenia: 17,16,15... Kanałowe: 34,37,36, (32?) Kamień do usunięcia`). Aby przedstawić pacjentowi propozycję leczenia z kosztorysem, musi ten surowy wpis ręcznie przekształcić: zidentyfikować każdy ząb, dobrać pozycje cennikowe, policzyć sumy osobno dla wariantu standardowego (kilka wizyt) i wariantu w narkozie (jedna sesja pod opieką anestezjologa — preferowanego przez gabinet), opisać scenariusze warunkowe i zaprezentować to w czytelnej formie. Koszt dzisiejszy: kilka–kilkanaście minut ręcznej pracy per pacjent, brak spójnej prezentacji porównawczej, ryzyko błędów rachunkowych.
+Dentystka prowadząca jednoosobowy gabinet stomatologiczny po pierwszej wizycie konsultacyjnej (pantomogram + badanie kliniczne) wpisuje rozpoznanie do swojego istniejącego systemu dokumentacji medycznej w formie półustrukturyzowanego tekstu (np. `Do leczenia: 17,16,15... Kanałowe: 34,37,36, (32?) Kamień do usunięcia`). Aby przedstawić pacjentowi propozycję leczenia z kosztorysem, musi ten surowy wpis ręcznie przekształcić: zidentyfikować każdy ząb, dobrać pozycje cennikowe, policzyć sumy osobno dla wariantu standardowego (kilka wizyt) i wariantu w narkozie (jedna sesja pod opieką anestezjologa — preferowanego przez gabinet), opisać scenariusze warunkowe i zaprezentować to w czytelnej formie. Koszt dzisiejszy: kilka–kilkanaście minut ręcznej pracy per pacjent, brak spójnej prezentacji porównawczej, ryzyko błędów rachunkowych.
 
 Insight, który czyni ten produkt możliwym dopiero teraz: dostępne na polskim rynku systemy gabinetowe celują w dokumentację medyczną, nie w prezentację dla pacjenta — porównanie dwuwariantowych planów leczenia (standardowy vs. w narkozie) jest niezagospodarowaną niszą. Drugi insight: parsowanie chaotycznego wpisu typu `(32?)` lub `Kanałowe: 34,37,36,` deterministycznymi regułami było wcześniej niewykonalne; współczesne metody automatycznego rozumienia języka naturalnego zamykają tę lukę bez konieczności narzucania dentystce sztywnego formatu wprowadzania. Aplikacja nie podejmuje decyzji medycznych — tylko strukturyzuje i prezentuje to, co dentystka już zdiagnozowała.
 
@@ -31,7 +31,7 @@ Insight, który czyni ten produkt możliwym dopiero teraz: dostępne na polskim 
 
 ## User & Persona
 
-**Primary persona — Dentystka (gabinet Dentina, Kołobrzeg)**
+**Primary persona — Dentystka (jednoosobowy gabinet stomatologiczny)**
 
 Pojedyncza osoba prowadząca gabinet stomatologiczny. Robi diagnostykę (pantomogram, badanie kliniczne), wprowadza rozpoznanie do istniejącego systemu dokumentacji medycznej. Po konsultacji potrzebuje szybko (kilka minut, nie kilkanaście) przygotować dla pacjenta czytelny plan leczenia z dwoma wariantami kosztowymi i przekazać go linkiem. Pracuje z gabinetu (desktop/laptop), ale może też dokończyć kosztorys w domu. Zna swój cennik na pamięć dla typowych pozycji; pamięta dwuwariantową logikę narkozową; nie chce uczyć się obsługi skomplikowanego narzędzia.
 

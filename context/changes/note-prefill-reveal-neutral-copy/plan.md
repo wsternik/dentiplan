@@ -164,7 +164,7 @@ or status change.
 
 #### Automated Verification:
 
-- No tracked file matches the practice name or town: `git ls-files -z | xargs -0 grep -il "dentina\|ko.obrz"` prints nothing (grep's exit 1 is the pass)
+- No tracked file matches the practice name or town: `git ls-files -z ":!context/changes/note-prefill-reveal-neutral-copy" | xargs -0 grep -il "dentina\|ko.obrz"` prints nothing (grep's exit 1 is the pass). The change folder is excluded because this line is itself a match — the search pattern has to name what it searches for.
 - Pricelist seed gate still green (F-02 has no test file of its own): `npm run validate:pricing`
 - Unit suite still green: `npm run test`
 - Build still succeeds: `npm run build`
@@ -229,11 +229,20 @@ behaviours against the live model instead of a stubbed route — left for the hu
 
 #### Automated
 
-- [ ] 2.1 No tracked file matches the practice name or town
-- [ ] 2.2 Pricelist seed gate green (`npm run validate:pricing`)
-- [ ] 2.3 Unit suite still green
-- [ ] 2.4 Build still succeeds
+- [x] 2.1 No tracked file matches the practice name or town
+- [x] 2.2 Pricelist seed gate green (`npm run validate:pricing`)
+- [x] 2.3 Unit suite still green
+- [x] 2.4 Build still succeeds
 
 #### Manual
 
 - [ ] 2.5 README and PRD still read naturally
+
+Six files carried the name: README "The problem", the PRD's problem statement and persona
+heading, five places in `shape-notes.md` (the tenancy gray-area decision, the source note, the
+problem statement, the persona heading, the multi-tenant non-goal), the `$comment` in
+`pricing.json`, and the two archived pricelist-seed documents. Each is a proper noun replaced
+by what it always meant — "jednoosobowy gabinet stomatologiczny", "the practice", "1 gabinet" —
+with no sentence rebuilt around the gap. `git ls-files -z ':!context/changes/…' | xargs -0
+grep -il` now prints nothing; `npm run validate:pricing` passes 7 categories / 37 items;
+`npm run test` 167/167; `npm run build` complete.

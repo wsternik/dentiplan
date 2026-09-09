@@ -2,17 +2,17 @@
 
 ## Overview
 
-Define the Dentina clinic pricelist as a **typed, Zod-validated TypeScript seed bundled into the app** — the single source the S-01 quote flow reads from to assign pricelist items per-tooth (FR-025), as general items (FR-029), sum ranges (FR-026), auto-skip locally-anesthetic items in the narkoza plan (FR-041), and compute the anesthesia fee (FR-042/FR-043). No DB table, no admin UI — both are deliberate v2 deferrals (roadmap F-02, PRD §Non-Goals). The seed is built from the real `pricing.json` / `pricing-narkoza.json` exports the dentystka supplied, annotated with DentiPlan-specific flags the exports lack.
+Define the clinic pricelist as a **typed, Zod-validated TypeScript seed bundled into the app** — the single source the S-01 quote flow reads from to assign pricelist items per-tooth (FR-025), as general items (FR-029), sum ranges (FR-026), auto-skip locally-anesthetic items in the narkoza plan (FR-041), and compute the anesthesia fee (FR-042/FR-043). No DB table, no admin UI — both are deliberate v2 deferrals (roadmap F-02, PRD §Non-Goals). The seed is built from the real `pricing.json` / `pricing-narkoza.json` exports the dentystka supplied, annotated with DentiPlan-specific flags the exports lack.
 
 ## Current State Analysis
 
 - **The snapshot value-type already exists.** `src/types.ts:79` defines `PricelistItemRefSchema` (`id`, `name`, `price`, `localAnesthesia`) — the by-value shape S-01 freezes into a quote's `content` jsonb on approval (FR-050). `PriceValueSchema` (`src/types.ts:68`) is a discriminated union of `fixed` and `range` only.
 - **No pricelist DB table.** F-01's migration (`supabase/migrations/20260603194110_quotes_foundation.sql`) created only `public.quotes`. The pricelist is repo-config, bundled at build — not a queried table. The `[db.seed]` hook in `supabase/config.toml:60` seeds DB rows and is **not** the home for this.
-- **Runtime is Cloudflare Workers SSR.** No filesystem read at request time; "loaded at build/deploy" means *bundled* — a TS/JSON module imported at build time.
+- **Runtime is Cloudflare Workers SSR.** No filesystem read at request time; "loaded at build/deploy" means _bundled_ — a TS/JSON module imported at build time.
 - **Real data exists, richer than the snapshot contract.** `pricing.json` (repo root) is a categorized export: 7 `categories` (`name`/`slug`/`items[]`), each item with `price_type` ∈ {`fixed`, `range`, `modifier`} (the `$comment` also documents `from`), `price_min`, `price_max`, `note`, `display`, plus top-level metadata (`currency`, `isIndicative`, `nfz`, `paymentMethods`, `installments`, `modifiers[]`). `pricing-narkoza.json` encodes the anesthesia fee model: base 1400 (dzieci/zęby mleczne) / 2000 (dorośli/zęby stałe), `+100` per tooth above 5 — exactly FR-042/FR-043 — with dental treatment itself priced from the standard pricelist ("wycena indywidualna").
 - **Two gaps between the export and what F-02 must deliver:**
   1. `price_type: "modifier"` (e.g. "Ponowne leczenie kanałowe +500 zł", "Szycie +100 zł") and the documented `from` have **no representation** in `PriceValueSchema`.
-  2. The export carries **no `localAnesthesia` flag** and **no per-tooth/general context flags**. The local-anesthetic line is a plain item "Znieczulenie" (50 zł). FR-041's flag must be *authored by us*, not read from the export.
+  2. The export carries **no `localAnesthesia` flag** and **no per-tooth/general context flags**. The local-anesthetic line is a plain item "Znieczulenie" (50 zł). FR-041's flag must be _authored by us_, not read from the export.
 - **Conventions.** Zod-first types in `src/types.ts` (types via `z.infer`); services/helpers in `src/lib/` (`utils.ts`, `supabase.ts`, `config-status.ts` today). No `lessons.md`. No test framework yet (Module 3 introduces testing per `CLAUDE.md`).
 
 ## Desired End State
@@ -81,9 +81,10 @@ z.object({ kind: z.literal("from"), amount: z.number() }),      // starting pric
 
 **File**: `src/lib/pricing/schema.ts` (new)
 
-**Intent**: Define the Zod schema for the *source* pricelist (richer than the snapshot ref: grouped by category, plus DentiPlan annotation flags and the `note`/`display` metadata the admin UI will want) and for the anesthesia fee schedule. Types via `z.infer`, following the `src/types.ts` pattern.
+**Intent**: Define the Zod schema for the _source_ pricelist (richer than the snapshot ref: grouped by category, plus DentiPlan annotation flags and the `note`/`display` metadata the admin UI will want) and for the anesthesia fee schedule. Types via `z.infer`, following the `src/types.ts` pattern.
 
 **Contract**: exports —
+
 - `PriceTypeSchema` = `z.enum(["fixed", "range", "modifier", "from"])` (matches the JSON's `price_type`).
 - `SourcePricelistItemSchema` — fields from the JSON (`name`, `price_type`, `price_min`, `price_max` nullable, `note` nullable, `display`) **plus** the authored fields: `id: string`, `localAnesthesia: boolean` (default `false`), `validForTooth: boolean`, `validForGeneral: boolean`. Cross-field refinement: `range` requires non-null `price_max`; `fixed`/`modifier`/`from` require null `price_max`.
 - `PricelistCategorySchema` — `name`, `slug`, `items: SourcePricelistItemSchema[]`.
@@ -131,6 +132,7 @@ Bring the real exports into the source tree, build the canonical seed (raw price
 **Intent**: Import the JSON, attach DentiPlan annotations (`localAnesthesia`, `validForTooth`, `validForGeneral`) and stable ids to every item inline, derive the anesthesia fee schedule from `pricing-narkoza.json`, validate the whole structure with the Phase 1 schema at module load, and export the typed results. Authoring the annotation map is the one place clinical judgment enters: mark the "Znieczulenie" (50 zł) item `localAnesthesia: true` (FR-041); mark Profilaktyka / consultation / RTG-type items `validForGeneral: true` and treatment items `validForTooth: true` per the dentystka's intent.
 
 **Contract**:
+
 - Stable id = `${category.slug}:${slugify(item.name)}`. No slug library is in deps, so author a small local `slugify`: NFKD diacritic-fold (ż/ł/ą/ó/ś/ć/ń/ź/ę → ascii — note `ł` needs an explicit map, NFKD won't fold it), lowercase, replace every run of non-`[a-z0-9]` (spaces, em-dashes, `/`, `+`, curly quotes, parens) with a single `-`, trim leading/trailing `-`. Because the id is the stable key S-01 references and freezes into snapshots (FR-050), the completeness guard **also asserts all generated ids are unique** — a collision (two names slugging to the same id within a category) must throw, not silently overwrite.
 - **Exclude the `leczenie-w-narkozie` category from `PRICELIST`.** Its three items (1400 / 2000 base, `+100` per extra tooth) are the anesthesia fee — they are represented by `ANESTHESIA_FEE_SCHEDULE` (derived from `pricing-narkoza.json`) and computed by S-01's formula, not picked as per-tooth or general items. Including them would force a meaningless `validForTooth`/`validForGeneral` annotation and risk leaking the fee into `listGeneralItems()`. The seed builder filters this category out before annotation; a top-of-module comment records why so a future re-import doesn't silently re-add it.
 - An inline annotation lookup keyed by id supplies `{ localAnesthesia?, validForTooth, validForGeneral }` for every **non-excluded** item. **The builder must throw if any included JSON item lacks an annotation entry** (completeness guard — see Critical Implementation Details) and if any annotation entry references a non-existent (or excluded) item.
@@ -185,6 +187,7 @@ Add the snapshot resolver and lookup surface S-01 consumes, plus a short doc for
 **Intent**: Map a source pricelist item to the F-01 `PricelistItemRef` snapshot value (the by-value shape frozen into a quote on approval) and provide context-aware lookups so S-01 can populate per-tooth and general-item pickers without re-deriving pricelist knowledge.
 
 **Contract**: exports —
+
 - `resolvePricelistItem(id: string): PricelistItemRef` — looks up the source item, converts its price to a `PriceValue` (`fixed`→`{kind:"fixed",amount:price_min}`, `range`→`{kind:"range",min,max}`, `modifier`→`{kind:"modifier",amount:price_min}`, `from`→`{kind:"from",amount:price_min}`), carries `id`, `name`, and `localAnesthesia` through. Throws on unknown id.
 - `findItemById(id): SourcePricelistItem | undefined`.
 - `listToothItems()` / `listGeneralItems()` — flattened items filtered by `validForTooth` / `validForGeneral`.
