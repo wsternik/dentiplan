@@ -11,10 +11,18 @@ providers:
   - id: anthropic:messages:claude-sonnet-5
     label: Sonnet 5 · medium effort
     config:
-      effort: medium
       max_tokens: 128000
       maxRetries: 1
       stream: true
+      # Promptfoo 0.120 defaults temperature to 0 for unknown model ids. Sonnet
+      # 5 rejects that deprecated parameter, so an explicit adaptive-thinking
+      # config both matches production and makes the provider omit temperature.
+      thinking:
+        type: adaptive
+      showThinking: false
+      extra_body:
+        output_config:
+          effort: medium
       output_format:
         type: json_schema
         schema: file://.generated/anthropic-schema.json
