@@ -624,14 +624,14 @@ never enters history, so rollback does not depend on deleting imported assets.
 
 #### Automated
 
-- [x] 2.1 `e2e/home-page.spec.ts` passes at the three target widths and proves CTA/anchor destinations plus no 375 px overflow.
-- [x] 2.2 `npm run lint`, `npx astro check`, and `npm run build` pass.
-- [x] 2.3 `npm run test:e2e` passes, and the only E2E diff is the new home spec.
-- [x] 2.4 The home ships no prototype asset, external font request, session data, or client-side JavaScript for static decoration.
+- [x] 2.1 `e2e/home-page.spec.ts` passes at the three target widths and proves CTA/anchor destinations plus no 375 px overflow. — 84207fc
+- [x] 2.2 `npm run lint`, `npx astro check`, and `npm run build` pass. — 84207fc
+- [x] 2.3 `npm run test:e2e` passes, and the only E2E diff is the new home spec. — 84207fc
+- [x] 2.4 The home ships no prototype asset, external font request, session data, or client-side JavaScript for static decoration. — 84207fc
 
 #### Manual
 
-- [x] 2.5 Captures at 1440, 768, and 375 px are ready for the non-blocking final visual review against the prototype.
+- [x] 2.5 Captures at 1440, 768, and 375 px are ready for the non-blocking final visual review against the prototype. — 84207fc
 
 ### Phase 3: Entry and workspace surfaces
 
