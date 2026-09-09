@@ -132,8 +132,8 @@ Other checks: `npm run lint`, `npx astro check`, `npm run depcruise`,
 
 Before changing the diagnosis-prefill prompt or its default model, run the paid
 manual regression gate with `npm run eval` under Node 22 and
-`ANTHROPIC_API_KEY` configured. It compares the production and English prompts
-across Sonnet and Haiku on eight synthetic cases; volatile prompts and model
+`ANTHROPIC_API_KEY` configured. It compares the English production prompt and
+Polish baseline across Sonnet and Haiku on eight synthetic cases; volatile prompts and model
 responses stay in the ignored `evals/prefill/.generated/` directory. The gate is
 deliberately outside CI because provider output is non-deterministic and each run
 costs money. The current measured decision is recorded in

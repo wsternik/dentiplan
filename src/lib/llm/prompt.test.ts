@@ -76,20 +76,20 @@ describe("buildInstructions", () => {
   // phrasings that used to stand here did neither — it passed as long as
   // *something* was written nearby, and it turned red on a rule she had improved.
   it("keeps the rules section, with `warnings` as the escape hatch", () => {
-    const rules = section(buildInstructions(), "Zasady");
+    const rules = section(buildInstructions(), "Rules");
 
     // FR-012: what the model cannot place is named, never guessed at. Unlike her
     // wording, `warnings` is a wire-contract token — asserting it freezes nothing.
     expect(rules).not.toEqual("");
     expect(rules).toContain("warnings");
-    expect(rules).toContain("Nie dobieraj najbliższej pozycji");
+    expect(rules).toContain("Do not choose the closest catalog item");
   });
 
   it("keeps a section for each thing the model is asked to propose", () => {
     const instructions = buildInstructions();
 
-    expect(section(instructions, "Grupowanie wizyt")).not.toEqual("");
-    expect(section(instructions, "Pilność")).not.toEqual("");
+    expect(section(instructions, "Visit grouping")).not.toEqual("");
+    expect(section(instructions, "Urgency")).not.toEqual("");
   });
 
   it("explains both fields the model fills in on its own", () => {
@@ -107,7 +107,7 @@ describe("buildInstructions", () => {
     // FR-041–FR-044 computes that variant from the in-plan teeth. A model that
     // imitates it by collapsing the plan to one visit produces a split that looks
     // deliberate and is not (plan: "What We're NOT Doing").
-    expect(section(buildInstructions(), "Narkoza")).not.toEqual("");
+    expect(section(buildInstructions(), "General anaesthesia")).not.toEqual("");
   });
 
   it("states the same visit ceiling the mapper enforces", () => {
@@ -115,7 +115,7 @@ describe("buildInstructions", () => {
     // for a different number, every run of the larger one would warn — the
     // instruction and the check have to be one constant, not two numerals that
     // agree today.
-    const grouping = section(buildInstructions(), "Grupowanie wizyt");
+    const grouping = section(buildInstructions(), "Visit grouping");
     const ceiling = new RegExp(`(?<!\\d)${MAX_PROPOSED_VISITS}(?!\\d)`);
 
     expect(grouping).toMatch(ceiling);

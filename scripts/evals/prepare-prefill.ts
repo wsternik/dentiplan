@@ -9,7 +9,7 @@ import { z } from "zod";
 import { ParsedDiagnosisSchema } from "../../src/lib/llm/schema";
 import { buildInstructions } from "../../src/lib/llm/prompt";
 import { sanitizeAnthropicSchema } from "./anthropic-schema";
-import { buildEnglishInstructions } from "./english-prompt";
+import { buildPolishInstructions } from "./polish-prompt";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, "../..");
@@ -19,10 +19,10 @@ const sourceFiles = [
   "evals/prefill/promptfooconfig.yaml",
   "evals/prefill/assertions.mjs",
   "evals/prefill/prompts/production.mjs",
-  "evals/prefill/prompts/english.mjs",
+  "evals/prefill/prompts/polish.mjs",
   "scripts/evals/assertions.ts",
   "scripts/evals/anthropic-schema.ts",
-  "scripts/evals/english-prompt.ts",
+  "scripts/evals/polish-prompt.ts",
   "scripts/evals/prepare-prefill.ts",
   "scripts/evals/summarize-prefill.ts",
   "src/lib/llm/prompt.ts",
@@ -83,7 +83,7 @@ function main(): void {
   if (new Set(ids).size !== ids.length) throw new Error("Every prompt-eval caseId must be unique.");
 
   const productionPrompt = buildInstructions();
-  const englishPrompt = buildEnglishInstructions();
+  const polishPrompt = buildPolishInstructions();
   const providerSchema = sanitizeAnthropicSchema(z.toJSONSchema(ParsedDiagnosisSchema));
   const gitSha = execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim();
   const gitStatus = execFileSync("git", ["status", "--porcelain", "--untracked-files=all"], {
@@ -107,8 +107,8 @@ function main(): void {
         gitDirty: false,
         corpus: cases.map(({ file, raw, parsed }) => ({ file, id: parsed.vars.caseId, sha256: sha256(raw) })),
         prompts: [
-          { id: "polish-production", label: "Polish production", sha256: sha256(productionPrompt) },
-          { id: "english-candidate", label: "English candidate", sha256: sha256(englishPrompt) },
+          { id: "english-production", label: "English production", sha256: sha256(productionPrompt) },
+          { id: "polish-baseline", label: "Polish baseline", sha256: sha256(polishPrompt) },
         ],
         providers: [
           {

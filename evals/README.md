@@ -36,70 +36,64 @@ This rule was committed with the corpus before any candidate prompt exists:
 4. If every recorded measure ties at report precision, retain the current Polish
    prompt and Sonnet model.
 
-## Complete matrix — 2026-09-08
+## Complete matrix — 2026-09-09
 
-The retained run `eval-ILg-2026-09-08T16:23:37` compared the production Polish
-prompt and the English-instruction candidate across `claude-sonnet-5` with
+The retained run `eval-m7a-2026-09-09T03:48:01` compared the strengthened
+Polish production prompt and English candidate across `claude-sonnet-5` with
 medium effort and `claude-haiku-4-5` without an effort option: 8 cases × 2
 prompts × 2 providers = 32 uncached calls, with no provider errors. Strict
 macro pass means that every deterministic atom for the case passed.
 
-| Prompt / model          | Safety eligible | Strict cases |          Atoms | Input / output tokens | Cost (USD) | Cost / case |       Median / p95 |
-| ----------------------- | --------------- | -----------: | -------------: | --------------------: | ---------: | ----------: | -----------------: |
-| Polish / Sonnet medium  | **yes**         |  2/8 (25.0%) | 91/110 (82.7%) |        49,035 / 8,466 |  $0.274095 |   $0.034262 | 7.366 s / 29.529 s |
-| English / Sonnet medium | **no**          |  1/8 (12.5%) | 92/110 (83.6%) |        42,899 / 6,494 |  $0.226107 |   $0.028263 | 8.597 s / 15.154 s |
-| Polish / Haiku          | **no**          |   0/8 (0.0%) | 87/110 (79.1%) |        38,007 / 2,712 |  $0.051567 |   $0.006446 | 9.536 s / 13.330 s |
-| English / Haiku         | **no**          |   0/8 (0.0%) | 88/110 (80.0%) |        32,695 / 2,456 |  $0.044975 |   $0.005622 | 8.585 s / 10.636 s |
+| Prompt / model          | Safety eligible | Strict cases |           Atoms | Input / output / total tokens | Median input / output / total | Cost (USD) | Cost / case |       Median / p95 |
+| ----------------------- | --------------- | -----------: | --------------: | ----------------------------: | ----------------------------: | ---------: | ----------: | -----------------: |
+| Polish / Sonnet medium  | **yes**         |  3/8 (37.5%) | 137/152 (90.1%) |       49,803 / 7,608 / 57,411 |           6,227 / 750 / 6,985 |  $0.175686 |   $0.021961 | 7.555 s / 20.544 s |
+| English / Sonnet medium | **yes**         |  3/8 (37.5%) | 137/152 (90.1%) |       43,459 / 7,126 / 50,585 |           5,434 / 699 / 6,125 |  $0.158178 |   $0.019772 | 7.928 s / 16.473 s |
+| Polish / Haiku          | **no**          |   0/8 (0.0%) | 125/152 (82.2%) |       38,543 / 2,683 / 41,226 |           4,819 / 352 / 5,174 |  $0.051958 |   $0.006495 | 8.695 s / 12.817 s |
+| English / Haiku         | **no**          |  1/8 (12.5%) | 130/152 (85.5%) |       33,047 / 2,258 / 35,305 |           4,132 / 294 / 4,429 |  $0.044337 |   $0.005542 | 8.462 s / 11.266 s |
 
 ### Decision
 
-**Keep the Polish production prompt and Sonnet 5 with medium effort.** It is the
-only safety-eligible cell, so the first ranking rule selects it before cost or
-latency can act as tie-breakers. The English/Sonnet cell was cheaper and passed
-one more atom overall, but it treated the unsupported `flow-injection` phrase as
-a filling and omitted the required warning. Both Haiku cells failed safety atoms,
-including invented clinical content for the empty/noisy note. No safety failure
-is waived for a cheaper or faster call.
+**Use the English instruction prompt with Sonnet 5 at medium effort.** Both
+Sonnet cells were safety-eligible and tied exactly on macro and micro quality,
+so the predeclared cost tie-break selected English/Sonnet: $0.019772 per case
+versus $0.021961 for Polish/Sonnet. Both Haiku cells remained ineligible after
+inventing clinical content or catalog assignments. No safety failure was waived
+for a cheaper or faster call.
 
 ### Production adoption
 
 The measured winner is active in production configuration: `buildInstructions()`
 is the single production prompt path, the default model is `claude-sonnet-5`, and
-Anthropic effort is `medium`. Production prompt SHA-256:
-`7a70760cf6711f883897c38c30476552f983f2942005e510f97c8f7bc6494266`.
+Anthropic effort is `medium`. The Polish text remains only as an eval baseline.
+Production prompt SHA-256:
+`970fddd5678a51e1f5e91e2cc8bba50a13a70743c40b5a188340a78ae831d5b1`.
 
 The prompt unit suite hashes the fully rendered production instructions and
 compares them with this report. Before changing the prompt or default model, run
 the complete uncached matrix and update the decision here; do not update the hash
 from an unevaluated prompt.
 
-The full run reproduced the broad baseline result despite ordinary provider
-variation: Polish/Sonnet again passed `unknowns-and-fdi` and `empty-noisy` with
-no safety failure, while Polish/Haiku remained ineligible. Its Polish/Sonnet
-micro score moved from 92/110 in the baseline to 91/110 here; that variation did
-not affect eligibility, macro rank, or the selected pair.
-
-| Case                     | Polish / Sonnet              | English / Sonnet                   | Polish / Haiku                                    | English / Haiku                    |
-| ------------------------ | ---------------------------- | ---------------------------------- | ------------------------------------------------- | ---------------------------------- |
-| `catalog-grounding`      | tooth details 16, 24, 54     | tooth details 16, 24, 54           | tooth details 16, 24, 54                          | tooth details 16, 24, 54           |
-| `unknowns-and-fdi`       | —                            | tooth 17; missing warning (safety) | tooth 17; missing warning (safety)                | tooth 17; missing warning (safety) |
-| `status-and-urgency`     | tooth details 16, 24         | tooth details 16, 24               | teeth 16, 24; visit groups; general item (safety) | teeth 16, 24; visit groups         |
-| `visit-topology`         | tooth details 24, 26, 45, 46 | visit groups                       | tooth details 45, 46; visit groups                | tooth details 45, 46; visit groups |
-| `explicit-plan`          | tooth details 14, 15         | tooth details 14, 15               | tooth details 14, 15                              | tooth details 14, 15               |
-| `anaesthesia-considered` | tooth details 16, 17, 24, 25 | tooth details 16, 17, 24, 25       | tooth details 16, 17, 24, 25                      | tooth details 16, 17, 24, 25       |
-| `anaesthesia-explicit`   | tooth details 16, 17, 24, 25 | tooth details 16, 17, 24, 25       | tooth details 16, 17, 24, 25                      | tooth details 16, 17, 24, 25       |
-| `empty-noisy`            | —                            | —                                  | invented clinical warning (safety)                | invented clinical warning (safety) |
+| Case                     | Polish / Sonnet                       | English / Sonnet                    | Polish / Haiku                                                    | English / Haiku                                              |
+| ------------------------ | ------------------------------------- | ----------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------ |
+| `catalog-grounding`      | urgency: 16, 24, 54                   | urgency: 16, 24, 54                 | wrong items: 16, 24 (safety); urgency: 16, 24, 54                 | wrong items: 16, 24 (safety); urgency: 16, 24, 54            |
+| `unknowns-and-fdi`       | —                                     | —                                   | invented treatment/item on 17; missing warning (safety)           | invented treatment/item on 17; missing warning (safety)      |
+| `status-and-urgency`     | `urgencyFromNote`: 24                 | `urgencyFromNote`: 24; visit groups | wrong items: 16, 24 (safety); `urgencyFromNote`: 24; visit groups | wrong item: 16 (safety); `urgencyFromNote`: 24; visit groups |
+| `visit-topology`         | urgency: 24, 26, 45, 46; visit groups | urgency: 24, 26, 45, 46             | urgency: 45, 46; visit groups                                     | visit groups                                                 |
+| `explicit-plan`          | urgency: 14, 15                       | urgency: 14, 15                     | urgency: 14, 15                                                   | —                                                            |
+| `anaesthesia-considered` | —                                     | —                                   | urgency: 16, 17, 24, 25                                           | urgency: 16, 17, 24, 25                                      |
+| `anaesthesia-explicit`   | urgency: 16, 17, 24, 25               | urgency: 16, 17, 24, 25             | urgency: 16, 17, 24, 25                                           | urgency: 16, 17, 24, 25                                      |
+| `empty-noisy`            | —                                     | —                                   | invented clinical warning (safety)                                | invented clinical warning (safety)                           |
 
 ### Reproducibility record
 
-- Timestamp: `2026-09-08T16:23:37.503Z`
-- Source revision: `531fd3ba9d4e076faf0af247b195a525cd29dc14`
-- Node: `22.14.0`; Promptfoo: `0.122.2`; cache: disabled; concurrency: 1
+- Timestamp: `2026-09-09T03:48:01.136Z`
+- Source revision: `624b02d6549f7c9aac7f5f32f5424be34072b5c3`
+- Node: `22.14.0`; Promptfoo: `0.120.19`; cache: disabled; concurrency: 1
 - Timeout: 45,000 ms; retries: 1; output caps: Sonnet 128,000, Haiku 64,000
 - Production prompt SHA-256:
-  `7a70760cf6711f883897c38c30476552f983f2942005e510f97c8f7bc6494266`
+  `8e1a3566f5bbfaa3d13dc1c87807391a97059167993184e6cb585ec7418a57a3`
 - English candidate prompt SHA-256:
-  `c357094b14a7d27394c322e8dd30c3da02f0b251380be0fa81585b6c78134d82`
+  `970fddd5678a51e1f5e91e2cc8bba50a13a70743c40b5a188340a78ae831d5b1`
 - Corpus SHA-256 by checked-in file:
   - `01-catalog-grounding.json`:
     `c234573b7ecf6abd08d4cd01469e0410faa4d85f750e319820e827adb88c9b2d`
@@ -118,10 +112,11 @@ not affect eligibility, macro rank, or the selected pair.
   - `08-empty-noisy.json`:
     `83f219a383fdf514cbdd2e1164535d7500f1f1ff439e93a1bafc17bc55c70800`
 
-Promptfoo's provider-reported cost matches Anthropic's standard list prices on
-the run date: Sonnet 5 at $3 / $15 and Haiku 4.5 at $1 / $5 per million
-input/output tokens. The pricing source is Anthropic's
-[2026-05-27 list-price sheet](https://www-cdn.anthropic.com/files/4zrzovbb/website/3684c2faafb97418665782cea0001f439f74b1d2.pdf).
+Promptfoo 0.120.19 does not know the newer model ids and reports zero provider
+cost, so the summarizer derives cost from required per-call token telemetry and
+freezes Anthropic's 2026-09-09 standard prices: Sonnet 5 at $2 / $10 and Haiku
+4.5 at $1 / $5 per million input/output tokens. The source is Anthropic's
+[current pricing table](https://platform.claude.com/docs/en/about-claude/pricing).
 
 Before the phase-1 baseline, the harness rejected two shakedowns: one exposed
 Promptfoo's implicit 1,024-token output cap through three truncated Sonnet
@@ -131,8 +126,18 @@ calls. Those runs are not mixed into the table. Their findings changed only the
 provider configuration and summarizer; no case oracle was changed after seeing
 model output.
 
+The implementation review found that the earlier scorer treated an invented
+billable item as quality-only. After the scorer fix, run
+`eval-tvE-2026-09-09T03:35:09` made every cell ineligible because both Sonnet
+prompts guessed a treatment for the unsupported `flow-injection` phrase. The
+prompt's existing no-guess rule was made explicit for unknown phrases, without
+changing any case or oracle, and the retained matrix above measured that exact
+revision. A preceding transport-only shakedown exposed Promptfoo 0.120.19's
+implicit `temperature: 0` for unknown Sonnet ids; explicit adaptive thinking and
+medium effort now match production and omit that deprecated parameter.
+
 The phase-1 baseline was not perfect, so the hard-case rule did not apply. The
-complete matrix used the same eight corpus files and unchanged hashes; no oracle
+retained matrix used the same eight corpus files and unchanged hashes; no oracle
 was altered after a model response was observed.
 
 Configuration follows the [Promptfoo Anthropic provider](https://www.promptfoo.dev/docs/providers/anthropic/),

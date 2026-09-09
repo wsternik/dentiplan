@@ -117,7 +117,7 @@ The classic test base for this project. AI-native tools (if any) carry a
 | e2e           | Playwright          | 1.62.1     | `playwright.config.ts`; `npm run test:e2e`. Chromium against `npm run dev` (`webServer`), signed in once via `storageState`. Local only — see §5. |
 | API mocking   | none yet            | —          | Decide during §3 Phase 1 research. The only external boundary today is Supabase.                                                                  |
 | accessibility | none                | —          | Out of scope: the PRD puts full WCAG-AA compliance in "consciously omitted for MVP".                                                              |
-| model eval    | Promptfoo           | 0.122.2    | Paid manual `npm run eval`; deterministic assertions over raw Anthropic responses, never CI.                                                      |
+| model eval    | Promptfoo           | 0.120.19   | Paid manual `npm run eval`; deterministic assertions over raw Anthropic responses, never CI; pinned for Node 22.14 compatibility.                 |
 | lint / format | ESLint 9 + Prettier | 9.29 / 3.8 | Wired locally through husky + lint-staged and in CI.                                                                                              |
 
 **Stack grounding tools (current session):**

@@ -187,7 +187,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Zielone testy mapowania nie mówią, czy zmieniony prompt lub model nadal poprawnie czyta notatkę. `npm run eval` porównuje niecache'owaną macierz na zamrożonym korpusie przed zmianą produkcji; nie działa w CI, bo odpowiedzi dostawcy są niedeterministyczne, wywołania kosztują, a CI nie przechowuje klucza.
-- **Status:** done — zrealizowane 2026-09-08 jako `prompt-evals`; zmierzony zwycięzca to polski prompt z `claude-sonnet-5` i `effort: medium`. Nowe ryzyko #10 w `test-plan.md` jest chronione ręczną bramką Promptfoo opisaną w `evals/README.md`.
+- **Status:** done — zrealizowane 2026-09-09 jako `prompt-evals`; zmierzony zwycięzca to angielskie instrukcje z polskim katalogiem i notatką, `claude-sonnet-5` oraz `effort: medium`. Nowe ryzyko #10 w `test-plan.md` jest chronione ręczną bramką Promptfoo opisaną w `evals/README.md`.
 
 ### S-06: Tooth chart on the patient page and in the editor
 

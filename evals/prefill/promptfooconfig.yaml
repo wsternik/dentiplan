@@ -3,9 +3,9 @@ description: DentiPlan diagnosis-prefill prompt and model matrix
 
 prompts:
   - id: file://prompts/production.mjs
-    label: Polish production
-  - id: file://prompts/english.mjs
-    label: English candidate
+    label: English production
+  - id: file://prompts/polish.mjs
+    label: Polish baseline
 
 providers:
   - id: anthropic:messages:claude-sonnet-5
