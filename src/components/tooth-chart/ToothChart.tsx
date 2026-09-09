@@ -115,7 +115,7 @@ export function ToothChart({ teeth, mode, onToothClick }: Props) {
   return (
     <div
       ref={containerRef}
-      className="tooth-chart bg-muted/50 relative mx-auto w-full max-w-[260px] rounded-lg p-3 sm:max-w-[420px]"
+      className="tooth-chart border-border/70 bg-card relative mx-auto w-full max-w-[280px] rounded-xl border p-4 sm:max-w-[440px] sm:p-5"
     >
       <svg
         viewBox={CHART_VIEWBOX_PADDED}

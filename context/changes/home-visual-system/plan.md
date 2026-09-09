@@ -650,14 +650,14 @@ never enters history, so rollback does not depend on deleting imported assets.
 
 #### Automated
 
-- [ ] 4.1 Editor disclosure, prefill success/failure focus, save/reopen, approve, visit, and odontogram E2E contracts pass unchanged.
-- [ ] 4.2 Computed chart fills and status strokes still agree with the written tooth list and legend.
-- [ ] 4.3 `npm run lint`, `npx astro check`, `npm test`, and `npm run build` pass.
-- [ ] 4.4 `npm run test:e2e` passes without edits to existing specs.
+- [x] 4.1 Editor disclosure, prefill success/failure focus, save/reopen, approve, visit, and odontogram E2E contracts pass unchanged.
+- [x] 4.2 Computed chart fills and status strokes still agree with the written tooth list and legend.
+- [x] 4.3 `npm run lint`, `npx astro check`, `npm test`, and `npm run build` pass.
+- [x] 4.4 `npm run test:e2e` passes without edits to existing specs.
 
 #### Manual
 
-- [ ] 4.5 The editor remains operable at 375 px with a long note, long warnings, multiple visits, and the sticky actions visible without covering content.
+- [x] 4.5 The editor remains operable at 375 px with a long note, long warnings, multiple visits, and the sticky actions visible without covering content.
 
 ### Phase 5: Patient document and A4 print
 

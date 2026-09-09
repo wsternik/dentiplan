@@ -57,14 +57,14 @@ export function ToothRow({ tooth, visits, options, onPatch, onAddItem, onRemoveI
       aria-label={toothName(tooth.number)}
       tabIndex={-1}
       className={cn(
-        "rounded-md border p-3 focus-visible:outline-2 focus-visible:outline-offset-2",
+        "bg-background/70 rounded-xl border p-4 focus-visible:outline-2 focus-visible:outline-offset-2",
         "focus-visible:outline-ring",
         STATUS_OUTLINE[tooth.status],
       )}
     >
-      <div className="mb-2 flex items-start justify-between gap-2">
+      <div className="mb-3 flex items-start justify-between gap-3">
         <div>
-          <div className="text-foreground flex items-center gap-2 text-sm font-medium">
+          <div className="text-foreground flex items-center gap-2 text-sm font-semibold tracking-tight">
             {tooth.urgency && (
               <span aria-hidden="true" className={cn("size-2 shrink-0 rounded-full", URGENCY_MARK[tooth.urgency])} />
             )}
@@ -108,7 +108,7 @@ export function ToothRow({ tooth, visits, options, onPatch, onAddItem, onRemoveI
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-3">
           <NativeSelect
             aria-label="Rodzaj leczenia"
             value={tooth.treatmentType ?? ""}
@@ -166,7 +166,7 @@ export function ToothRow({ tooth, visits, options, onPatch, onAddItem, onRemoveI
         )
       ) : (
         <Input
-          className="mt-2"
+          className="mt-3"
           placeholder="Notatka (opcjonalnie)"
           value={tooth.note}
           onChange={(e) => {
@@ -175,13 +175,13 @@ export function ToothRow({ tooth, visits, options, onPatch, onAddItem, onRemoveI
         />
       )}
 
-      <div className="mt-2">
+      <div className="mt-3">
         {!readOnly && <PricelistPicker options={options} onAdd={onAddItem} />}
         {tooth.pricelistItems.length > 0 && (
           <ul className="mt-2 flex flex-wrap gap-2">
             {tooth.pricelistItems.map((item, index) => (
               <li key={`${item.id}-${index}`}>
-                <Badge variant="outline" className="gap-1">
+                <Badge variant="outline" className="h-auto max-w-full gap-1 py-1 text-left whitespace-normal">
                   {item.name} · {formatPriceValue(item.price)}
                   {!readOnly && (
                     <button
@@ -207,7 +207,7 @@ export function ToothRow({ tooth, visits, options, onPatch, onAddItem, onRemoveI
 
       {!readOnly && isInPlan && visits.length > 0 && (
         <NativeSelect
-          className="mt-2"
+          className="mt-3"
           aria-label="Wizyta"
           value={tooth.visitNumber ?? ""}
           onChange={(e) => {

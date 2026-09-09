@@ -527,7 +527,7 @@ export default function QuoteEditor({
         <p className="text-sm whitespace-pre-line">{rawText}</p>
       ) : (
         <>
-          <Label htmlFor="rawText" className="text-muted-foreground mb-1">
+          <Label htmlFor="rawText" className="text-muted-foreground mb-2 leading-relaxed">
             <span className="sr-only">Pole robocze — </span>
             Zapisywana razem z kosztorysem, widoczna tylko dla Ciebie — nigdy nie trafia na stronę pacjenta.
           </Label>
@@ -541,10 +541,11 @@ export default function QuoteEditor({
               setRawText(e.target.value);
             }}
           />
-          <div className="mt-2 flex flex-wrap items-center gap-2">
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             <Button
               type="button"
               variant="outline"
+              shape="pill"
               ref={prefillButtonRef}
               disabled={operationBusy || rawText.trim().length === 0}
               onClick={() => void handlePrefill()}
@@ -563,14 +564,14 @@ export default function QuoteEditor({
   );
 
   return (
-    <div className="relative mx-auto max-w-4xl px-4 py-8" aria-busy={operationBusy} aria-label="Edytor kosztorysu">
+    <div className="shell-workspace relative py-8 sm:py-12" aria-busy={operationBusy} aria-label="Edytor kosztorysu">
       <span className="sr-only" role="status" aria-live="polite">
         {operationStatus}
       </span>
       {parsing && (
-        <div className="bg-background/60 absolute inset-0 z-30 cursor-wait" aria-hidden="true">
+        <div className="bg-background/75 absolute inset-0 z-30 cursor-wait backdrop-blur-[1px]" aria-hidden="true">
           <div className="sticky top-6 flex justify-center px-4">
-            <span className="bg-popover text-popover-foreground border-border rounded-full border px-4 py-2 text-sm font-medium shadow-md">
+            <span className="bg-popover text-popover-foreground border-border rounded-full border px-5 py-2.5 text-sm font-semibold shadow-[0_16px_35px_-22px_color-mix(in_oklch,var(--foreground)_55%,transparent)]">
               Wypełnianie formularza…
             </span>
           </div>
@@ -579,13 +580,19 @@ export default function QuoteEditor({
 
       <div
         inert={operationBusy || undefined}
-        className={cn("space-y-4", operationBusy && "pointer-events-none select-none")}
+        className={cn("space-y-5 sm:space-y-6", operationBusy && "pointer-events-none select-none")}
       >
-        <div className="border-border flex flex-wrap items-baseline justify-between gap-4 border-b pb-4">
-          <h1 className="font-serif text-2xl font-medium tracking-tight">
-            {readOnly ? "Kosztorys zatwierdzony" : savedId ? "Kosztorys (szkic)" : "Nowy kosztorys"}
-          </h1>
-          <a href="/admin" className="text-muted-foreground text-sm underline underline-offset-4">
+        <div className="border-border flex flex-wrap items-end justify-between gap-5 border-b pb-6">
+          <div>
+            <span className="bg-brand mb-3 block h-1 w-10 rounded-full" aria-hidden="true" />
+            <h1 className="font-editorial text-3xl font-medium tracking-[-0.035em] sm:text-4xl">
+              {readOnly ? "Kosztorys zatwierdzony" : savedId ? "Kosztorys (szkic)" : "Nowy kosztorys"}
+            </h1>
+          </div>
+          <a
+            href="/admin"
+            className="border-border bg-card hover:bg-accent focus-visible:ring-ring inline-flex h-9 items-center rounded-full border px-4 text-sm font-medium tracking-tight transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+          >
             Lista kosztorysów
           </a>
         </div>
@@ -596,7 +603,7 @@ export default function QuoteEditor({
           <Button
             type="button"
             variant="outline"
-            className="w-full justify-center border-dashed"
+            className="bg-card w-full justify-center rounded-xl border-dashed py-5"
             aria-expanded={manualFormOpen}
             aria-controls="quote-details"
             onClick={() => {
@@ -607,7 +614,7 @@ export default function QuoteEditor({
           </Button>
         )}
 
-        <div id="quote-details" className="space-y-4" hidden={!manualFormOpen}>
+        <div id="quote-details" className="space-y-5 sm:space-y-6" hidden={!manualFormOpen}>
           {!noteFirst && diagnosisNoteSection}
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -641,7 +648,7 @@ export default function QuoteEditor({
             </Section>
 
             <Section title="Typ pacjenta">
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button
                   type="button"
                   disabled={readOnly}
@@ -668,7 +675,7 @@ export default function QuoteEditor({
 
           <Section title="Zęby">
             {!readOnly && (
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row">
                 {/* The placeholder IS this field's accessible name — `seed.spec.ts`
                 and `patient-link-content.spec.ts` both locate it that way. It
                 does not move. */}
@@ -685,7 +692,7 @@ export default function QuoteEditor({
                     }
                   }}
                 />
-                <Button type="button" onClick={addTeeth}>
+                <Button type="button" shape="pill" className="sm:shrink-0" onClick={addTeeth}>
                   Dodaj
                 </Button>
               </div>
@@ -700,7 +707,7 @@ export default function QuoteEditor({
             {/* The same drawing the patient gets, above the rows it addresses.
             `read-only` on an approved quote is inert but still hoverable —
             FR-053 freezes the quote, not the tooltip. */}
-            <div className="tooth-chart-layout mt-4 lg:grid lg:grid-cols-2 lg:items-center lg:gap-6">
+            <div className="tooth-chart-layout bg-secondary/35 mt-5 rounded-xl p-4 sm:p-5 lg:grid lg:grid-cols-2 lg:items-center lg:gap-6">
               <ToothChart
                 teeth={chartTeeth}
                 mode={readOnly ? "read-only" : "interactive"}
@@ -709,7 +716,7 @@ export default function QuoteEditor({
               <ChartLegend />
             </div>
 
-            <div className="mt-3 space-y-3">
+            <div className="mt-4 space-y-3">
               {teeth.length === 0 && (
                 <p className="text-muted-foreground text-sm">
                   {readOnly ? "Brak zębów w kosztorysie." : "Brak zębów. Dodaj numery powyżej."}
@@ -771,7 +778,7 @@ export default function QuoteEditor({
                 Kosztorys jest zatwierdzony, więc nie da się go już zmienić (nowa wersja = nowy kosztorys i nowy link).
               </p>
               {readOnlyPatientPath ? (
-                <div className="space-y-3">
+                <div className="bg-secondary/35 space-y-4 rounded-xl p-4 sm:p-5">
                   <CopyLink path={readOnlyPatientPath} />
                   <QrCode path={readOnlyPatientPath} />
                 </div>
@@ -792,24 +799,47 @@ export default function QuoteEditor({
             // click, failing a spec with a message that never mentions a bar. Sticky
             // occupies real space at the end of the flow, so it cannot overlap
             // anything, and still pins to the bottom while there is more form below.
-            <div className="border-border bg-background/95 no-print sticky bottom-0 z-10 -mx-4 border-t px-4 backdrop-blur-sm">
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 py-3">
-                <Button type="button" size="lg" disabled={approveDisabled || operationBusy} onClick={handleApprove}>
+            <div className="border-border bg-card/95 no-print sticky bottom-0 z-10 -mx-4 border-t px-4 shadow-[0_-18px_38px_-34px_color-mix(in_oklch,var(--foreground)_60%,transparent)] backdrop-blur-sm sm:mx-0 sm:rounded-t-xl sm:border-x">
+              <div className="grid grid-cols-2 items-center gap-2 py-3 sm:flex sm:flex-wrap sm:gap-x-3 sm:gap-y-1.5">
+                <Button
+                  type="button"
+                  size="lg"
+                  shape="pill"
+                  className="w-full sm:w-auto"
+                  disabled={approveDisabled || operationBusy}
+                  onClick={handleApprove}
+                >
                   {submitting ? "Zatwierdzanie…" : "Zatwierdź"}
                 </Button>
                 <Button
                   type="button"
                   size="lg"
                   variant="outline"
+                  shape="pill"
+                  className="w-full sm:w-auto"
                   disabled={operationBusy}
                   onClick={() => void handleSaveDraft()}
                 >
                   {saving ? "Zapisywanie…" : "Zapisz szkic"}
                 </Button>
-                {savedAt && !saveError && <span className="text-muted-foreground text-sm">Zapisano {savedAt}</span>}
-                {approveReason && <p className="text-muted-foreground basis-full text-sm">{approveReason}</p>}
-                {submitError && <p className="text-destructive basis-full text-sm">{submitError}</p>}
-                {saveError && <p className="text-destructive basis-full text-sm">{saveError}</p>}
+                {savedAt && !saveError && (
+                  <span className="text-muted-foreground col-span-2 text-sm sm:basis-full">Zapisano {savedAt}</span>
+                )}
+                {approveReason && (
+                  <p className="text-muted-foreground col-span-2 min-w-0 text-sm leading-relaxed break-words sm:basis-full">
+                    {approveReason}
+                  </p>
+                )}
+                {submitError && (
+                  <p className="text-destructive col-span-2 min-w-0 text-sm leading-relaxed break-words sm:basis-full">
+                    {submitError}
+                  </p>
+                )}
+                {saveError && (
+                  <p className="text-destructive col-span-2 min-w-0 text-sm leading-relaxed break-words sm:basis-full">
+                    {saveError}
+                  </p>
+                )}
               </div>
             </div>
           )}

@@ -48,8 +48,8 @@ const SWATCH_SHAPE = "M12 2c5 0 8 3 8 8s-3 12-8 12-8-7-8-12 3-8 8-8Z";
 
 export function ChartLegend() {
   return (
-    <div className="chart-legend border-border text-muted-foreground mt-4 border-t pt-4 font-sans text-xs lg:mt-0 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-6">
-      <h3 className="text-foreground font-medium">Jak czytać schemat</h3>
+    <div className="chart-legend border-border/70 text-muted-foreground mt-5 border-t pt-5 font-sans text-xs lg:mt-0 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-6">
+      <h3 className="text-foreground font-semibold tracking-tight">Jak czytać schemat</h3>
 
       {/* One definition for the whole legend — a `<defs>` inside the status loop
           would emit the same id three times. */}

@@ -41,7 +41,7 @@ export function ToothTooltip({ tooth, at }: Props) {
       role="tooltip"
       aria-hidden="true"
       className={cn(
-        "no-print bg-popover text-popover-foreground border-border pointer-events-none absolute z-10 max-w-[15rem] min-w-[9rem] -translate-x-1/2 rounded border px-2.5 py-2 font-sans text-xs shadow-sm",
+        "no-print bg-popover text-popover-foreground border-border pointer-events-none absolute z-10 max-w-[15rem] min-w-[9rem] -translate-x-1/2 rounded-lg border px-3 py-2.5 font-sans text-xs shadow-[0_14px_30px_-20px_color-mix(in_oklch,var(--foreground)_55%,transparent)]",
         !below && "-translate-y-full",
       )}
       style={{ left: at.x, top: below ? at.bottom + 8 : at.top - 8 }}

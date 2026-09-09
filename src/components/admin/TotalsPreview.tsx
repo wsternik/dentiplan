@@ -11,8 +11,8 @@ export function TotalsPreview({ totals }: { totals: QuoteTotals }) {
 
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <div className="border-border border-l-border/80 rounded-md border border-l-[3px] p-3">
-        <h3 className="mb-2 text-sm font-semibold tracking-tight">Wariant standardowy (wiele wizyt)</h3>
+      <div className="border-border border-l-border/80 bg-background/70 rounded-xl border border-l-[3px] p-4 sm:p-5">
+        <h3 className="mb-3 text-sm font-semibold tracking-tight">Wariant standardowy (wiele wizyt)</h3>
         {standard && standard.perVisit.length > 0 ? (
           <ul className="space-y-1 text-sm">
             {standard.perVisit.map((entry) => (
@@ -25,14 +25,14 @@ export function TotalsPreview({ totals }: { totals: QuoteTotals }) {
         ) : (
           <p className="text-muted-foreground text-sm">Brak pozycji przypisanych do wizyt.</p>
         )}
-        <div className="border-border mt-2 flex justify-between gap-4 border-t pt-2 text-sm font-semibold">
+        <div className="border-border mt-3 flex justify-between gap-4 border-t pt-3 text-sm font-semibold">
           <span>Razem</span>
           <span className="numeric">{standard?.grandTotal ? formatRange(standard.grandTotal) : formatPln(0)}</span>
         </div>
       </div>
 
-      <div className="border-border border-l-primary rounded-md border border-l-[6px] p-3">
-        <h3 className="mb-2 flex flex-wrap items-center gap-2 text-sm font-semibold tracking-tight">
+      <div className="border-border border-l-primary bg-secondary/35 rounded-xl border border-l-[6px] p-4 sm:p-5">
+        <h3 className="mb-3 flex flex-wrap items-center gap-2 text-sm font-semibold tracking-tight">
           Wariant w narkozie (jedna sesja)
           <Badge>rekomendowane</Badge>
         </h3>
@@ -42,7 +42,7 @@ export function TotalsPreview({ totals }: { totals: QuoteTotals }) {
               <span className="text-muted-foreground">Opłata za narkozę</span>
               <span className="numeric">{formatPln(anesthesia.fee)}</span>
             </div>
-            <div className="border-border mt-2 flex justify-between gap-4 border-t pt-2 font-semibold">
+            <div className="border-border mt-3 flex justify-between gap-4 border-t pt-3 font-semibold">
               <span>Razem</span>
               <span className="numeric">{formatRange(anesthesia.total)}</span>
             </div>
