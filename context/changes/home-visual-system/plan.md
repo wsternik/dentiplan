@@ -637,14 +637,14 @@ never enters history, so rollback does not depend on deleting imported assets.
 
 #### Automated
 
-- [x] 3.1 Auth E2E retains `Email`, `Password`, `Sign in`, no sign-up, and successful redirect.
-- [x] 3.2 Admin E2E retains the semantic table, strict `Nowy kosztorys` locator, draft row actions, and approval confirmation.
-- [x] 3.3 `npm run lint`, `npx astro check`, `npm test`, and `npm run build` pass.
-- [x] 3.4 `npm run test:e2e` passes without edits to existing specs.
+- [x] 3.1 Auth E2E retains `Email`, `Password`, `Sign in`, no sign-up, and successful redirect. — 97c41c8
+- [x] 3.2 Admin E2E retains the semantic table, strict `Nowy kosztorys` locator, draft row actions, and approval confirmation. — 97c41c8
+- [x] 3.3 `npm run lint`, `npx astro check`, `npm test`, and `npm run build` pass. — 97c41c8
+- [x] 3.4 `npm run test:e2e` passes without edits to existing specs. — 97c41c8
 
 #### Manual
 
-- [x] 3.5 Sign-in, populated/empty/error list states, approval, and not-found state use one visual hierarchy at desktop and 375 px.
+- [x] 3.5 Sign-in, populated/empty/error list states, approval, and not-found state use one visual hierarchy at desktop and 375 px. — 97c41c8
 
 ### Phase 4: Quote editor
 
