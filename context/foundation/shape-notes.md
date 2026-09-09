@@ -8,7 +8,7 @@ checkpoint:
   phases_completed: [1, 2, 3, 4, 5, 6, 7]
   gray_areas_resolved:
     - topic: "persona scope"
-      decision: "Tylko jeden gabinet — 1 gabinet, 1 dentystka. Brak multi-tenant w MVP."
+      decision: "Tylko 1 gabinet, 1 dentystka. Brak multi-tenant w MVP."
     - topic: "insight (dlaczego jeszcze nie istnieje)"
       decision: "Nisza dwuwariantowych planów (standardowy vs. narkoza) + LLM jako enabler parsowania chaotycznego wpisu diagnozy."
     - topic: "inne persony"

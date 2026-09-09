@@ -164,7 +164,7 @@ or status change.
 
 #### Automated Verification:
 
-- No tracked file matches the practice name or town: `git ls-files -z ":!context/changes/note-prefill-reveal-neutral-copy" | xargs -0 grep -il "dentina\|ko.obrz"` prints nothing (grep's exit 1 is the pass). The change folder is excluded because this line is itself a match — the search pattern has to name what it searches for.
+- No tracked file matches the practice name or town: `git ls-files -z ":!context/changes/note-prefill-reveal-neutral-copy" | xargs -0 grep -in "dentin\|ko.obrz" | grep -vi "dentiplan\|dentist\|dentition\|dentine\|dentiplus"` prints nothing (grep's exit 1 is the pass). The stem, not the nominative: Polish declines the name, and the first version of this gate passed over `cennik Dentiny` and `wyłącznie Dentinę` in the roadmap. The change folder is excluded because this line is itself a match — the search pattern has to name what it searches for.
 - Pricelist seed gate still green (F-02 has no test file of its own): `npm run validate:pricing`
 - Unit suite still green: `npm run test`
 - Build still succeeds: `npm run build`
@@ -191,7 +191,7 @@ or status change.
 1. `npm run dev`, sign in, open `/admin/quotes/new`.
 2. Paste a diagnosis note, click "Wypełnij z notatki" — the form opens with the result.
 3. Collapse it with "Ukryj formularz ręcznie", run the prefill again — it reopens.
-4. `rg -i "dentina|ko.obrz"` over tracked files — no hits.
+4. `rg -i "dentin|ko.obrz"` over tracked files — no hits outside the product's own name.
 
 ## References
 
@@ -224,6 +224,10 @@ unedited (`git diff --stat` touches only the new `e2e/quote-prefill-reveal.spec.
 two new cases. The warnings list is a `role="group"`, not a region: the spec's first run said
 so, and the locator was corrected rather than the assertion dropped. 1.5/1.6 are the same two
 behaviours against the live model instead of a stubbed route — left for the human pass.
+Implementation review then took two defects the phase had missed: the reveal announced nothing
+to a screen reader and the `inert` overlay left focus on `<body>`. Both fixed and asserted in
+the spec, so 1.5's "focus still on the button" now describes the code rather than an assumption
+— see `reviews/impl-review.md`.
 
 ### Phase 2: Neutral clinic copy
 

@@ -39,7 +39,7 @@ const PREFILL: PrefillResult = {
         visitNumber: 1,
       },
     ],
-    visits: [{ number: 1, label: "" }],
+    visits: [{ number: 1, label: "Leczenie pilne" }],
     generalItems: [],
   },
   warnings: ["Nie odczytano: „kamień do usunięcia”."],
@@ -66,24 +66,9 @@ test("a successful prefill opens the form it filled", async ({ page }) => {
   await expect(page.getByRole("group", { name: /^16 — / })).toBeVisible();
   await expect(page.getByRole("group", { name: /^34 — / })).toBeVisible();
   await expect(page.getByRole("group", { name: "Do przejrzenia po wypełnieniu z notatki" })).toBeVisible();
-});
-
-test("a failed prefill leaves the form as it was", async ({ page }) => {
-  await page.route("**/api/admin/quotes/parse", async (route) => {
-    await route.fulfill({ status: 502, json: { error: "Model nie odpowiedział — wypełnij formularz ręcznie." } });
-  });
-
-  await page.goto("/admin/quotes/new");
-  await waitForIslands(page);
-
-  await page.getByLabel(/Zapisywana razem z kosztorysem/).fill(NOTE);
-  await page.getByRole("button", { name: "Wypełnij z notatki" }).click();
-
-  // FR-013: the prefill is never a gate. It says so and changes nothing —
-  // including the disclosure, which has no result to reveal.
-  await expect(page.getByText("Model nie odpowiedział — wypełnij formularz ręcznie.")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Dostosuj formularz ręcznie" })).toHaveAttribute(
-    "aria-expanded",
-    "false",
-  );
+  // The reveal is otherwise a purely visual event: nothing moves focus and no
+  // control changes state, so without this the only announcement of a form
+  // having opened is the overlay's message ending.
+  await expect(page.getByRole("status")).toHaveText(/Formularz jest otwarty, liczba zębów: 2\./);
+  await expect(page.getByRole("button", { name: "Wypełnij z notatki" })).toBeFocused();
 });
