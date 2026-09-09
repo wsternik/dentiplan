@@ -24,6 +24,7 @@ describe("buildEnglishInstructions", () => {
     expect(instructions).toContain("visitNumber = 0");
     expect(instructions).toContain(String(MAX_PROPOSED_VISITS));
     expect(instructions).toContain("Never invent an id");
+    expect(instructions).toContain("Do not choose the closest catalog item");
     expect(instructions).toContain("do not collapse the normal split into one visit");
   });
 });

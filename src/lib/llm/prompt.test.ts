@@ -82,6 +82,7 @@ describe("buildInstructions", () => {
     // wording, `warnings` is a wire-contract token — asserting it freezes nothing.
     expect(rules).not.toEqual("");
     expect(rules).toContain("warnings");
+    expect(rules).toContain("Nie dobieraj najbliższej pozycji");
   });
 
   it("keeps a section for each thing the model is asked to propose", () => {
