@@ -1,10 +1,10 @@
 ---
 change_id: note-prefill-reveal-neutral-copy
 title: Reveal the quote form after a successful note prefill, and drop the single-clinic name from copy
-status: planned
+status: archived
 created: 2026-09-09
 updated: 2026-09-09
-archived_at: null
+archived_at: 2026-09-09T06:59:51Z
 ---
 
 ## Notes
