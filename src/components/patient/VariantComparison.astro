@@ -36,15 +36,23 @@ function visitLabel(n: number): string {
 ---
 
 <section class="space-y-5">
-  <h2 class="text-xl font-medium tracking-tight">Warianty leczenia</h2>
+  <div>
+    <span class="text-brand-ink text-xs font-bold tracking-[0.12em] uppercase">Porównanie kosztów</span>
+    <h2 class="font-editorial mt-1 text-2xl font-medium tracking-[-0.025em]">Warianty leczenia</h2>
+  </div>
 
   <div class="variant-grid grid grid-cols-1 gap-4 md:grid-cols-2">
-    <article class="variant border-border border-l-border/80 bg-card rounded-md border border-l-[3px] p-5">
-      <h3 class="text-base leading-snug font-medium">Leczenie w kilku wizytach</h3>
-      <p class="text-muted-foreground mt-1 font-sans text-xs">Koszt rozłożony na kolejne wizyty.</p>
+    <article
+      class="variant border-border bg-card rounded-2xl border p-5 shadow-[0_18px_45px_-40px_color-mix(in_oklch,var(--foreground)_45%,transparent)]"
+    >
+      <span class="text-muted-foreground text-[0.6875rem] font-bold tracking-[0.1em] uppercase"
+        >Wariant standardowy</span
+      >
+      <h3 class="font-editorial mt-2 text-lg leading-snug font-medium tracking-[-0.02em]">Leczenie w kilku wizytach</h3>
+      <p class="text-muted-foreground mt-1 text-xs">Koszt rozłożony na kolejne wizyty.</p>
       {
         standard && standard.perVisit.length > 0 && (
-          <dl class="mt-5 space-y-2 font-sans text-sm">
+          <dl class="mt-5 space-y-2 text-sm">
             {standard.perVisit.map((entry) => (
               <div class="flex justify-between gap-4">
                 <dt class="text-muted-foreground">{visitLabel(entry.visitNumber)}</dt>
@@ -54,7 +62,7 @@ function visitLabel(n: number): string {
           </dl>
         )
       }
-      <div class="border-border mt-5 flex justify-between gap-4 border-t pt-4 font-sans text-sm font-semibold">
+      <div class="border-border mt-5 flex justify-between gap-4 border-t pt-4 text-sm font-semibold">
         <span>Razem</span>
         <span class="numeric whitespace-nowrap">
           {standard?.grandTotal ? formatRangeHeadline(standard.grandTotal) : formatAmount(0)}
@@ -62,14 +70,17 @@ function visitLabel(n: number): string {
       </div>
     </article>
 
-    <article class="variant border-border border-l-primary bg-card rounded-md border border-l-[6px] p-5">
-      <h3 class="text-base leading-snug font-medium">Leczenie w narkozie (jedna sesja)</h3>
-      <p class="text-muted-foreground mt-1 font-sans text-xs">
-        Całe leczenie za jednym razem — rekomendowane przez gabinet.
-      </p>
+    <article
+      class="variant border-border border-l-brand bg-secondary/35 rounded-2xl border border-l-[6px] p-5 shadow-[0_18px_45px_-40px_color-mix(in_oklch,var(--foreground)_45%,transparent)]"
+    >
+      <span class="text-brand-ink text-[0.6875rem] font-bold tracking-[0.1em] uppercase">Rekomendowany wariant</span>
+      <h3 class="font-editorial mt-2 text-lg leading-snug font-medium tracking-[-0.02em]">
+        Leczenie w narkozie (jedna sesja)
+      </h3>
+      <p class="text-muted-foreground mt-1 text-xs">Całe leczenie za jednym razem — rekomendowane przez gabinet.</p>
       {
         anesthesia && (
-          <dl class="mt-5 space-y-2 font-sans text-sm">
+          <dl class="mt-5 space-y-2 text-sm">
             <div class="flex justify-between gap-4">
               <dt class="text-muted-foreground">Opłata za narkozę</dt>
               <dd class="numeric m-0 whitespace-nowrap">{formatAmount(anesthesia.fee)}</dd>
@@ -79,7 +90,7 @@ function visitLabel(n: number): string {
       }
       {
         anesthesia && (
-          <div class="border-border mt-5 flex justify-between gap-4 border-t pt-4 font-sans text-sm font-semibold">
+          <div class="border-border mt-5 flex justify-between gap-4 border-t pt-4 text-sm font-semibold">
             <span>Razem</span>
             <span class="numeric whitespace-nowrap">{formatRangeHeadline(anesthesia.total)}</span>
           </div>

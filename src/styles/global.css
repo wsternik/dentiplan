@@ -236,8 +236,13 @@
    gone. The grip edge survives as a solid bar, so the recommendation is still
    marked on paper where colour may not reproduce at all.
 
-   The footer slot is reserved for the QR code S-07 puts there. */
+   The footer closes with a reproducible QR and the full online address. */
 @media print {
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+
   :root {
     --background: #fff;
     --card: #fff;
@@ -264,6 +269,27 @@
     padding: 0;
   }
 
+  .patient-document {
+    width: 100%;
+    font-size: 12pt;
+    line-height: 1.45;
+  }
+
+  .patient-document > header {
+    padding-bottom: 0.45cm;
+  }
+
+  .patient-document > div {
+    margin-top: 0.55cm;
+  }
+
+  .patient-document article,
+  .patient-document .quadrant,
+  .patient-document [role="note"] {
+    border-radius: 0;
+    box-shadow: none;
+  }
+
   /* The comparison is the point of the page; it does not get to reflow into one
      column just because the medium changed — and it nearly did. The grid is
      `md:grid-cols-2` (768px), while A4 at default margins gives about 717px of
@@ -277,6 +303,7 @@
   .variant {
     animation: none !important;
     break-inside: avoid;
+    padding: 0.45cm;
   }
 
   /* The chart is the one thing on this page whose meaning is carried by fill
@@ -330,6 +357,7 @@
      so the hatched rule and the heading carry the distinction instead. */
   .deferred {
     opacity: 1;
+    background: #fff;
   }
 
   a[href]::after {

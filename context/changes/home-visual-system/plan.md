@@ -663,14 +663,14 @@ never enters history, so rollback does not depend on deleting imported assets.
 
 #### Automated
 
-- [ ] 5.1 Existing patient content, no-disclosure, tooth-chart, QR, and 717 px print-layout E2E specs pass unchanged.
-- [ ] 5.2 `node --import tsx scripts/verify-patient-print.ts <patient-url> /tmp/dentiplan-patient-a4.pdf` generates A4 and passes variant, status, URL, QR-size, and footer-bound checks.
-- [ ] 5.3 `npm run lint`, `npx astro check`, `npm test`, and `npm run build` pass.
-- [ ] 5.4 `npm run test:e2e` passes without edits to existing specs.
+- [x] 5.1 Existing patient content, no-disclosure, tooth-chart, QR, and 717 px print-layout E2E specs pass unchanged.
+- [x] 5.2 `node --import tsx scripts/verify-patient-print.ts <patient-url> /tmp/dentiplan-patient-a4.pdf` generates A4 and passes variant, status, URL, QR-size, and footer-bound checks.
+- [x] 5.3 `npm run lint`, `npx astro check`, `npm test`, and `npm run build` pass.
+- [x] 5.4 `npm run test:e2e` passes without edits to existing specs.
 
 #### Manual
 
-- [ ] 5.5 The generated A4 PDF is ready for non-blocking visual confirmation of the chart, disclaimer, QR, and full address with background graphics disabled.
+- [x] 5.5 The generated A4 PDF is ready for non-blocking visual confirmation of the chart, disclaimer, QR, and full address with background graphics disabled.
 
 ### Phase 6: Contract cleanup and product documentation
 
