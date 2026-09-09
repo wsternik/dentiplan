@@ -24,10 +24,15 @@ const buttonVariants = cva(
         lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
         icon: "size-9",
       },
+      shape: {
+        standard: "",
+        pill: "rounded-full py-1 pr-1 pl-5 has-[>svg]:pr-1 has-[>svg]:pl-5 [&>[data-slot=button-icon]]:ml-1",
+      },
     },
     defaultVariants: {
       variant: "default",
       size: "default",
+      shape: "standard",
     },
   },
 );
@@ -36,6 +41,7 @@ function Button({
   className,
   variant,
   size,
+  shape,
   asChild = false,
   ...props
 }: React.ComponentProps<"button"> &
@@ -44,7 +50,28 @@ function Button({
   }) {
   const Comp = asChild ? Slot : "button";
 
-  return <Comp data-slot="button" className={cn(buttonVariants({ variant, size, className }))} {...props} />;
+  return (
+    <Comp
+      data-slot="button"
+      data-shape={shape}
+      className={cn(buttonVariants({ variant, size, shape, className }))}
+      {...props}
+    />
+  );
 }
 
-export { Button, buttonVariants };
+function ButtonIcon({ className, ...props }: React.ComponentProps<"span">) {
+  return (
+    <span
+      data-slot="button-icon"
+      className={cn(
+        "bg-primary-foreground text-primary inline-flex size-7 shrink-0 items-center justify-center rounded-full [&>svg]:size-3.5",
+        className,
+      )}
+      aria-hidden="true"
+      {...props}
+    />
+  );
+}
+
+export { Button, ButtonIcon, buttonVariants };

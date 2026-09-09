@@ -42,6 +42,9 @@ pnpm-debug.log*
 # sample diagnosis documents used while developing the editor
 example-doctor-input/
 
+# approved local visual reference; rebuilt in product source, never shipped
+/prototypes/dentiplan-home/
+
 # playwright
 playwright/.auth/
 test-results/

@@ -610,15 +610,15 @@ never enters history, so rollback does not depend on deleting imported assets.
 
 #### Automated
 
-- [ ] 1.1 Prototype ignore is narrow and the directory has zero tracked files.
-- [ ] 1.2 Manrope/Fraunces are installed and imported with no active Archivo/Literata references.
-- [ ] 1.3 Base-token contrast checks pass for foreground, muted text, primary controls, focus, and clinical text on the new surfaces.
-- [ ] 1.4 `npm run lint`, `npx astro check`, `npm test`, and `npm run build` pass.
-- [ ] 1.5 `npm run test:e2e` passes without edits to existing specs.
+- [x] 1.1 Prototype ignore is narrow and the directory has zero tracked files.
+- [x] 1.2 Manrope/Fraunces are installed and imported with no active Archivo/Literata references.
+- [x] 1.3 Base-token contrast checks pass for foreground, muted text, primary controls, focus, and clinical text on the new surfaces.
+- [x] 1.4 `npm run lint`, `npx astro check`, `npm test`, and `npm run build` pass.
+- [x] 1.5 `npm run test:e2e` passes without edits to existing specs.
 
 #### Manual
 
-- [ ] 1.6 Shared wordmark and representative controls render coherently on home, auth, admin, and patient shells; final aesthetic approval remains in the later visual review.
+- [x] 1.6 Shared wordmark and representative controls render coherently on home, auth, admin, and patient shells; final aesthetic approval remains in the later visual review.
 
 ### Phase 2: Production home
 

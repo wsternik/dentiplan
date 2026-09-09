@@ -24,10 +24,12 @@ const tone: Record<Variant, string> = {
 
 <div
   class:list={[
-    "border-b px-4 py-2.5 text-center text-sm [&_a]:font-medium [&_a]:underline [&_a]:underline-offset-2",
+    "border-b text-center text-sm [&_a]:font-medium [&_a]:underline [&_a]:underline-offset-2",
     tone[variant],
   ]}
   role={variant === "error" ? "alert" : "status"}
 >
-  <slot />
+  <div class="shell-workspace py-2.5">
+    <slot />
+  </div>
 </div>

@@ -1,0 +1,33 @@
+---
+interface Props {
+  href?: string;
+  class?: string;
+  compact?: boolean;
+}
+
+const { href, class: className, compact = false } = Astro.props;
+const Element = href ? "a" : "span";
+const elementProps = href ? { href, "aria-label": "DentiPlan" } : { role: "img" as const, "aria-label": "DentiPlan" };
+---
+
+<Element
+  {...elementProps}
+  class:list={[
+    "text-foreground focus-visible:ring-ring inline-flex w-fit items-center gap-2 rounded-sm font-semibold tracking-[-0.035em] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none",
+    compact ? "text-base" : "text-lg",
+    className,
+  ]}
+>
+  <svg
+    class:list={["text-brand shrink-0", compact ? "size-7" : "size-9"]}
+    viewBox="0 0 40 40"
+    fill="none"
+    aria-hidden="true"
+  >
+    <path
+      d="M8 8C13 5 16 11 20 11S27 5 32 8C39 13 31 32 27 32C24 32 25 22 20 22S16 32 13 32C9 32 1 13 8 8Z"
+      fill="currentColor"></path>
+    <path d="M11 15Q20 23 29 15" class="stroke-background" stroke-width="2" stroke-linecap="round"></path>
+  </svg>
+  <span aria-hidden="true">DentiPlan</span>
+</Element>
