@@ -94,5 +94,5 @@ anti-corruption layer: I had no concrete migration requirement. The useful
 benefits were easier testing and one place to express access rules, which
 addressed problems already visible in the code.
 
-The complete historical analysis remains available in
-[`context/architect-report.md`](https://github.com/wsternik/dentiplan/blob/main/context/architect-report.md).
+The supporting evidence remains available in the repository map, feature
+research, refactoring plan and domain notes linked on the first page.
