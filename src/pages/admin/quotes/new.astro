@@ -16,7 +16,7 @@ const { toothOptions, generalOptions } = buildPickerOptions();
 
 <Layout title="Nowy kosztorys">
   <Topbar />
-  <main>
+  <main class="min-h-[calc(100svh-3.75rem)]">
     <QuoteEditor toothOptions={toothOptions} generalOptions={generalOptions} client:load />
   </main>
 </Layout>

@@ -3,35 +3,34 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* DentiPlan's palette. The reasoning lives in
-   `context/changes/ui-redesign/design-brief.md`; the short version is that the
-   ground is enamel rather than paper-cream, the ink is a blue-black rather than
-   a brown-black, and saturated colour is reserved for clinical meaning. Chrome —
-   navigation, buttons, borders, the "recommended" marker — is ink. If something
-   on screen is coloured, it is saying something about a tooth. */
+/* Warm paper and plum ink carry the product identity. Coral is a dedicated
+   brand accent rather than an alias for urgency, destructive actions, or focus;
+   clinical colour keeps its own semantic family below. */
 :root {
-  /* A shade tab is a squared rectangle. This also takes the whole shadcn set off
-     the starter's pill-ish 0.625rem in one line. */
-  --radius: 0.25rem;
+  --radius: 0.5rem;
 
   /* --- Base --- */
-  --background: oklch(0.985 0.004 95); /* enamel */
-  --foreground: oklch(0.28 0.042 205); /* ink */
-  --card: oklch(1 0 0); /* porcelain — surfaces that sit ON the paper */
-  --card-foreground: oklch(0.28 0.042 205);
+  --background: oklch(0.9825 0.0057 84.6); /* warm paper */
+  --foreground: oklch(0.29 0.044 319.8); /* plum ink */
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.29 0.044 319.8);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.28 0.042 205);
-  --primary: oklch(0.33 0.055 205); /* deep ink */
-  --primary-foreground: oklch(0.985 0.004 95);
-  --secondary: oklch(0.955 0.006 200);
-  --secondary-foreground: oklch(0.28 0.042 205);
-  --muted: oklch(0.955 0.006 200);
-  --muted-foreground: oklch(0.505 0.028 205); /* slate */
-  --accent: oklch(0.955 0.006 200);
-  --accent-foreground: oklch(0.28 0.042 205);
-  --border: oklch(0.885 0.008 205); /* hairline */
-  --input: oklch(0.885 0.008 205);
-  --ring: oklch(0.55 0.05 205);
+  --popover-foreground: oklch(0.29 0.044 319.8);
+  --primary: oklch(0.29 0.044 319.8);
+  --primary-foreground: oklch(0.9825 0.0057 84.6);
+  --secondary: oklch(0.938 0.0124 317.7);
+  --secondary-foreground: oklch(0.29 0.044 319.8);
+  --muted: oklch(0.938 0.0124 317.7);
+  --muted-foreground: oklch(0.5103 0.0218 325.9);
+  --accent: oklch(0.938 0.0124 317.7);
+  --accent-foreground: oklch(0.29 0.044 319.8);
+  --border: oklch(0.855 0.018 319.8);
+  --input: oklch(0.855 0.018 319.8);
+  --ring: oklch(0.48 0.1 294);
+
+  /* Decorative identity. Neither value carries clinical state. */
+  --brand: oklch(0.678 0.1691 33.2);
+  --brand-ink: oklch(0.56 0.1662 32.9);
 
   /* --- Clinical --- */
   /* Every clinical hue ships twice. The plain value is a MARK: fills, dots,
@@ -59,17 +58,17 @@
   --chart-1: oklch(0.545 0.168 27);
   --chart-2: oklch(0.735 0.135 68);
   --chart-3: oklch(0.655 0.085 142);
-  --chart-4: oklch(0.33 0.055 205);
+  --chart-4: oklch(0.29 0.044 319.8);
   --chart-5: oklch(0.8 0.01 205);
 
-  --sidebar: oklch(0.955 0.006 200);
-  --sidebar-foreground: oklch(0.28 0.042 205);
-  --sidebar-primary: oklch(0.33 0.055 205);
-  --sidebar-primary-foreground: oklch(0.985 0.004 95);
-  --sidebar-accent: oklch(0.985 0.004 95);
-  --sidebar-accent-foreground: oklch(0.28 0.042 205);
-  --sidebar-border: oklch(0.885 0.008 205);
-  --sidebar-ring: oklch(0.55 0.05 205);
+  --sidebar: oklch(0.938 0.0124 317.7);
+  --sidebar-foreground: oklch(0.29 0.044 319.8);
+  --sidebar-primary: oklch(0.29 0.044 319.8);
+  --sidebar-primary-foreground: oklch(0.9825 0.0057 84.6);
+  --sidebar-accent: oklch(0.9825 0.0057 84.6);
+  --sidebar-accent-foreground: oklch(0.29 0.044 319.8);
+  --sidebar-border: oklch(0.855 0.018 319.8);
+  --sidebar-ring: oklch(0.48 0.1 294);
 }
 
 /* Not designed, not reviewed, not screenshotted — a treatment estimate is read
@@ -78,32 +77,34 @@
    clinical hues are NOT redefined here: they cascade from `:root`, and their
    meaning does not change with the ambient light. */
 .dark {
-  --background: oklch(0.19 0.02 205);
+  --background: oklch(0.19 0.025 319.8);
   --foreground: oklch(0.95 0.005 95);
-  --card: oklch(0.24 0.022 205);
+  --card: oklch(0.24 0.025 319.8);
   --card-foreground: oklch(0.95 0.005 95);
-  --popover: oklch(0.24 0.022 205);
+  --popover: oklch(0.24 0.025 319.8);
   --popover-foreground: oklch(0.95 0.005 95);
-  --primary: oklch(0.9 0.012 200);
-  --primary-foreground: oklch(0.24 0.022 205);
-  --secondary: oklch(0.3 0.02 205);
+  --primary: oklch(0.9 0.012 317.7);
+  --primary-foreground: oklch(0.24 0.025 319.8);
+  --secondary: oklch(0.3 0.03 319.8);
   --secondary-foreground: oklch(0.95 0.005 95);
-  --muted: oklch(0.3 0.02 205);
-  --muted-foreground: oklch(0.72 0.018 205);
-  --accent: oklch(0.3 0.02 205);
+  --muted: oklch(0.3 0.03 319.8);
+  --muted-foreground: oklch(0.74 0.018 325.9);
+  --accent: oklch(0.3 0.03 319.8);
   --accent-foreground: oklch(0.95 0.005 95);
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 16%);
-  --ring: oklch(0.65 0.04 205);
+  --ring: oklch(0.72 0.1 294);
+  --brand: oklch(0.72 0.16 33.2);
+  --brand-ink: oklch(0.78 0.13 33.2);
   --destructive: oklch(0.62 0.17 27);
-  --sidebar: oklch(0.24 0.022 205);
+  --sidebar: oklch(0.24 0.025 319.8);
   --sidebar-foreground: oklch(0.95 0.005 95);
-  --sidebar-primary: oklch(0.9 0.012 200);
-  --sidebar-primary-foreground: oklch(0.24 0.022 205);
-  --sidebar-accent: oklch(0.3 0.02 205);
+  --sidebar-primary: oklch(0.9 0.012 317.7);
+  --sidebar-primary-foreground: oklch(0.24 0.025 319.8);
+  --sidebar-accent: oklch(0.3 0.03 319.8);
   --sidebar-accent-foreground: oklch(0.95 0.005 95);
   --sidebar-border: oklch(1 0 0 / 12%);
-  --sidebar-ring: oklch(0.65 0.04 205);
+  --sidebar-ring: oklch(0.72 0.1 294);
 }
 
 @theme inline {
@@ -112,11 +113,10 @@
   --radius-lg: calc(var(--radius) + 2px);
   --radius-xl: calc(var(--radius) + 6px);
 
-  /* Literata reads (the patient document); Archivo works (the interface, and
-     every number — it was drawn with tabular figures, which is the difference
-     between a price list and a price table). */
-  --font-sans: "Archivo Variable", Archivo, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-serif: "Literata Variable", Literata, Georgia, "Times New Roman", serif;
+  /* Manrope carries interface and reading copy; Fraunces is reserved for
+     editorial hierarchy through `font-editorial`. */
+  --font-sans: "Manrope Variable", Manrope, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-editorial: "Fraunces Variable", Fraunces, Georgia, "Times New Roman", serif;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -136,6 +136,8 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-brand: var(--brand);
+  --color-brand-ink: var(--brand-ink);
 
   --color-urgency-urgent: var(--urgency-urgent);
   --color-urgency-urgent-ink: var(--urgency-urgent-ink);
@@ -161,8 +163,54 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-/* Money, and anything else read as a column of figures. Archivo's tabular
-   figures are the reason it is here. */
+@utility font-editorial {
+  font-family: var(--font-editorial);
+}
+
+/* Three page jobs, three stable measures. Marketing gets the broad prototype
+   composition; workspace stays dense; document remains a reading surface. */
+@utility shell-marketing {
+  width: 100%;
+  max-width: 90rem;
+  margin-inline: auto;
+  padding-inline: 1.375rem;
+
+  @media (min-width: 40rem) {
+    padding-inline: 1.5625rem;
+  }
+
+  @media (min-width: 48rem) {
+    padding-inline: 2.1875rem;
+  }
+
+  @media (min-width: 80rem) {
+    padding-inline: 4rem;
+  }
+}
+
+@utility shell-workspace {
+  width: 100%;
+  max-width: 64rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
+
+  @media (min-width: 40rem) {
+    padding-inline: 1.5rem;
+  }
+}
+
+@utility shell-document {
+  width: 100%;
+  max-width: 48rem;
+  margin-inline: auto;
+  padding-inline: 1.375rem;
+
+  @media (min-width: 40rem) {
+    padding-inline: 1.75rem;
+  }
+}
+
+/* Money, and anything else read as a column of figures. */
 @utility numeric {
   font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
@@ -187,8 +235,13 @@
    gone. The grip edge survives as a solid bar, so the recommendation is still
    marked on paper where colour may not reproduce at all.
 
-   The footer slot is reserved for the QR code S-07 puts there. */
+   The footer closes with a reproducible QR and the full online address. */
 @media print {
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+
   :root {
     --background: #fff;
     --card: #fff;
@@ -196,6 +249,8 @@
     --muted-foreground: #333;
     --border: #999;
     --primary: #000;
+    --brand: #000;
+    --brand-ink: #000;
   }
 
   body {
@@ -215,12 +270,33 @@
     padding: 0;
   }
 
+  .patient-document {
+    width: 100%;
+    font-size: 12pt;
+    line-height: 1.45;
+  }
+
+  .patient-document > header {
+    padding-bottom: 0.45cm;
+  }
+
+  .patient-document > div {
+    margin-top: 0.55cm;
+  }
+
+  .patient-document article,
+  .patient-document .quadrant,
+  .patient-document [role="note"] {
+    border-radius: 0;
+    box-shadow: none;
+  }
+
   /* The comparison is the point of the page; it does not get to reflow into one
      column just because the medium changed — and it nearly did. The grid is
-     `md:grid-cols-2` (768px), while A4 at default margins gives about 717px of
-     printable width, so on paper the tabs stacked. Screenshotting with print
-     media emulated at a 1280px viewport hid that completely; it only shows up
-     when you measure at the width a printer actually has. */
+     `md:grid-cols-2` (768px), while the frozen browser check gives 717px and the
+     generated A4 page with 15mm margins gives about 680px. Screenshotting with
+     print media emulated at a 1280px viewport hid the original failure; it only
+     shows up when you measure at the width a printer actually has. */
   .variant-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
@@ -228,6 +304,7 @@
   .variant {
     animation: none !important;
     break-inside: avoid;
+    padding: 0.45cm;
   }
 
   /* The chart is the one thing on this page whose meaning is carried by fill
@@ -281,6 +358,7 @@
      so the hatched rule and the heading carry the distinction instead. */
   .deferred {
     opacity: 1;
+    background: #fff;
   }
 
   a[href]::after {

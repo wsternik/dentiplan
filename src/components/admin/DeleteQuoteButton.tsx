@@ -43,7 +43,7 @@ export function DeleteQuoteButton({ id }: Props) {
   }
 
   if (error) {
-    return <span className="text-destructive text-xs">{error}</span>;
+    return <span className="text-destructive inline-block max-w-48 text-left text-xs leading-relaxed">{error}</span>;
   }
 
   if (!armed) {
@@ -52,6 +52,7 @@ export function DeleteQuoteButton({ id }: Props) {
         type="button"
         variant="ghost"
         size="sm"
+        className="text-destructive hover:bg-destructive/8 hover:text-destructive"
         onClick={() => {
           setArmed(true);
         }}
@@ -62,7 +63,7 @@ export function DeleteQuoteButton({ id }: Props) {
   }
 
   return (
-    <span className="flex items-center gap-1">
+    <span className="flex flex-wrap items-center justify-end gap-1">
       <Button type="button" variant="destructive" size="sm" disabled={deleting} onClick={() => void remove()}>
         {deleting ? "Usuwanie…" : "Na pewno?"}
       </Button>

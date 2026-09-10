@@ -21,8 +21,13 @@ export function VisitList({ visits, onAdd, onRemove, onLabelChange, readOnly }: 
     <div className="space-y-2">
       {visits.length === 0 && <p className="text-muted-foreground text-sm">Brak wizyt. Dodaj pierwszą wizytę.</p>}
       {visits.map((visit) => (
-        <div key={visit.number} className="flex items-center gap-2">
-          <span className="text-foreground w-20 shrink-0 text-sm font-medium">Wizyta {visit.number}</span>
+        <div
+          key={visit.number}
+          className="border-border/70 bg-background/70 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-xl border p-3 sm:grid-cols-[5rem_minmax(0,1fr)_auto]"
+        >
+          <span className="text-foreground col-span-2 text-sm font-semibold tracking-tight sm:col-span-1">
+            Wizyta {visit.number}
+          </span>
           <Input
             readOnly={readOnly}
             placeholder="Opis wizyty (opcjonalnie)"
@@ -47,7 +52,7 @@ export function VisitList({ visits, onAdd, onRemove, onLabelChange, readOnly }: 
         </div>
       ))}
       {!readOnly && (
-        <Button type="button" variant="outline" size="sm" onClick={onAdd}>
+        <Button type="button" variant="outline" size="sm" shape="pill" onClick={onAdd}>
           <Plus /> Dodaj wizytę
         </Button>
       )}

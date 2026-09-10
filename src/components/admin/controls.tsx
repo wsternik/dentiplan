@@ -6,7 +6,7 @@ import type { ReactNode, SelectHTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 
 const selectBase =
-  "h-9 w-full min-w-0 rounded-md border border-input bg-card px-3 py-1 text-sm outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50";
+  "h-9 w-full min-w-0 rounded-lg border border-input bg-card px-3 py-1 text-sm outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50";
 
 /** Native select styled to match the shadcn Input. */
 export function NativeSelect({ className, children, ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
@@ -24,7 +24,7 @@ export function NativeSelect({ className, children, ...props }: SelectHTMLAttrib
  */
 export function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="border-border bg-card rounded-md border p-4 sm:p-5">
+    <section className="border-border bg-card rounded-xl border p-4 sm:p-5">
       <h2 className="text-muted-foreground border-border mb-4 border-b pb-2 text-xs font-semibold tracking-tight">
         {title}
       </h2>

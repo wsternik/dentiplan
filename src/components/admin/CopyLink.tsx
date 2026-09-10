@@ -32,7 +32,7 @@ export function CopyLink({ path }: Props) {
   }
 
   return (
-    <Button type="button" onClick={() => void copy()}>
+    <Button type="button" shape="pill" className="w-full sm:w-auto" onClick={() => void copy()}>
       {copied ? "Skopiowano ✓" : "Kopiuj link"}
     </Button>
   );

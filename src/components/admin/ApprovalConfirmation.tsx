@@ -19,29 +19,32 @@ interface Props {
 
 export function ApprovalConfirmation({ path, onReset }: Props) {
   return (
-    <div className="mx-auto max-w-2xl space-y-4 px-4 py-8">
-      <h1 className="font-serif text-2xl font-medium tracking-tight">Kosztorys zatwierdzony</h1>
-      <p className="text-muted-foreground max-w-prose text-sm leading-relaxed">
-        Skopiuj poniższy link i przekaż go pacjentowi. Link jest aktywny od razu; zatwierdzonego kosztorysu nie można
-        już edytować.
-      </p>
+    <div className="shell-workspace py-8 sm:py-12">
+      <section className="border-border bg-card mx-auto max-w-2xl rounded-2xl border p-6 sm:p-9">
+        <span className="bg-brand mb-4 block h-1 w-10 rounded-full" aria-hidden="true" />
+        <h1 className="font-editorial text-3xl font-medium tracking-[-0.035em]">Kosztorys zatwierdzony</h1>
+        <p className="text-muted-foreground mt-3 max-w-prose text-sm leading-relaxed">
+          Skopiuj poniższy link i przekaż go pacjentowi. Link jest aktywny od razu; zatwierdzonego kosztorysu nie można
+          już edytować.
+        </p>
 
-      <div className="space-y-3">
-        <CopyLink path={path} />
-        <QrCode path={path} />
-      </div>
+        <div className="bg-secondary/45 mt-7 space-y-4 rounded-xl p-4 sm:p-5">
+          <CopyLink path={path} />
+          <QrCode path={path} />
+        </div>
 
-      <div className="flex flex-wrap gap-2">
-        <Button type="button" variant="outline" onClick={onReset}>
-          Nowy kosztorys
-        </Button>
-        <a
-          href="/admin"
-          className="border-border bg-card hover:bg-accent inline-flex h-9 items-center rounded-md border px-4 text-sm font-medium tracking-tight transition-colors"
-        >
-          Lista kosztorysów
-        </a>
-      </div>
+        <div className="border-border mt-7 flex flex-wrap gap-2 border-t pt-5">
+          <Button type="button" variant="outline" shape="pill" onClick={onReset}>
+            Nowy kosztorys
+          </Button>
+          <a
+            href="/admin"
+            className="border-border bg-card hover:bg-accent focus-visible:ring-ring inline-flex h-9 items-center rounded-full border px-4 text-sm font-medium tracking-tight transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+          >
+            Lista kosztorysów
+          </a>
+        </div>
+      </section>
     </div>
   );
 }

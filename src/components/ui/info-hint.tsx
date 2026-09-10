@@ -55,7 +55,7 @@ export function InfoHint({ label, children }: InfoHintProps) {
           <Tooltip.Content
             sideOffset={6}
             aria-hidden="true"
-            className="bg-popover text-popover-foreground border-border z-50 max-w-72 rounded-md border px-3 py-2 text-sm leading-snug shadow-md"
+            className="bg-popover text-popover-foreground border-border z-50 max-w-72 rounded-lg border px-3 py-2 text-sm leading-snug shadow-md"
           >
             {children}
             <Tooltip.Arrow className="fill-border" />

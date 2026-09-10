@@ -41,24 +41,28 @@ const chartTeeth = toChartTeeth(content);
 ---
 
 {
-  /* 17px at 1.65 is the brief's reading setting, and it belongs on the container
-    rather than on each section — the sections inherited 14px `text-sm` from the
-    admin conventions they were built alongside, which is a form size, not a
-    document size. `max-w-[68ch]` caps the measure. */
+  /* 17px at 1.65 is the document's reading setting, and it belongs on the
+    container rather than on each section. The shared shell keeps the measure
+    readable while the section cards provide the new visual hierarchy. */
 }
-<main class="mx-auto max-w-3xl px-5 py-10 font-serif text-[17px] leading-[1.65] sm:py-14">
-  <header class="border-border border-b pb-6">
-    <h1 class="text-3xl leading-tight font-medium tracking-tight sm:text-4xl">Twój kosztorys leczenia</h1>
-    <p class="text-muted-foreground mt-2 font-sans text-sm">
+<main class="patient-document shell-document py-8 text-[17px] leading-[1.65] sm:py-12">
+  <header class="border-border border-b pb-7">
+    <span class="bg-brand mb-4 block h-1 w-10 rounded-full" aria-hidden="true"></span>
+    <h1 class="font-editorial text-3xl leading-tight font-medium tracking-[-0.035em] sm:text-4xl">
+      Twój kosztorys leczenia
+    </h1>
+    <p class="text-muted-foreground mt-2 text-sm">
       Plan {audience}, sporządzony {formatDate(createdAt)}.
     </p>
   </header>
 
-  <div class="mt-10 space-y-12">
+  <div class="mt-8 space-y-10 sm:mt-10 sm:space-y-12">
     <VariantComparison totals={content.totals} visits={content.visits} />
 
     <section class="tooth-chart-block space-y-4" aria-labelledby="schemat-heading">
-      <h2 id="schemat-heading" class="text-xl font-medium tracking-tight">Twoje zęby na schemacie</h2>
+      <h2 id="schemat-heading" class="font-editorial text-2xl font-medium tracking-[-0.025em]">
+        Twoje zęby na schemacie
+      </h2>
       <div class="tooth-chart-layout lg:grid lg:grid-cols-2 lg:items-center lg:gap-6">
         <ToothChart client:load teeth={chartTeeth} mode="read-only" />
         {

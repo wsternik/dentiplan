@@ -2,16 +2,15 @@
 // "Odroczone" section (FR-062): out-of-current-plan teeth, clearly marked as
 // outside the current plan. Default label "Odroczone" per PRD Open Q #5.
 //
-// Status is drawn, not coloured: this section is dimmed and sits under a hatched
-// rule, so it stays distinguishable in greyscale, in print, and to a reader who
-// cannot separate red from green.
+// Status is drawn, not coloured: this section sits on one muted surface and
+// under a hatched rule, so it stays distinguishable in greyscale, in print, and
+// to a reader who cannot separate red from green.
 //
 // Two things the first version of this got wrong, both found in review:
 //
-//   - The descendants also carried `text-muted-foreground`, and the two dims
-//     multiplied: 5.55:1 became 2.72:1, under the floor, on clinical text about
-//     the reader's own mouth. The section dims itself now; the text does not
-//     dim itself again.
+//   - The section and its descendants both carried dimming, and the two effects
+//     multiplied below the contrast floor. The section now uses one muted
+//     surface while the clinical text stays full-strength.
 //   - The hatch is a `background-image`, and browsers suppress background images
 //     in print unless the reader ticks "Background graphics" — while the print
 //     block undims the section. On paper the deferred teeth would have looked
@@ -34,18 +33,21 @@ const { teeth } = Astro.props;
 const sorted = [...teeth].sort((a, b) => a.number - b.number);
 ---
 
-<section class="deferred space-y-3 opacity-65" aria-labelledby="odroczone-heading">
+<section
+  class="deferred border-border/80 bg-secondary/40 space-y-3 rounded-2xl border border-dashed p-5"
+  aria-labelledby="odroczone-heading"
+>
   <div>
-    <h2 id="odroczone-heading" class="text-xl font-medium tracking-tight">Odroczone</h2>
+    <h2 id="odroczone-heading" class="font-editorial text-2xl font-medium tracking-[-0.025em]">Odroczone</h2>
     <div class="hatched mt-2 h-1"></div>
   </div>
-  <p class="font-sans text-sm">Te zęby nie są częścią bieżącego planu leczenia.</p>
+  <p class="text-sm">Te zęby nie są częścią bieżącego planu leczenia.</p>
   <ul class="max-w-[68ch] space-y-1.5 text-sm">
     {
       sorted.map((tooth) => (
         <li>
           {toothName(tooth.number)}
-          {tooth.note && <span class="font-sans"> — {tooth.note}</span>}
+          {tooth.note && <span> — {tooth.note}</span>}
         </li>
       ))
     }

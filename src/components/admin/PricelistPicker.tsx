@@ -7,6 +7,7 @@ import { useMemo } from "react";
 import { NativeSelect } from "./controls";
 import { formatPriceValue } from "./format";
 import type { PickerOption } from "@/lib/pricing";
+import { cn } from "@/lib/utils";
 
 interface Props {
   options: PickerOption[];
@@ -29,7 +30,7 @@ export function PricelistPicker({ options, onAdd, placeholder = "Dodaj pozycję 
 
   return (
     <NativeSelect
-      className={className}
+      className={cn("bg-background", className)}
       value=""
       onChange={(e) => {
         const option = byId.get(e.target.value);

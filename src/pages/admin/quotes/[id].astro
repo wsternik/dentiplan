@@ -53,7 +53,7 @@ if (id.success && supabase) {
 
 <Layout title={quote ? "Kosztorys" : "Nie znaleziono"}>
   <Topbar />
-  <main>
+  <main class="min-h-[calc(100svh-3.75rem)]">
     {
       quote ? (
         <QuoteEditor
@@ -69,14 +69,22 @@ if (id.success && supabase) {
           client:load
         />
       ) : (
-        <div class="mx-auto max-w-2xl px-4 py-12">
-          <h1 class="font-serif text-2xl font-medium tracking-tight">Nie znaleziono kosztorysu</h1>
-          <p class="text-muted-foreground mt-2 text-sm leading-relaxed">
-            Ten kosztorys nie istnieje albo został usunięty.
-          </p>
-          <a href="/admin" class="mt-6 inline-block text-sm underline underline-offset-4">
-            Lista kosztorysów
-          </a>
+        <div class="shell-workspace py-10 sm:py-16">
+          <section class="border-border bg-card max-w-2xl rounded-2xl border p-6 sm:p-9">
+            <span class="bg-brand mb-4 block h-1 w-10 rounded-full" aria-hidden="true" />
+            <h1 class="font-editorial text-2xl font-medium tracking-[-0.03em] sm:text-3xl">
+              Nie znaleziono kosztorysu
+            </h1>
+            <p class="text-muted-foreground mt-3 max-w-prose text-sm leading-relaxed">
+              Ten kosztorys nie istnieje albo został usunięty.
+            </p>
+            <a
+              href="/admin"
+              class="border-border bg-card hover:bg-accent focus-visible:ring-ring mt-7 inline-flex h-10 items-center rounded-full border px-5 text-sm font-semibold tracking-tight transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+            >
+              Lista kosztorysów
+            </a>
+          </section>
         </div>
       )
     }

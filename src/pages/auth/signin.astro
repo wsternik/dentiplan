@@ -13,16 +13,24 @@
 
 import Layout from "@/layouts/Layout.astro";
 import SignInForm from "@/components/auth/SignInForm";
+import Wordmark from "@/components/Wordmark.astro";
 
 const error = Astro.url.searchParams.get("error");
 ---
 
 <Layout title="Sign in" lang="en">
-  <main class="flex min-h-screen flex-col items-center justify-center px-5 py-12">
-    <a href="/" class="text-muted-foreground mb-8 text-sm font-medium tracking-tight">DentiPlan</a>
-    <div class="border-border bg-card w-full max-w-sm rounded-md border p-7">
-      <h1 class="mb-6 font-serif text-xl font-medium tracking-tight">Sign in</h1>
-      <SignInForm serverError={error} client:load />
+  <main class="shell-workspace flex min-h-screen items-center justify-center py-10 sm:py-16">
+    <div class="w-full max-w-md">
+      <Wordmark href="/" class="mb-8" />
+      <section
+        class="border-border bg-card rounded-2xl border p-6 shadow-[0_24px_70px_-42px_color-mix(in_oklch,var(--foreground)_42%,transparent)] sm:p-8"
+      >
+        <div class="border-border mb-7 border-b pb-6">
+          <span class="bg-brand mb-4 block h-1 w-10 rounded-full" aria-hidden="true"></span>
+          <h1 class="font-editorial text-3xl font-medium tracking-[-0.035em]">Sign in</h1>
+        </div>
+        <SignInForm serverError={error} client:load />
+      </section>
     </div>
   </main>
 </Layout>

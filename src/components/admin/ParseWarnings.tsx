@@ -27,14 +27,14 @@ export function ParseWarnings({ warnings }: Props) {
 
   return (
     <div
-      className="border-urgency-moderate/50 mt-3 border-l-2 pl-3"
+      className="border-urgency-moderate/50 bg-urgency-moderate/8 mt-4 min-w-0 rounded-xl border border-l-[3px] p-3 sm:p-4"
       role="group"
       aria-label="Do przejrzenia po wypełnieniu z notatki"
     >
       <p className="text-urgency-moderate-ink text-xs font-medium">
         Do przejrzenia — czego nie odczytano z notatki i co model zaproponował sam:
       </p>
-      <ul className="text-muted-foreground mt-1 space-y-0.5 text-xs">
+      <ul className="text-muted-foreground mt-2 space-y-1 text-xs leading-relaxed break-words">
         {/* Keyed by position, not by the message: two items can legitimately
             produce identical wording, and the model's own warnings are free text
             it may well repeat. The list is read-only and never reordered. */}

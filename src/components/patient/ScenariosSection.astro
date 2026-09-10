@@ -31,9 +31,9 @@ const show = sorted.length > 0 || showRangeUpside;
 
 {
   show && (
-    <section class="space-y-3" aria-labelledby="scenariusze-heading">
+    <section class="border-border/80 bg-card space-y-3 rounded-2xl border p-5" aria-labelledby="scenariusze-heading">
       <div>
-        <h2 id="scenariusze-heading" class="text-xl font-medium tracking-tight">
+        <h2 id="scenariusze-heading" class="font-editorial text-2xl font-medium tracking-[-0.025em]">
           Scenariusze, które mogą zmienić koszt
         </h2>
         <div class="border-border mt-2 border-t border-dashed" />
@@ -49,9 +49,9 @@ const show = sorted.length > 0 || showRangeUpside;
           <li>
             {toothName(tooth.number)}
             {tooth.note ? (
-              <span class="text-muted-foreground font-sans"> — {tooth.note}</span>
+              <span class="text-muted-foreground"> — {tooth.note}</span>
             ) : (
-              <span class="text-muted-foreground font-sans"> — możliwe dodatkowe leczenie</span>
+              <span class="text-muted-foreground"> — możliwe dodatkowe leczenie</span>
             )}
           </li>
         ))}

@@ -1,7 +1,5 @@
 ---
-// The panel's chrome: wordmark, who is signed in, and the way out. Phase 3 puts
-// it on the three admin pages, each of which currently repeats its own
-// `Zalogowano: {user.email}` line.
+// The panel's chrome: shared identity, who is signed in, and the way out.
 //
 // Two things this deliberately does NOT contain, both because the E2E suite
 // locates against the whole page under strict mode:
@@ -12,20 +10,17 @@
 // Admin-only, so there is no signed-out branch: every page that renders this is
 // behind `PROTECTED_ROUTES`.
 
+import Wordmark from "@/components/Wordmark.astro";
+
 const { user } = Astro.locals;
 ---
 
 <header class="border-border bg-background/95 no-print sticky top-0 z-20 border-b backdrop-blur-sm">
-  <div class="mx-auto flex max-w-5xl items-baseline justify-between gap-4 px-4 py-3">
-    <a
-      href="/admin"
-      class="text-foreground focus-visible:ring-ring rounded-xs text-base font-semibold tracking-tight focus-visible:ring-2 focus-visible:outline-none"
-    >
-      DentiPlan
-    </a>
+  <div class="shell-workspace flex items-center justify-between gap-4 py-3">
+    <Wordmark href="/admin" compact />
     {
       user && (
-        <div class="text-muted-foreground flex items-baseline gap-4 text-xs">
+        <div class="text-muted-foreground flex items-center gap-4 text-xs">
           <span class="hidden sm:inline">{user.email}</span>
           <form method="POST" action="/api/auth/signout">
             <button

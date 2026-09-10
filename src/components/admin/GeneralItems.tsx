@@ -28,13 +28,19 @@ export function GeneralItems({ items, options, visits, onAdd, onRemove, onVisitC
       {!readOnly && <PricelistPicker options={options} onAdd={onAdd} placeholder="Dodaj pozycję ogólną…" />}
       {items.length === 0 && <p className="text-muted-foreground text-sm">Brak pozycji ogólnych.</p>}
       {items.map((general) => (
-        <div key={general.id} className="flex items-center gap-2">
-          <Badge variant="outline" className="shrink-0">
+        <div
+          key={general.id}
+          className="border-border/70 bg-background/70 flex min-w-0 flex-col gap-2 rounded-xl border p-3 sm:flex-row sm:items-center"
+        >
+          <Badge
+            variant="outline"
+            className="h-auto max-w-full justify-start py-1 text-left whitespace-normal sm:shrink-0"
+          >
             {general.item.name} · {formatPriceValue(general.item.price)}
           </Badge>
           {visits.length > 0 && (
             <NativeSelect
-              className="max-w-56"
+              className="sm:max-w-56"
               disabled={readOnly}
               aria-label="Wizyta dla pozycji ogólnej"
               value={general.visitNumber ?? ""}

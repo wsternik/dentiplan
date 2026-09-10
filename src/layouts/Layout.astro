@@ -1,10 +1,8 @@
 ---
-// `wght.css`, not `standard.css`: the optical-size axis more than doubles
-// Literata (195 KB vs 93 KB for the two cuts a Polish reader fetches), and the
-// hero context for this app is a phone in a corridor. One display heading is
-// not worth 102 KB on that connection.
-import "@fontsource-variable/literata/wght.css";
-import "@fontsource-variable/archivo/wght.css";
+// Fontsource's weight-only entrypoints bundle both latin and latin-ext ranges,
+// so Polish glyphs stay local without loading unused variable axes or a CDN.
+import "@fontsource-variable/manrope/wght.css";
+import "@fontsource-variable/fraunces/wght.css";
 import "../styles/global.css";
 import Banner from "@/components/Banner.astro";
 import { missingConfigs, publicMissingConfigs } from "@/lib/config-status";
