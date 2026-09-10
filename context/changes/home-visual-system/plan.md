@@ -676,12 +676,12 @@ never enters history, so rollback does not depend on deleting imported assets.
 
 #### Automated
 
-- [x] 6.1 `rg` confirms no active Archivo/Literata, legacy `font-serif`, previous base anchors, stale font-role comments, or raw repeated prototype anchors in `src/` and package manifests.
-- [x] 6.2 `git check-ignore` identifies the narrow prototype rule and `git ls-files -- prototypes/dentiplan-home` is empty.
-- [x] 6.3 `git diff main...HEAD -- e2e playwright.config.ts` contains only `e2e/home-page.spec.ts`.
-- [x] 6.4 `npm run lint`, `npx astro check`, `npm test`, `npm run build`, and `npm run test:e2e` all pass.
-- [x] 6.5 `context/foundation/test-plan.md`, `context/foundation/roadmap.md`, and `README.md` describe the shipped system and risk boundary.
+- [x] 6.1 `rg` confirms no active Archivo/Literata, legacy `font-serif`, previous base anchors, stale font-role comments, or raw repeated prototype anchors in `src/` and package manifests. — 91b56fe
+- [x] 6.2 `git check-ignore` identifies the narrow prototype rule and `git ls-files -- prototypes/dentiplan-home` is empty. — 91b56fe
+- [x] 6.3 `git diff main...HEAD -- e2e playwright.config.ts` contains only `e2e/home-page.spec.ts`. — 91b56fe
+- [x] 6.4 `npm run lint`, `npx astro check`, `npm test`, `npm run build`, and `npm run test:e2e` all pass. — 91b56fe
+- [x] 6.5 `context/foundation/test-plan.md`, `context/foundation/roadmap.md`, and `README.md` describe the shipped system and risk boundary. — 91b56fe
 
 #### Manual
 
-- [x] 6.6 Final desktop/mobile/document captures and the A4 PDF are ready for product-owner visual review without blocking integration.
+- [x] 6.6 Final desktop/mobile/document captures and the A4 PDF are ready for product-owner visual review without blocking integration. — 91b56fe
