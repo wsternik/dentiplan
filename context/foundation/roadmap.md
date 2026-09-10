@@ -3,7 +3,7 @@ project: DentiPlan
 version: 1
 status: draft
 created: 2026-05-25
-updated: 2026-09-09
+updated: 2026-09-10
 prd_version: 1
 main_goal: low-complexity
 top_blocker: decisions
@@ -275,6 +275,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 ## Done
 
+- **S-11: dentystka i pacjent widzą spójny system wizualny, a publiczny home wyjaśnia dwa warianty i prowadzi do logowania bez klientowego runtime** — Archived 2026-09-10 → `context/archive/2026-09-09-home-visual-system/`. Lesson: —.
 - **S-11: wspólny system wizualny i strona główna — dentystka widzi spójne wejście do DentiPlan, a publiczna strona wyjaśnia porównanie wariantów i prowadzi do logowania bez klientowego runtime.** — Delivered 2026-09-09 as `home-visual-system`; status: `done`; source brief: `context/changes/home-visual-system/design-brief.md`; dependencies: S-01, S-06, S-07, S-10. Lesson: kontrakt wydruku trzeba mierzyć w szerokości papieru; znaczenie kliniczne nie może zależeć od tła ani samego koloru.
 
 - **S-08: przed zmianą promptu lub domyślnego modelu dentystka ma powtarzalny, płatny na żądanie test tego, jak dostawca odczytuje osiem syntetycznych notatek: surowa odpowiedź jest oceniana deterministycznie pod kątem zębów, cennika, statusów, pilności, ostrzeżeń i grup wizyt, a produkcja używa zwycięzcy pełnej macierzy.** — Archived 2026-09-09 → `context/archive/2026-09-08-prompt-evals/`. Lesson: —.
