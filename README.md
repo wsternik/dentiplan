@@ -184,11 +184,12 @@ session under anesthesia. Its content remains measured and printable; the two
 options stay comparable at printable A4 width, not merely in a screen-sized
 print preview.
 
-Colour in this interface means something clinical. Navigation, buttons and the
-"recommended" marker are ink; the only saturated hues in the system are the
-urgency marks on a tooth. Plan status is drawn rather than coloured — dashed for
-uncertain, dimmed and hatched for deferred — so it survives being printed in
-black and white and being read by someone who cannot separate red from green.
+Colour has two deliberately separate jobs. Coral identifies the DentiPlan brand
+and highlights small interface accents; the clinical urgency ramp remains a
+separate semantic family paired with written labels. Plan status is drawn as
+well as coloured — dashed for uncertain, muted and hatched for deferred — so it
+survives being printed in black and white and being read by someone who cannot
+separate red from green.
 
 The palette and typography live as tokens in `src/styles/global.css`. Colour
 never carries a clinical distinction alone: status also has a border or label,

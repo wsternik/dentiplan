@@ -54,16 +54,16 @@ copy retains a readable 17 px / 1.65 setting and a 68-character measure.
 The values below are anchors. Production defines semantic OKLCH tokens in
 `global.css`; components consume names, never repeated raw values.
 
-| Role                 | Prototype anchor     | OKLCH target                         | Use                                   |
-| -------------------- | -------------------- | ------------------------------------ | ------------------------------------- |
-| Background           | `#fbf9f5`            | `oklch(0.9825 0.0057 84.6)`          | page ground                           |
-| Foreground / primary | `#352439`            | `oklch(0.2900 0.0440 319.8)`         | text, primary control                 |
-| Brand accent         | `#ed694e`            | `oklch(0.6780 0.1691 33.2)`          | identity, small highlights            |
-| Brand accent ink     | `#d95940`            | `oklch(0.6247 0.1662 32.9)`          | accessible accent text where verified |
-| Soft surface         | `#eee8f0`            | `oklch(0.9380 0.0124 317.7)`         | quiet panels and illustration ground  |
-| Card                 | `#ffffff`            | `oklch(1 0 0)`                       | raised surfaces                       |
-| Muted text           | `#6d626d`            | `oklch(0.5103 0.0218 325.9)`         | secondary copy                        |
-| Border               | plum-tinted hairline | derived from foreground/soft surface | rules and inputs                      |
+| Role                 | Prototype anchor     | OKLCH target                         | Use                                     |
+| -------------------- | -------------------- | ------------------------------------ | --------------------------------------- |
+| Background           | `#fbf9f5`            | `oklch(0.9825 0.0057 84.6)`          | page ground                             |
+| Foreground / primary | `#352439`            | `oklch(0.2900 0.0440 319.8)`         | text, primary control                   |
+| Brand accent         | `#ed694e`            | `oklch(0.6780 0.1691 33.2)`          | identity, small highlights              |
+| Brand accent ink     | `#d95940`            | `oklch(0.5600 0.1662 32.9)`          | accessible accent text on soft surfaces |
+| Soft surface         | `#eee8f0`            | `oklch(0.9380 0.0124 317.7)`         | quiet panels and illustration ground    |
+| Card                 | `#ffffff`            | `oklch(1 0 0)`                       | raised surfaces                         |
+| Muted text           | `#6d626d`            | `oklch(0.5103 0.0218 325.9)`         | secondary copy                          |
+| Border               | plum-tinted hairline | derived from foreground/soft surface | rules and inputs                        |
 
 The brand accent is decorative and identifying. It is not urgency red, delete
 red, warning ochre, success green, or the focus ring.

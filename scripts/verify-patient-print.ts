@@ -3,7 +3,10 @@ import { dirname, isAbsolute } from "node:path";
 
 import { chromium, type Locator, type Page } from "@playwright/test";
 
-const A4_PRINTABLE_WIDTH = 717;
+const A4_WIDTH_MM = 210;
+const PAGE_MARGIN_MM = 15;
+const CSS_PX_PER_MM = 96 / 25.4;
+const A4_PRINTABLE_WIDTH = Math.round((A4_WIDTH_MM - 2 * PAGE_MARGIN_MM) * CSS_PX_PER_MM);
 const CSS_PX_PER_CM = 96 / 2.54;
 const EXPECTED_QR_SIZE = 2.5 * CSS_PX_PER_CM;
 const EDGE_TOLERANCE = 5;

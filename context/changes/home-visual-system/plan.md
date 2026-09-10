@@ -434,7 +434,7 @@ introduced; protected substrings remain absent.
 **Intent**: Reconcile the new base palette/type with the existing black-on-white
 A4 document.
 
-**Contract**: At approximately 717 px printable width, variants use two columns;
+**Contract**: At the approximately 680 px left by A4 with the shipped 15 mm margins, variants use two columns;
 recommendation survives through text/edge; deferred/uncertain status survives
 without background graphics; chart and legend remain bounded; QR stays 2.5 cm
 with quiet zone; full `Wersja online:` address wraps; disclaimer remains. Print
@@ -447,9 +447,9 @@ does not depend on screen breakpoints.
 **Intent**: Make the non-E2E part of the print contract repeatable without
 editing the frozen browser specs.
 
-**Contract**: The script accepts an absolute patient URL and output path, opens
-Chromium at a 717 px printable viewport with `print` media and background
-graphics disabled, asserts both variant headings and status labels, measures the
+**Contract**: The script accepts an absolute patient URL and output path, derives
+the approximately 680 px printable viewport from A4 and the shipped 15 mm margins,
+opens Chromium with `print` media and background graphics disabled, asserts both variant headings and status labels, measures the
 variant top edges, footer bounds, and approximately 2.5 cm QR box, then emits an
 A4 PDF. Run it as
 `node --import tsx scripts/verify-patient-print.ts <patient-url> /tmp/dentiplan-patient-a4.pdf`.

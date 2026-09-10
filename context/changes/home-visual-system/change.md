@@ -1,9 +1,9 @@
 ---
 change_id: home-visual-system
 title: Home visual system
-status: implementing
+status: impl_reviewed
 created: 2026-09-09
-updated: 2026-09-09
+updated: 2026-09-10
 archived_at: null
 ---
 

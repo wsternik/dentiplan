@@ -30,7 +30,7 @@
 
   /* Decorative identity. Neither value carries clinical state. */
   --brand: oklch(0.678 0.1691 33.2);
-  --brand-ink: oklch(0.6247 0.1662 32.9);
+  --brand-ink: oklch(0.56 0.1662 32.9);
 
   /* --- Clinical --- */
   /* Every clinical hue ships twice. The plain value is a MARK: fills, dots,
@@ -249,6 +249,8 @@
     --muted-foreground: #333;
     --border: #999;
     --primary: #000;
+    --brand: #000;
+    --brand-ink: #000;
   }
 
   body {
@@ -291,10 +293,10 @@
 
   /* The comparison is the point of the page; it does not get to reflow into one
      column just because the medium changed — and it nearly did. The grid is
-     `md:grid-cols-2` (768px), while A4 at default margins gives about 717px of
-     printable width, so on paper the tabs stacked. Screenshotting with print
-     media emulated at a 1280px viewport hid that completely; it only shows up
-     when you measure at the width a printer actually has. */
+     `md:grid-cols-2` (768px), while the frozen browser check gives 717px and the
+     generated A4 page with 15mm margins gives about 680px. Screenshotting with
+     print media emulated at a 1280px viewport hid the original failure; it only
+     shows up when you measure at the width a printer actually has. */
   .variant-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
