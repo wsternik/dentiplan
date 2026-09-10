@@ -38,19 +38,23 @@ Full problem statement, persona and requirements: [`context/foundation/prd.md`](
 
 - paste the raw diagnosis note and press **"Wypełnij z notatki"** — the note (and
   nothing else: no name, no e-mail, no identifier) goes to Anthropic, and the
-  teeth, procedures, uncertainty markers and practice-wide items it reads come
-  back into the form. It appends, never overwrites, and everything it could not
-  place — an unknown pricelist item, a tooth number outside FDI — is listed as a
-  warning instead of quietly dropped or quietly accepted. If the call fails the
-  form is filled in by hand exactly as before; the parser is an accelerator, not
-  a dependency
+  teeth, procedures, uncertainty markers, practice-wide items and a proposed
+  visit split come back into the form. It appends, never overwrites, and
+  everything it could not place — an unknown pricelist item, a tooth number
+  outside FDI — is listed as a warning instead of quietly dropped or quietly
+  accepted. If the call fails the form is filled in by hand exactly as before;
+  the parser is an accelerator, not a dependency
 - paste the raw diagnosis text and fill the form: patient type (child/adult),
   and per tooth the procedure, urgency, status (`in-plan` / `uncertain` /
   `out-of-current-plan`), pricelist items and a note; plus practice-wide items
   and an assignment of `in-plan` teeth to visits
+- use the odontogram as a visual picker while editing and verify the same marked
+  teeth in the approved, read-only view
 - see costs computed for both variants as you go, price ranges staying ranges
 - approve once — approval is final and freezes a snapshot of the pricelist into
   the quote, so later price changes never alter a quote a patient already has
+- copy the patient link or scan its QR code from the approved quote; the QR and
+  its fallback URL are also present on the printed document
 - browse every quote, reopen drafts, and keep the recipient's e-mail next to the
   quote for the dentist's own reference (never sent anywhere, never shown to the
   patient)
@@ -59,8 +63,10 @@ Full problem statement, persona and requirements: [`context/foundation/prd.md`](
 
 - teeth grouped and named, a _Odroczone_ section for what is out of the current
   plan, and a _Scenariusze, które mogą zmienić koszt_ section for uncertain teeth
+- a read-only odontogram whose marks match those written sections
 - the standard plan (visits and their totals) and the general-anaesthesia plan
   (one session, fee by the practice's rule) side by side
+- an A4-safe print layout with the online link encoded as a QR code
 - a disclaimer about the estimate's nature that cannot be dismissed
 
 The token carries ≥ 128 bits of entropy and is not sequential, so links are
